@@ -1,0 +1,313 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #FFFBF5;
+  --card: #FFFFFF;
+  --card-hover: #FFF8F0;
+  --surface: #FEF3E2;
+  --surface-2: #FDE8C8;
+  --border: #E8D5B8;
+  --fg: #1C1917;
+  --fg-2: #44403C;
+  --muted: #78716C;
+  --muted-2: #A8A29E;
+  --accent: #D97706;
+  --accent-muted: rgba(217, 119, 6, 0.10);
+  --accent-hover: #B45309;
+  --green: #059669;
+  --green-muted: rgba(5, 150, 105, 0.10);
+  --red: #DC2626;
+  --red-muted: rgba(220, 38, 38, 0.10);
+  --amber: #D97706;
+  --amber-muted: rgba(217, 119, 6, 0.10);
+  --glow: rgba(217, 119, 6, 0.06);
+}
+
+.dark {
+  --bg: #0C0A09;
+  --card: #1C1917;
+  --card-hover: #292524;
+  --surface: #1C1917;
+  --surface-2: #292524;
+  --border: #3D3530;
+  --fg: #FAFAF9;
+  --fg-2: #D6D3D1;
+  --muted: #A8A29E;
+  --muted-2: #78716C;
+  --accent: #F59E0B;
+  --accent-muted: rgba(245, 158, 11, 0.12);
+  --accent-hover: #FBBF24;
+  --green: #34D399;
+  --green-muted: rgba(52, 211, 153, 0.12);
+  --red: #F87171;
+  --red-muted: rgba(248, 113, 113, 0.12);
+  --amber: #FBBF24;
+  --amber-muted: rgba(251, 191, 36, 0.12);
+  --glow: rgba(245, 158, 11, 0.06);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: 'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
+
+/* Tabular numbers for data */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-family: 'Fira Code', monospace;
+}
+
+/* Smooth transitions on interactive elements */
+button, a, input, textarea, select {
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, opacity 150ms ease, transform 100ms ease, box-shadow 150ms ease;
+  touch-action: manipulation;
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+button {
+  cursor: pointer;
+}
+
+/* Focus ring */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Card base — warm with subtle inner glow */
+.card {
+  background: linear-gradient(135deg, var(--card) 0%, color-mix(in srgb, var(--card) 96%, var(--accent) 4%) 100%);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: background-color 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.card:hover {
+  border-color: color-mix(in srgb, var(--accent) 25%, var(--border));
+  box-shadow: 0 0 20px color-mix(in srgb, var(--accent) 4%, transparent);
+}
+
+/* Accent glow card — for featured stats */
+.card-glow {
+  background: linear-gradient(135deg, var(--card) 0%, color-mix(in srgb, var(--card) 90%, var(--accent) 10%) 100%);
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--border));
+  border-radius: 12px;
+  box-shadow: 0 0 30px color-mix(in srgb, var(--accent) 6%, transparent);
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.card-glow:hover {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  box-shadow: 0 0 40px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+/* Section header */
+.section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+/* Stat number — large, bold, with subtle gradient */
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-family: 'Fira Code', monospace;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.stat-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+/* Page header */
+.page-title {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+}
+
+.page-subtitle {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* Nav tab active indicator */
+.nav-tab-active {
+  position: relative;
+}
+.nav-tab-active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 1px;
+}
+
+/* Subtle gradient border bottom for nav */
+.nav-bar {
+  background: linear-gradient(180deg, var(--card) 0%, var(--bg) 100%);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+}
+
+/* Chart container inner glow */
+.chart-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.chart-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 30%, transparent), transparent);
+}
+
+/* Recharts tooltip override */
+.recharts-tooltip-wrapper {
+  outline: none;
+}
+
+/* Badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: 'Fira Code', monospace;
+}
+
+.badge-accent {
+  background: var(--accent-muted);
+  color: var(--accent);
+}
+
+.badge-green {
+  background: var(--green-muted);
+  color: var(--green);
+}
+
+.badge-amber {
+  background: var(--amber-muted);
+  color: var(--amber);
+}
+
+.badge-red {
+  background: var(--red-muted);
+  color: var(--red);
+}
+
+/* Skeleton loading shimmer */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--surface) 25%, var(--surface-2) 50%, var(--surface) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+/* Keyboard heatmap key */
+.heatmap-key {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-family: 'Fira Code', monospace;
+  height: 38px;
+  cursor: default;
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+  transition: background-color 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.heatmap-key:hover {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border)) !important;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.heatmap-key-shift {
+  font-size: 8px;
+  line-height: 1;
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+.heatmap-key-base {
+  font-size: 11px;
+  line-height: 1.1;
+}
+
+.heatmap-key-count {
+  font-size: 7px;
+  line-height: 1;
+  position: absolute;
+  bottom: 2px;
+  right: 3px;
+  opacity: 0.8;
+}
