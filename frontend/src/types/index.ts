@@ -93,6 +93,7 @@ export interface AppConfig {
   blacklisted_apps: string[];
   theme: string;
   data_retention_days: number;
+  data_dir: string;
 }
 
 export interface HeatmapData {

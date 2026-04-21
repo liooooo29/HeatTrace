@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { GetConfig, SaveConfig, GetMonitorStatus, ToggleMonitor, TestMonitor, GetEventCount, BrowserOpenURL, ClearAllData, Quit } from '../wails-bindings';
+import { GetConfig, SaveConfig, GetMonitorStatus, ToggleMonitor, TestMonitor, GetEventCount, BrowserOpenURL, ClearAllData, Quit, GetDefaultDataDir } from '../wails-bindings';
 import { ErrorPage } from './ErrorPage';
 import { KeyboardDebug } from './KeyboardDebug';
 import { t } from '../i18n';
@@ -45,14 +45,16 @@ export function SettingsPanel({ lang }: SettingsPanelProps) {
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [clearing, setClearing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [defaultDataDir, setDefaultDataDir] = useState('');
 
   useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
     async function load() {
       try {
-        const [cfg, status] = await Promise.all([GetConfig(), GetMonitorStatus()]);
+        const [cfg, status, defaultDir] = await Promise.all([GetConfig(), GetMonitorStatus(), GetDefaultDataDir()]);
         setConfig(cfg);
         setMonStatus(status);
+        setDefaultDataDir(defaultDir);
         setLoadError('');
       } catch (e) {
         console.error('Failed to load config:', e);
@@ -327,6 +329,21 @@ export function SettingsPanel({ lang }: SettingsPanelProps) {
                   className="w-20 rounded-lg px-3 py-1.5 text-sm border tabular-nums text-right"
                   style={inputStyle} />
                 <span className="text-xs font-medium" style={{ color: 'var(--muted)' }}>{t('set.days', lang)}</span>
+              </div>
+            </label>
+
+            <div className="h-px" style={{ backgroundColor: 'var(--border)' }} />
+
+            <label className="block">
+              <div className="text-sm mb-1" style={{ color: 'var(--fg)' }}>{t('set.dataDir', lang)}</div>
+              <div className="text-xs mb-2" style={{ color: 'var(--muted)' }}>{t('set.dataDirDesc', lang)}</div>
+              <input type="text" value={config.data_dir || ''}
+                onChange={e => setConfig({ ...config, data_dir: e.target.value })}
+                placeholder={defaultDataDir}
+                className="w-full rounded-lg px-3 py-2 text-sm border font-mono"
+                style={inputStyle} />
+              <div className="text-[10px] mt-1" style={{ color: 'var(--muted-2)' }}>
+                {t('set.dataDirDefault', lang)}: {defaultDataDir}
               </div>
             </label>
           </div>

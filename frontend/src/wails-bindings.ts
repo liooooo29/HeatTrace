@@ -65,6 +65,12 @@ export async function GetConfig(): Promise<any> {
   return app.GetConfig();
 }
 
+export async function GetDefaultDataDir(): Promise<string> {
+  const app = getApp();
+  if (!app?.GetDefaultDataDir) return '';
+  return app.GetDefaultDataDir();
+}
+
 export async function SaveConfig(config: any): Promise<void> {
   const app = getApp();
   if (!app?.SaveConfig) return;

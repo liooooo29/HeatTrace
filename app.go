@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"sort"
 	"sync/atomic"
 	"time"
@@ -33,7 +34,7 @@ func NewApp() (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	store, err := storage.NewJSONStore()
+	store, err := storage.NewJSONStore(cfg.EffectiveDataDir())
 	if err != nil {
 		return nil, err
 	}
@@ -241,6 +242,10 @@ func (a *App) SaveReportImage(base64Data string) (string, error) {
 
 func (a *App) GetConfig() *config.Config {
 	return a.cfg
+}
+
+func (a *App) GetDefaultDataDir() string {
+	return filepath.Join(config.DataDir(), "data")
 }
 
 func (a *App) SaveConfig(cfg config.Config) error {
