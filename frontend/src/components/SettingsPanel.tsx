@@ -321,18 +321,6 @@ export function SettingsPanel({ lang }: SettingsPanelProps) {
                 <span className="text-xs font-medium" style={{ color: 'var(--muted)' }}>{t('set.days', lang)}</span>
               </div>
             </label>
-
-            <div className="h-px" style={{ backgroundColor: 'var(--border)' }} />
-
-            <label className="block">
-              <div className="text-sm mb-1" style={{ color: 'var(--fg)' }}>{t('set.blacklist', lang)}</div>
-              <div className="text-xs mb-2" style={{ color: 'var(--muted)' }}>{t('set.blacklistDesc', lang)}</div>
-              <textarea value={config.blacklisted_apps.join(', ')}
-                onChange={e => setConfig({ ...config, blacklisted_apps: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
-                rows={2}
-                className="w-full rounded-lg px-3 py-2 text-sm border resize-none"
-                style={inputStyle} />
-            </label>
           </div>
         </div>
 
@@ -347,15 +335,25 @@ export function SettingsPanel({ lang }: SettingsPanelProps) {
           {saved ? t('set.saved', lang) : t('set.save', lang)}
         </button>
 
-        {/* Clear Data */}
-        <div className="card p-5">
-          <div className="text-sm font-semibold mb-2" style={{ color: 'var(--fg)' }}>{t('set.danger', lang)}</div>
-          <div className="text-xs mb-3" style={{ color: 'var(--muted)' }}>{t('set.dangerDesc', lang)}</div>
-          <button onClick={() => setShowClearConfirm(true)}
-            className="px-4 py-2 rounded-lg text-xs font-semibold"
-            style={{ backgroundColor: 'var(--red-bg)', color: 'var(--red)', border: '1px solid color-mix(in srgb, var(--red) 20%, var(--border))' }}>
-            {t('set.clearData', lang)}
-          </button>
+        {/* Clear Data — danger styled */}
+        <div className="card p-5" style={{ borderColor: 'var(--red-border, var(--red-bg))' }}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+              style={{ backgroundColor: 'var(--red-bg)' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
+              </svg>
+            </div>
+            <div className="flex-1">
+              <div className="text-sm font-semibold" style={{ color: 'var(--red)' }}>{t('set.clearData', lang)}</div>
+              <div className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>{t('set.dangerDesc', lang)}</div>
+            </div>
+            <button onClick={() => setShowClearConfirm(true)}
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold shrink-0"
+              style={{ backgroundColor: 'var(--red-bg)', color: 'var(--red)' }}>
+              {t('set.clearBtn', lang)}
+            </button>
+          </div>
         </div>
 
         {/* Clear Confirmation Modal */}
