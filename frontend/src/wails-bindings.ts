@@ -119,6 +119,12 @@ export async function ClearAllData(): Promise<void> {
   return app.ClearAllData();
 }
 
+export async function Quit(): Promise<void> {
+  const app = getApp();
+  if (!app?.Quit) return;
+  return app.Quit();
+}
+
 export async function GetDataVersion(): Promise<number> {
   const app = getApp();
   if (!app?.GetDataVersion) return 0;
