@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { GetConfig, SaveConfig, GetMonitorStatus, ToggleMonitor, TestMonitor, GetEventCount, BrowserOpenURL, ClearAllData } from '../wails-bindings';
+import { GetConfig, SaveConfig, GetMonitorStatus, ToggleMonitor, TestMonitor, GetEventCount, BrowserOpenURL, ClearAllData, Quit } from '../wails-bindings';
 import { ErrorPage } from './ErrorPage';
 import { KeyboardDebug } from './KeyboardDebug';
 import { t } from '../i18n';
@@ -35,7 +35,6 @@ interface SettingsPanelProps {
 
 export function SettingsPanel({ lang }: SettingsPanelProps) {
   const [config, setConfig] = useState<AppConfig | null>(null);
-  const [saved, setSaved] = useState(false);
   const [monStatus, setMonStatus] = useState({ running: false, access_err: '' });
   const [toggleErr, setToggleErr] = useState('');
   const [testing, setTesting] = useState(false);
@@ -45,6 +44,7 @@ export function SettingsPanel({ lang }: SettingsPanelProps) {
   const [showKbDebug, setShowKbDebug] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [clearing, setClearing] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
@@ -81,17 +81,25 @@ export function SettingsPanel({ lang }: SettingsPanelProps) {
     return () => clearInterval(interval);
   }, [monStatus.running]);
 
+  // Auto-save config on change (debounced 500ms)
+  useEffect(() => {
+    if (!config) return;
+    const timer = setTimeout(handleSave, 500);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config]);
+
   const handleSave = async () => {
     if (!config) return;
     try {
+      setSaving(true);
       await SaveConfig(config);
       const status = await GetMonitorStatus();
       setMonStatus(status);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
     } catch (e) {
       console.error('Failed to save config:', e);
     }
+    setSaving(false);
   };
 
   const handleToggle = async () => {
@@ -324,18 +332,7 @@ export function SettingsPanel({ lang }: SettingsPanelProps) {
           </div>
         </div>
 
-        {/* Save Button */}
-        <button onClick={handleSave}
-          className="w-full py-2.5 rounded-lg text-sm font-semibold"
-          style={{
-            backgroundColor: saved ? 'var(--green-bg)' : 'var(--accent)',
-            color: saved ? 'var(--green)' : '#fff',
-            border: saved ? '1px solid var(--green-border)' : 'none',
-          }}>
-          {saved ? t('set.saved', lang) : t('set.save', lang)}
-        </button>
-
-        {/* Clear Data — danger styled */}
+        {/* Uninstall — danger styled */}
         <div className="card p-5" style={{ borderColor: 'var(--red-border, var(--red-bg))' }}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
@@ -345,13 +342,13 @@ export function SettingsPanel({ lang }: SettingsPanelProps) {
               </svg>
             </div>
             <div className="flex-1">
-              <div className="text-sm font-semibold" style={{ color: 'var(--red)' }}>{t('set.clearData', lang)}</div>
-              <div className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>{t('set.dangerDesc', lang)}</div>
+              <div className="text-sm font-semibold" style={{ color: 'var(--red)' }}>{t('set.uninstall', lang)}</div>
+              <div className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>{t('set.uninstallDesc', lang)}</div>
             </div>
             <button onClick={() => setShowClearConfirm(true)}
               className="px-3 py-1.5 rounded-lg text-xs font-semibold shrink-0"
               style={{ backgroundColor: 'var(--red-bg)', color: 'var(--red)' }}>
-              {t('set.clearBtn', lang)}
+              {t('set.uninstallBtn', lang)}
             </button>
           </div>
         </div>
@@ -369,8 +366,8 @@ export function SettingsPanel({ lang }: SettingsPanelProps) {
                   <path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                 </svg>
               </div>
-              <div className="text-sm font-semibold mb-1" style={{ color: 'var(--fg)' }}>{t('set.clearTitle', lang)}</div>
-              <div className="text-xs mb-5" style={{ color: 'var(--muted)' }}>{t('set.clearDesc', lang)}</div>
+              <div className="text-sm font-semibold mb-1" style={{ color: 'var(--fg)' }}>{t('set.uninstallTitle', lang)}</div>
+              <div className="text-xs mb-5" style={{ color: 'var(--muted)' }}>{t('set.uninstallModalDesc', lang)}</div>
               <div className="flex gap-3 justify-center">
                 <button onClick={() => setShowClearConfirm(false)}
                   className="px-4 py-2 rounded-lg text-xs font-semibold"
@@ -382,7 +379,7 @@ export function SettingsPanel({ lang }: SettingsPanelProps) {
                   try {
                     await ClearAllData();
                     setShowClearConfirm(false);
-                    window.location.reload();
+                    await Quit();
                   } catch (e) {
                     console.error('Clear failed:', e);
                   }
@@ -390,7 +387,7 @@ export function SettingsPanel({ lang }: SettingsPanelProps) {
                 }} disabled={clearing}
                   className="px-4 py-2 rounded-lg text-xs font-semibold"
                   style={{ backgroundColor: 'var(--red)', color: '#fff' }}>
-                  {clearing ? '...' : t('set.confirmClear', lang)}
+                  {clearing ? '...' : t('set.confirmUninstall', lang)}
                 </button>
               </div>
             </div>
