@@ -13,6 +13,7 @@ type Config struct {
 	BlacklistedApps     []string `json:"blacklisted_apps"`
 	Theme               string   `json:"theme"`
 	DataRetentionDays   int      `json:"data_retention_days"`
+	DataDir             string   `json:"data_dir,omitempty"` // empty = default path
 }
 
 func DefaultConfig() *Config {
@@ -22,6 +23,7 @@ func DefaultConfig() *Config {
 		BlacklistedApps:     []string{},
 		Theme:               "auto",
 		DataRetentionDays:   90,
+		DataDir:             "",
 	}
 }
 
@@ -56,6 +58,13 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 	return &cfg, nil
+}
+
+func (cfg *Config) EffectiveDataDir() string {
+	if cfg.DataDir != "" {
+		return cfg.DataDir
+	}
+	return filepath.Join(DataDir(), "data")
 }
 
 func Save(cfg *Config) error {

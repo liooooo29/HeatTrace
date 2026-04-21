@@ -20,8 +20,10 @@ type JSONStore struct {
 	stopCh   chan struct{}
 }
 
-func NewJSONStore() (*JSONStore, error) {
-	dataDir := filepath.Join(config.DataDir(), "data")
+func NewJSONStore(dataDir string) (*JSONStore, error) {
+	if dataDir == "" {
+		dataDir = filepath.Join(config.DataDir(), "data")
+	}
 	if err := os.MkdirAll(dataDir, 0755); err != nil {
 		return nil, err
 	}
