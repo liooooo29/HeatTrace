@@ -3,9 +3,13 @@ package monitor
 import (
 	hook "github.com/robotn/gohook"
 	"fmt"
+	"log"
+	"os"
 	"time"
 	"HeatTrace/storage"
 )
+
+var debugKeys = os.Getenv("HEATTRACE_DEBUG_KEY") != ""
 
 func (m *Monitor) startKeyboardListener() {
 	defer m.wg.Done()
@@ -22,10 +26,23 @@ func (m *Monitor) startKeyboardListener() {
 
 			switch ev.Kind {
 			case hook.KeyDown:
+				key := keycodeToName(ev.Keychar, ev.Rawcode)
+				mods := extractModifiers(ev)
+				if debugKeys {
+					log.Printf("[KEY] char=%d(0x%X) raw=%d(0x%X) mask=0x%04X → key=%q mods=%v",
+						ev.Keychar, ev.Keychar, ev.Rawcode, ev.Rawcode, ev.Mask, key, mods)
+				}
+				m.lastKeyEvent = LastKeyEvent{
+					Key:       key,
+					Keychar:   int32(ev.Keychar),
+					Rawcode:   ev.Rawcode,
+					Mask:      ev.Mask,
+					Modifiers: mods,
+				}
 				ke := storage.KeyEvent{
 					Timestamp: ts,
-					Key:       keycodeToName(ev.Keychar, ev.Rawcode),
-					Modifiers: extractModifiers(ev),
+					Key:       key,
+					Modifiers: mods,
 				}
 				if m.filter.ShouldFilter(ke) {
 					ke.Filtered = true
@@ -59,37 +76,12 @@ func (m *Monitor) startKeyboardListener() {
 	}
 }
 
-// rawcodeToName maps macOS raw keycodes to readable names.
-var rawcodeToName = map[uint16]string{
-	// Arrow keys
-	123: "Left", 124: "Right", 125: "Down", 126: "Up",
-	// Function keys
-	122: "F1", 120: "F2", 99: "F3", 118: "F4", 96: "F5", 97: "F6",
-	98: "F7", 100: "F8", 101: "F9", 109: "F10", 103: "F11", 111: "F12",
-	// Special
-	51: "Delete", 117: "ForwardDelete", 115: "Home", 119: "End",
-	116: "PageUp", 121: "PageDown", 53: "Esc",
-	114: "Help",
-	// Numpad
-	65: "Num.", 67: "Num*", 69: "Num+", 75: "Num/", 76: "NumEnter", 78: "Num-",
-	81: "Num=",
-	82: "Num0", 83: "Num1", 84: "Num2", 85: "Num3", 86: "Num4",
-	87: "Num5", 88: "Num6", 89: "Num7", 91: "Num8", 92: "Num9",
-}
-
-// shiftedToBase maps shifted punctuation characters to their unshifted base key.
-var shiftedToBase = map[rune]string{
-	'!': "1", '@': "2", '#': "3", '$': "4", '%': "5",
-	'^': "6", '&': "7", '*': "8", '(': "9", ')': "0",
-	'_': "-", '+': "=", '~': "`",
-	'{': "[", '}': "]", '|': "\\",
-	':': ";", '"': "'",
-	'<': ",", '>': ".", '?': "/",
-}
+// charUndefined is gohook's sentinel for "no character" (maps to C CHAR_UNDEFINED = 0xFFFF)
+const charUndefined rune = 0xFFFF
 
 func keycodeToName(keychar rune, rawcode uint16) string {
-	// Control characters and non-printable: use rawcode mapping
-	if keychar > 0 && keychar >= 32 && keychar != 127 {
+	// Valid printable character from the OS (macOS populates this well)
+	if keychar > 0 && keychar < charUndefined && keychar >= 32 && keychar != 127 {
 		switch keychar {
 		case '\r':
 			return "Enter"
@@ -102,32 +94,52 @@ func keycodeToName(keychar rune, rawcode uint16) string {
 		case 27:
 			return "Esc"
 		default:
-			// Normalize shifted punctuation to base key
-			if base, ok := shiftedToBase[keychar]; ok {
-				return base
-			}
 			return string(keychar)
 		}
 	}
-	// Try rawcode mapping for non-printable keys
+	// Try rawcode mapping for non-printable keys (arrows, F-keys, etc.)
 	if name, ok := rawcodeToName[rawcode]; ok {
 		return name
+	}
+	// On Linux X11, KeyDown events have keychar=0 or 0xFFFF and rawcode=X11 KeySym.
+	// X11 KeySyms for printable chars are Unicode code points.
+	if rawcode >= 0x20 && rawcode <= 0x7E {
+		return string(rune(rawcode))
+	}
+	// Extended Unicode via X11 KeySym (Latin, CJK, etc.)
+	if rawcode >= 0x80 && rawcode < 0xFF00 {
+		ch := rune(rawcode)
+		if ch >= 0x80 && ch <= 0x10FFFF {
+			return string(ch)
+		}
 	}
 	return fmt.Sprintf("raw:%d", rawcode)
 }
 
+// iohook modifier mask constants (from hook/iohook.h)
+const (
+	maskShiftL = 1 << 0 // 0x0001
+	maskCtrlL  = 1 << 1 // 0x0002
+	maskMetaL  = 1 << 2 // 0x0004
+	maskAltL   = 1 << 3 // 0x0008
+	maskShiftR = 1 << 4 // 0x0010
+	maskCtrlR  = 1 << 5 // 0x0020
+	maskMetaR  = 1 << 6 // 0x0040
+	maskAltR   = 1 << 7 // 0x0080
+)
+
 func extractModifiers(ev hook.Event) []string {
 	var mods []string
-	if ev.Mask&0x0200 != 0 || ev.Mask&0x0400 != 0 {
+	if ev.Mask&(maskShiftL|maskShiftR) != 0 {
 		mods = append(mods, "shift")
 	}
-	if ev.Mask&0x0800 != 0 {
+	if ev.Mask&(maskCtrlL|maskCtrlR) != 0 {
 		mods = append(mods, "ctrl")
 	}
-	if ev.Mask&0x1000 != 0 || ev.Mask&0x0008 != 0 {
+	if ev.Mask&(maskAltL|maskAltR) != 0 {
 		mods = append(mods, "alt")
 	}
-	if ev.Mask&0x0100 != 0 {
+	if ev.Mask&(maskMetaL|maskMetaR) != 0 {
 		mods = append(mods, "meta")
 	}
 	return mods

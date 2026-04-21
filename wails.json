@@ -6,6 +6,7 @@
   "frontend:build": "npm run build",
   "frontend:dev:watcher": "npm run dev",
   "frontend:dev:serverUrl": "auto",
+  "build:tags": "webkit2_41",
   "author": {
     "name": "halalala222",
     "email": "1741196223@qq.com"

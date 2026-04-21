@@ -3,23 +3,30 @@ interface StatCardProps {
   value: string;
   color?: string;
   icon?: React.ReactNode;
+  delta?: number;
 }
 
-export function StatCard({ label, value, color = 'var(--accent)', icon }: StatCardProps) {
-  return (
-    <div className="card p-5 relative overflow-hidden group">
-      {/* Top accent bar with gradient */}
-      <div className="absolute top-0 left-0 right-0 h-[2px]"
-        style={{ background: `linear-gradient(90deg, ${color}, color-mix(in srgb, ${color} 50%, transparent))` }} />
+export function StatCard({ label, value, color = 'var(--accent)', icon, delta }: StatCardProps) {
+  const showDelta = delta != null && delta !== 0;
+  const deltaColor = delta != null && delta > 0 ? 'var(--green)' : 'var(--red)';
 
-      {/* Subtle corner glow */}
-      <div className="absolute -top-8 -right-8 w-16 h-16 rounded-full opacity-20 group-hover:opacity-30 transition-opacity"
-        style={{ background: `radial-gradient(circle, ${color}, transparent)` }} />
+  return (
+    <div className="card p-5 relative overflow-hidden">
+      {/* Top accent bar */}
+      <div className="absolute top-0 left-0 right-0 h-[2px]"
+        style={{ backgroundColor: color }} />
 
       <div className="flex items-start justify-between">
         <div>
-          <div className="stat-value" style={{ color: 'var(--fg)' }}>
-            {value}
+          <div className="flex items-baseline gap-2">
+            <div className="stat-value" style={{ color: 'var(--fg)' }}>
+              {value}
+            </div>
+            {showDelta && (
+              <span className="text-[11px] font-semibold tabular-nums" style={{ color: deltaColor }}>
+                {delta! > 0 ? '+' : ''}{delta}%
+              </span>
+            )}
           </div>
           <div className="stat-label">
             {label}
@@ -27,7 +34,7 @@ export function StatCard({ label, value, color = 'var(--accent)', icon }: StatCa
         </div>
         {icon && (
           <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-            style={{ backgroundColor: `color-mix(in srgb, ${color} 12%, transparent)` }}>
+            style={{ backgroundColor: 'var(--surface-2)' }}>
             {icon}
           </div>
         )}

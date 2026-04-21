@@ -16,11 +16,26 @@ type Monitor struct {
 	mouseMoveChan   chan storage.MouseMove
 	mouseClickChan  chan storage.MouseClick
 	stopChan        chan struct{}
+	dataChanged     chan struct{} // signal when data is saved
 	wg              sync.WaitGroup
 	running         bool
 	mu              sync.Mutex
 	accessErr       string
-	eventCount      int64 // atomic counter for test verification
+	eventCount      int64 // total events (for test verification)
+	keyCount        int64 // keyboard events only
+	mouseClickCount int64 // mouse click events only
+	mouseMoveCount  int64 // mouse move events only
+	lastKeyEvent    LastKeyEvent
+	heatmapCounts   map[string]int // in-memory heatmap key counts
+	heatmapMax      int            // max count for normalization
+}
+
+type LastKeyEvent struct {
+	Key       string   `json:"key"`
+	Keychar   int32    `json:"keychar"`
+	Rawcode   uint16   `json:"rawcode"`
+	Mask      uint16   `json:"mask"`
+	Modifiers []string `json:"modifiers"`
 }
 
 func New(store storage.Store, f *filter.SensitiveFilter) *Monitor {
@@ -31,7 +46,14 @@ func New(store storage.Store, f *filter.SensitiveFilter) *Monitor {
 		mouseMoveChan:  make(chan storage.MouseMove, 1000),
 		mouseClickChan: make(chan storage.MouseClick, 1000),
 		stopChan:       make(chan struct{}),
+		dataChanged:    make(chan struct{}, 1),
+		heatmapCounts:  make(map[string]int),
 	}
+}
+
+// DataChanged returns a channel that receives a signal when new data is saved.
+func (m *Monitor) DataChanged() <-chan struct{} {
+	return m.dataChanged
 }
 
 func (m *Monitor) Start() error {
@@ -91,6 +113,70 @@ func (m *Monitor) EventCount() int64 {
 	return atomic.LoadInt64(&m.eventCount)
 }
 
+// KeyCount returns the number of keyboard events processed.
+func (m *Monitor) KeyCount() int64 {
+	return atomic.LoadInt64(&m.keyCount)
+}
+
+// MouseClickCount returns the number of mouse click events processed.
+func (m *Monitor) MouseClickCount() int64 {
+	return atomic.LoadInt64(&m.mouseClickCount)
+}
+
+// MouseMoveCount returns the number of mouse move events processed.
+func (m *Monitor) MouseMoveCount() int64 {
+	return atomic.LoadInt64(&m.mouseMoveCount)
+}
+
+// LastKeyEvent returns the most recent keyboard event details.
+func (m *Monitor) LastKeyEvent() LastKeyEvent {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return m.lastKeyEvent
+}
+
+// shiftedToBase normalizes shifted chars to base keys for heatmap layout.
+var shiftedToBase = map[string]string{
+	"!": "1", "@": "2", "#": "3", "$": "4", "%": "5",
+	"^": "6", "&": "7", "*": "8", "(": "9", ")": "0",
+	"_": "-", "+": "=", "~": "`",
+	"{": "[", "}": "]", "|": "\\",
+	":": ";", "\"": "'",
+	"<": ",", ">": ".", "?": "/",
+}
+
+// IncrementHeatmapKey increments a key's count in the in-memory heatmap.
+func (m *Monitor) IncrementHeatmapKey(key string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if base, ok := shiftedToBase[key]; ok {
+		key = base
+	}
+	m.heatmapCounts[key]++
+	if m.heatmapCounts[key] > m.heatmapMax {
+		m.heatmapMax = m.heatmapCounts[key]
+	}
+}
+
+// GetHeatmapCounts returns the current in-memory heatmap counts.
+func (m *Monitor) GetHeatmapCounts() (map[string]int, int) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	cp := make(map[string]int, len(m.heatmapCounts))
+	for k, v := range m.heatmapCounts {
+		cp[k] = v
+	}
+	return cp, m.heatmapMax
+}
+
+// ResetHeatmapCounts clears the in-memory heatmap (e.g. on date change).
+func (m *Monitor) ResetHeatmapCounts() {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.heatmapCounts = make(map[string]int)
+	m.heatmapMax = 0
+}
+
 func (m *Monitor) writeLoop() {
 	defer m.wg.Done()
 	for {
@@ -101,15 +187,29 @@ func (m *Monitor) writeLoop() {
 			date := dateFromTimestamp(ev.Timestamp)
 			_ = m.store.SaveKeyEvent(date, ev)
 			atomic.AddInt64(&m.eventCount, 1)
+			atomic.AddInt64(&m.keyCount, 1)
+				if !ev.Filtered && ev.Key != "" {
+					m.IncrementHeatmapKey(ev.Key)
+				}
 		case ev := <-m.mouseMoveChan:
 			date := dateFromTimestamp(ev.Timestamp)
 			_ = m.store.SaveMouseMove(date, ev)
 			atomic.AddInt64(&m.eventCount, 1)
+			atomic.AddInt64(&m.mouseMoveCount, 1)
 		case ev := <-m.mouseClickChan:
 			date := dateFromTimestamp(ev.Timestamp)
 			_ = m.store.SaveMouseClick(date, ev)
 			atomic.AddInt64(&m.eventCount, 1)
+			atomic.AddInt64(&m.mouseClickCount, 1)
+			m.signalDataChanged()
 		}
+	}
+}
+
+func (m *Monitor) signalDataChanged() {
+	select {
+	case m.dataChanged <- struct{}{}:
+	default: // already pending, skip
 	}
 }
 

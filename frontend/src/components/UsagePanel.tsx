@@ -57,13 +57,13 @@ export function UsagePanel({ dateRange }: UsagePanelProps) {
       <div className="grid grid-cols-2 gap-4 mb-8">
         <div className="card p-5 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px]"
-            style={{ background: 'linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 50%, transparent))' }} />
+            style={{ background: 'linear-gradient(90deg, var(--accent), var(--accent-border))' }} />
           <div className="stat-value">{formatMinutes(data.total_minutes)}</div>
           <div className="stat-label">Total active</div>
         </div>
         <div className="card p-5 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px]"
-            style={{ background: 'linear-gradient(90deg, var(--green), color-mix(in srgb, var(--green) 50%, transparent))' }} />
+            style={{ background: 'linear-gradient(90deg, var(--green), var(--green-border))' }} />
           <div className="stat-value">{data.app_usage.length}</div>
           <div className="stat-label">Active apps</div>
         </div>

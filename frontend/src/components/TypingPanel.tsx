@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { GetTypingSpeed, GetUsageTime } from '../wails-bindings';
+import { GetTypingSpeed, GetUsageTime, GetKeyCount } from '../wails-bindings';
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { ErrorPage } from './ErrorPage';
 import { t } from '../i18n';
@@ -54,7 +54,20 @@ export function TypingPanel({ dateRange, lang }: TypingPanelProps) {
     }
     load();
     timer = setInterval(load, 5000);
-    return () => clearInterval(timer);
+    let lastKeyCount = -1;
+    const keyTimer = setInterval(async () => {
+      try {
+        const count = await GetKeyCount();
+        if (count !== lastKeyCount) {
+          if (lastKeyCount >= 0) load();
+          lastKeyCount = count;
+        }
+      } catch {}
+    }, 200);
+    return () => {
+      clearInterval(timer);
+      clearInterval(keyTimer);
+    };
   }, [dateRange]);
 
   if (error && !typing) return (
@@ -91,7 +104,7 @@ export function TypingPanel({ dateRange, lang }: TypingPanelProps) {
 
       {error && (
         <div className="mb-4 text-xs px-3 py-2.5 rounded-lg flex items-center justify-between"
-          style={{ backgroundColor: 'var(--amber-muted)', color: 'var(--amber)' }}>
+          style={{ backgroundColor: 'var(--amber-bg)', color: 'var(--amber)' }}>
           <span>{t('error.loadFailed', lang)}: {error}</span>
         </div>
       )}
@@ -99,25 +112,25 @@ export function TypingPanel({ dateRange, lang }: TypingPanelProps) {
       <div className="grid grid-cols-4 gap-4 mb-8">
         <div className="card p-5 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px]"
-            style={{ background: 'linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 50%, transparent))' }} />
+            style={{ background: 'linear-gradient(90deg, var(--accent), var(--accent-border))' }} />
           <div className="stat-value">{typing.average_cpm.toFixed(0)}</div>
           <div className="stat-label">{t('prod.avgCpm', lang)}</div>
         </div>
         <div className="card p-5 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px]"
-            style={{ background: 'linear-gradient(90deg, var(--green), color-mix(in srgb, var(--green) 50%, transparent))' }} />
+            style={{ background: 'linear-gradient(90deg, var(--green), var(--green-border))' }} />
           <div className="stat-value">{typing.average_wpm.toFixed(0)}</div>
           <div className="stat-label">{t('prod.avgWpm', lang)}</div>
         </div>
         <div className="card p-5 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px]"
-            style={{ background: 'linear-gradient(90deg, var(--amber), color-mix(in srgb, var(--amber) 50%, transparent))' }} />
+            style={{ background: 'linear-gradient(90deg, var(--amber), var(--amber-bg))' }} />
           <div className="stat-value">{formatMinutes(usage.total_minutes)}</div>
           <div className="stat-label">{t('prod.active', lang)}</div>
         </div>
         <div className="card p-5 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px]"
-            style={{ background: 'linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 50%, transparent))' }} />
+            style={{ background: 'linear-gradient(90deg, var(--accent), var(--accent-border))' }} />
           <div className="stat-value">{usage.app_usage.length}</div>
           <div className="stat-label">{t('prod.apps', lang)}</div>
         </div>

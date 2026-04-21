@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { GetKeyboardStats, GetMouseStats, GetHeatmapData } from '../wails-bindings';
+import { GetKeyboardStats, GetMouseStats, GetHeatmapData, GetKeyCount, GetMouseClickCount } from '../wails-bindings';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { KeyboardHeatmap } from './KeyboardHeatmap';
 import { MouseHeatmap } from './MouseHeatmap';
@@ -41,20 +41,26 @@ export function ActivityPanel({ dateRange, lang }: ActivityPanelProps) {
   const [error, setError] = useState('');
   const [loaded, setLoaded] = useState(false);
 
+  // Heatmap data — load once per date change (cumulative)
+  useEffect(() => {
+    GetHeatmapData(dateRange.start, dateRange.end).then(hm => {
+      if (hm?.keyboard_layout?.keys) setHeatmapKeys(hm.keyboard_layout.keys);
+      if (hm?.mouse_heatmap?.points) setHeatmapPoints(hm.mouse_heatmap.points);
+    }).catch(() => {});
+  }, [dateRange]);
+
+  // Stats data — fast refresh on key/click events
   useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
-    async function load() {
+    async function loadStats() {
       try {
-        const [ks, ms, hm] = await Promise.all([
+        const [ks, ms] = await Promise.all([
           GetKeyboardStats(dateRange.start, dateRange.end),
           GetMouseStats(dateRange.start, dateRange.end),
-          GetHeatmapData(dateRange.start, dateRange.end),
         ]);
         setError('');
         setKeyStats(ks);
         setMouseStats(ms);
-        if (hm?.keyboard_layout?.keys) setHeatmapKeys(hm.keyboard_layout.keys);
-        if (hm?.mouse_heatmap?.points) setHeatmapPoints(hm.mouse_heatmap.points);
         setLoaded(true);
       } catch (e) {
         console.error('Failed to load activity data:', e);
@@ -62,9 +68,33 @@ export function ActivityPanel({ dateRange, lang }: ActivityPanelProps) {
         setLoaded(true);
       }
     }
-    load();
-    timer = setInterval(load, 5000);
-    return () => clearInterval(timer);
+    loadStats();
+    timer = setInterval(loadStats, 5000);
+    let lastKeyCount = -1;
+    const keyTimer = setInterval(async () => {
+      try {
+        const count = await GetKeyCount();
+        if (count !== lastKeyCount) {
+          if (lastKeyCount >= 0) loadStats();
+          lastKeyCount = count;
+        }
+      } catch {}
+    }, 200);
+    let lastClickCount = -1;
+    const clickTimer = setInterval(async () => {
+      try {
+        const count = await GetMouseClickCount();
+        if (count !== lastClickCount) {
+          if (lastClickCount >= 0) loadStats();
+          lastClickCount = count;
+        }
+      } catch {}
+    }, 500);
+    return () => {
+      clearInterval(timer);
+      clearInterval(keyTimer);
+      clearInterval(clickTimer);
+    };
   }, [dateRange]);
 
   if (error && loaded && !keyStats) return (
@@ -98,25 +128,25 @@ export function ActivityPanel({ dateRange, lang }: ActivityPanelProps) {
       <div className="grid grid-cols-4 gap-4 mb-8">
         <div className="card p-5 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px]"
-            style={{ background: 'linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 50%, transparent))' }} />
+            style={{ background: 'linear-gradient(90deg, var(--accent), var(--accent-border))' }} />
           <div className="stat-value">{keyStats.total_keys.toLocaleString()}</div>
           <div className="stat-label">{t('act.totalKeys', lang)}</div>
         </div>
         <div className="card p-5 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px]"
-            style={{ background: 'linear-gradient(90deg, var(--green), color-mix(in srgb, var(--green) 50%, transparent))' }} />
+            style={{ background: 'linear-gradient(90deg, var(--green), var(--green-border))' }} />
           <div className="stat-value">{mouseStats.total_clicks.toLocaleString()}</div>
           <div className="stat-label">{t('act.clicks', lang)}</div>
         </div>
         <div className="card p-5 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px]"
-            style={{ background: 'linear-gradient(90deg, var(--amber), color-mix(in srgb, var(--amber) 50%, transparent))' }} />
+            style={{ background: 'linear-gradient(90deg, var(--amber), var(--amber-bg))' }} />
           <div className="stat-value">{formatDistance(mouseStats.total_distance_meters)}</div>
           <div className="stat-label">{t('act.distance', lang)}</div>
         </div>
         <div className="card p-5 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px]"
-            style={{ background: 'linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 50%, transparent))' }} />
+            style={{ background: 'linear-gradient(90deg, var(--accent), var(--accent-border))' }} />
           <div className="stat-value">{keyStats.mod_combos.length}</div>
           <div className="stat-label">{t('act.combos', lang)}</div>
         </div>
@@ -158,7 +188,7 @@ export function ActivityPanel({ dateRange, lang }: ActivityPanelProps) {
                     <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'var(--surface)' }} />
                     <Bar dataKey="count" radius={[0, 4, 4, 0]}>
                       {topKeys.map((_, i) => (
-                        <Cell key={i} fill={i === 0 ? 'var(--accent)' : 'color-mix(in srgb, var(--accent) 55%, transparent)'} />
+                        <Cell key={i} fill={i === 0 ? 'var(--accent)' : 'var(--accent-bg)'} />
                       ))}
                     </Bar>
                   </BarChart>

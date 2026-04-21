@@ -28,8 +28,8 @@ type DailyDistPoint struct {
 func ComputeMouseStats(days []storage.DayData) MouseStats {
 	var totalMoves, totalClicks, leftClicks, rightClicks int
 	var totalDistance float64
-	var clickPoints []ClickPoint
-	var dailyDist []DailyDistPoint
+	clickPoints := make([]ClickPoint, 0)
+	dailyDist := make([]DailyDistPoint, 0)
 
 	for _, day := range days {
 		totalMoves += len(day.Mouse.Moves)

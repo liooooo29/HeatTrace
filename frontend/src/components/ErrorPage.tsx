@@ -12,7 +12,7 @@ interface ErrorPageProps {
 export function ErrorPage({ title, message, details, onRetry, lang }: ErrorPageProps) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
-      <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'var(--red-muted)' }}>
+      <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'var(--red-bg)' }}>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="12" r="10"/>
           <line x1="15" y1="9" x2="9" y2="15"/>
@@ -28,11 +28,11 @@ export function ErrorPage({ title, message, details, onRetry, lang }: ErrorPageP
         </div>
       </div>
       {details && (
-        <details className="max-w-sm w-full">
+        <details className="max-w-lg w-full">
           <summary className="text-xs cursor-pointer" style={{ color: 'var(--muted)' }}>
             {t('error.details', lang)}
           </summary>
-          <pre className="mt-2 p-3 rounded-lg text-[11px] font-mono overflow-auto max-h-32"
+          <pre className="mt-2 p-4 rounded-lg text-[11px] font-mono overflow-auto max-h-64"
             style={{ backgroundColor: 'var(--surface)', color: 'var(--muted)', border: '1px solid var(--border)' }}>
             {details}
           </pre>

@@ -32,13 +32,26 @@ func ComputeHeatmapData(days []storage.DayData) HeatmapData {
 	var mousePoints []MouseHeatPoint
 	var maxKeyCount int
 
+	// Normalize shifted chars to base keys for heatmap layout matching
+	var shiftedToBase = map[string]string{
+		"!": "1", "@": "2", "#": "3", "$": "4", "%": "5",
+		"^": "6", "&": "7", "*": "8", "(": "9", ")": "0",
+		"_": "-", "+": "=", "~": "`",
+		"{": "[", "}": "]", "|": "\\",
+		":": ";", "\"": "'",
+		"<": ",", ">": ".", "?": "/",
+	}
+
 	for _, day := range days {
 		for _, k := range day.Keyboard {
 			if !k.Filtered {
-				nk := normalizeKey(k.Key)
-				keyFreq[nk]++
-				if keyFreq[nk] > maxKeyCount {
-					maxKeyCount = keyFreq[nk]
+				key := k.Key
+				if base, ok := shiftedToBase[key]; ok {
+					key = base
+				}
+				keyFreq[key]++
+				if keyFreq[key] > maxKeyCount {
+					maxKeyCount = keyFreq[key]
 				}
 			}
 		}

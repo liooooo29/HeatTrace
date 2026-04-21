@@ -1,13 +1,26 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { themes, defaultTheme } from '../themes';
 
-type Theme = 'light' | 'dark';
-
-export function useTheme(initial: Theme = 'dark') {
-  const [theme, setTheme] = useState<Theme>(initial);
+export function useTheme() {
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('heattrace-theme') || defaultTheme;
+  });
 
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', theme === 'dark');
+    const def = themes.find(t => t.id === theme) || themes[0];
+    const root = document.documentElement;
+    for (const [k, v] of Object.entries(def.vars)) {
+      root.style.setProperty(k, v);
+    }
+    localStorage.setItem('heattrace-theme', theme);
   }, [theme]);
 
-  return { theme, setTheme };
+  const nextTheme = useCallback(() => {
+    setTheme(prev => {
+      const idx = themes.findIndex(t => t.id === prev);
+      return themes[(idx + 1) % themes.length].id;
+    });
+  }, []);
+
+  return { theme, setTheme, nextTheme };
 }

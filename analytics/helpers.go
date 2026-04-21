@@ -18,7 +18,7 @@ func joinModifiers(mods []string) string {
 
 func topNKeys(freq map[string]int, n int) []storage.KeyCount {
 	type kv struct{ k string; v int }
-	var sorted []kv
+	sorted := make([]kv, 0)
 	for k, v := range freq {
 		sorted = append(sorted, kv{k, v})
 	}
@@ -45,7 +45,7 @@ type HourlyCount struct {
 
 func topNModCombos(freq map[string]int, n int) []ModComboCount {
 	type kv struct{ k string; v int }
-	var sorted []kv
+	sorted := make([]kv, 0)
 	for k, v := range freq {
 		sorted = append(sorted, kv{k, v})
 	}

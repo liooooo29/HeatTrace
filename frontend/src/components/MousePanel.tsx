@@ -57,25 +57,25 @@ export function MousePanel({ dateRange }: MousePanelProps) {
       <div className="grid grid-cols-4 gap-4 mb-8">
         <div className="card p-5 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px]"
-            style={{ background: 'linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 50%, transparent))' }} />
+            style={{ background: 'linear-gradient(90deg, var(--accent), var(--accent-border))' }} />
           <div className="stat-value">{stats.total_clicks.toLocaleString()}</div>
           <div className="stat-label">Total clicks</div>
         </div>
         <div className="card p-5 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px]"
-            style={{ background: 'linear-gradient(90deg, var(--green), color-mix(in srgb, var(--green) 50%, transparent))' }} />
+            style={{ background: 'linear-gradient(90deg, var(--green), var(--green-border))' }} />
           <div className="stat-value">{formatDistance(stats.total_distance_meters)}</div>
           <div className="stat-label">Distance</div>
         </div>
         <div className="card p-5 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px]"
-            style={{ background: 'linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 50%, transparent))' }} />
+            style={{ background: 'linear-gradient(90deg, var(--accent), var(--accent-border))' }} />
           <div className="stat-value">{stats.left_clicks.toLocaleString()}</div>
           <div className="stat-label">Left clicks</div>
         </div>
         <div className="card p-5 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px]"
-            style={{ background: 'linear-gradient(90deg, var(--amber), color-mix(in srgb, var(--amber) 50%, transparent))' }} />
+            style={{ background: 'linear-gradient(90deg, var(--amber), var(--amber-bg))' }} />
           <div className="stat-value">{stats.right_clicks.toLocaleString()}</div>
           <div className="stat-label">Right clicks</div>
         </div>
