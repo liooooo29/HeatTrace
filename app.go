@@ -2,8 +2,12 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"log"
+	"os"
+	"sort"
+	"sync/atomic"
 	"time"
 
 	"HeatTrace/analytics"
@@ -15,12 +19,13 @@ import (
 )
 
 type App struct {
-	ctx   context.Context
-	store *storage.JSONStore
-	agg   *storage.Aggregator
-	mon   *monitor.Monitor
-	fltr  *filter.SensitiveFilter
-	cfg   *config.Config
+	ctx         context.Context
+	store       *storage.JSONStore
+	agg         *storage.Aggregator
+	mon         *monitor.Monitor
+	fltr        *filter.SensitiveFilter
+	cfg         *config.Config
+	dataVersion int64 // incremented on each data save
 }
 
 func NewApp() (*App, error) {
@@ -47,6 +52,8 @@ func NewApp() (*App, error) {
 
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
+	// Start version counter loop
+	go a.dataVersionLoop()
 	if !a.cfg.MonitorEnabled {
 		return
 	}
@@ -65,6 +72,37 @@ func (a *App) startup(ctx context.Context) {
 	}()
 }
 
+// dataVersionLoop listens for data-change signals and bumps a version counter.
+func (a *App) dataVersionLoop() {
+	ch := a.mon.DataChanged()
+	for {
+		_, ok := <-ch
+		if !ok {
+			return
+		}
+		// Drain burst signals for 200ms
+		drain := time.NewTimer(200 * time.Millisecond)
+	loop:
+		for {
+			select {
+			case <-ch:
+				drain.Reset(200 * time.Millisecond)
+			case <-drain.C:
+				break loop
+			}
+		}
+		atomic.AddInt64(&a.dataVersion, 1)
+		if a.ctx != nil {
+			runtime.EventsEmit(a.ctx, "data-updated")
+		}
+	}
+}
+
+// GetDataVersion returns a counter that increments each time monitor data changes.
+func (a *App) GetDataVersion() int64 {
+	return atomic.LoadInt64(&a.dataVersion)
+}
+
 func (a *App) shutdown(ctx context.Context) {
 	a.mon.Stop()
 	a.store.Stop()
@@ -72,6 +110,10 @@ func (a *App) shutdown(ctx context.Context) {
 
 func (a *App) GetDailySummary(date string) (*storage.DailySummary, error) {
 	return a.agg.GetDailySummary(date)
+}
+
+func (a *App) GetRangeSummary(startDate, endDate string) (*storage.DailySummary, error) {
+	return a.agg.GetRangeSummary(startDate, endDate)
 }
 
 func (a *App) GetKeyboardStats(startDate, endDate string) (*analytics.KeyboardStats, error) {
@@ -115,8 +157,86 @@ func (a *App) GetHeatmapData(startDate, endDate string) (*analytics.HeatmapData,
 	if err != nil {
 		return nil, err
 	}
-	data := analytics.ComputeHeatmapData(days)
-	return &data, nil
+	// Load directly into monitor memory (no compute + replay)
+	a.mon.ResetHeatmapCounts()
+	for _, day := range days {
+		for _, k := range day.Keyboard {
+			if !k.Filtered && k.Key != "" {
+				a.mon.IncrementHeatmapKey(k.Key)
+			}
+		}
+	}
+	return a.GetHeatmapCurrent(), nil
+}
+
+// GetHeatmapCurrent returns the in-memory heatmap (sorted by key for stable ordering).
+func (a *App) GetHeatmapCurrent() *analytics.HeatmapData {
+	counts, maxCount := a.mon.GetHeatmapCounts()
+	keys := make([]analytics.KeyHeatPoint, 0, len(counts))
+	sortedKeys := make([]string, 0, len(counts))
+	for k := range counts {
+		sortedKeys = append(sortedKeys, k)
+	}
+	sort.Strings(sortedKeys)
+	for _, key := range sortedKeys {
+		count := counts[key]
+		val := 0.0
+		if maxCount > 0 {
+			val = float64(count) / float64(maxCount)
+		}
+		keys = append(keys, analytics.KeyHeatPoint{Key: key, Count: count, Value: val})
+	}
+	return &analytics.HeatmapData{
+		KeyboardLayout: analytics.KeyboardHeatmapPoints{Keys: keys},
+	}
+}
+
+func (a *App) GetWeeklyReport() (*analytics.WeeklyReport, error) {
+	now := time.Now()
+	weekday := int(now.Weekday())
+	if weekday == 0 {
+		weekday = 7
+	}
+	monday := now.AddDate(0, 0, -weekday+1)
+	thisStart := monday.Format("2006-01-02")
+	thisEnd := now.Format("2006-01-02")
+	prevStart := monday.AddDate(0, 0, -7).Format("2006-01-02")
+	prevEnd := monday.AddDate(0, 0, -1).Format("2006-01-02")
+
+	thisWeek, err := a.store.LoadDateRange(thisStart, thisEnd)
+	if err != nil {
+		return nil, err
+	}
+	prevWeek, _ := a.store.LoadDateRange(prevStart, prevEnd)
+
+	report := analytics.ComputeWeeklyReport(thisWeek, prevWeek)
+	return &report, nil
+}
+
+func (a *App) GetTypingRhythm(startDate, endDate string) ([]analytics.RhythmPoint, error) {
+	days, err := a.store.LoadDateRange(startDate, endDate)
+	if err != nil {
+		return nil, err
+	}
+	return analytics.ComputeTypingRhythm(days), nil
+}
+
+func (a *App) SaveReportImage(base64Data string) (string, error) {
+	imgBytes, err := base64.StdEncoding.DecodeString(base64Data)
+	if err != nil {
+		return "", err
+	}
+	savePath, err := runtime.SaveFileDialog(a.ctx, runtime.SaveDialogOptions{
+		Title: "Save Weekly Report",
+		Filters: []runtime.FileFilter{
+			{DisplayName: "PNG Image (*.png)", Pattern: "*.png"},
+		},
+		DefaultFilename: fmt.Sprintf("weekly-report-%s.png", time.Now().Format("2006-01-02")),
+	})
+	if err != nil || savePath == "" {
+		return "", err
+	}
+	return savePath, os.WriteFile(savePath, imgBytes, 0644)
 }
 
 func (a *App) GetConfig() *config.Config {
@@ -180,6 +300,18 @@ func (a *App) TestMonitor() TestResult {
 
 func (a *App) GetEventCount() int64 {
 	return a.mon.EventCount()
+}
+
+func (a *App) GetKeyCount() int64 {
+	return a.mon.KeyCount()
+}
+
+func (a *App) GetMouseClickCount() int64 {
+	return a.mon.MouseClickCount()
+}
+
+func (a *App) GetLastKeyEvent() monitor.LastKeyEvent {
+	return a.mon.LastKeyEvent()
 }
 
 func (a *App) ToggleMonitor() bool {

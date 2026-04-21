@@ -20,7 +20,7 @@ type AppUsagePoint struct {
 
 func ComputeUsageTime(days []storage.DayData) UsageTime {
 	var totalMinutes int
-	var dailyUsage []DailyUsagePoint
+	dailyUsage := make([]DailyUsagePoint, 0)
 	appMinutes := make(map[string]int)
 
 	for _, day := range days {
@@ -40,7 +40,7 @@ func ComputeUsageTime(days []storage.DayData) UsageTime {
 		}
 	}
 
-	var appUsage []AppUsagePoint
+	appUsage := make([]AppUsagePoint, 0)
 	for app, mins := range appMinutes {
 		appUsage = append(appUsage, AppUsagePoint{App: app, Minutes: mins})
 	}

@@ -17,6 +17,12 @@ export async function GetDailySummary(date: string): Promise<any> {
   return app.GetDailySummary(date);
 }
 
+export async function GetRangeSummary(start: string, end: string): Promise<any> {
+  const app = getApp();
+  if (!app?.GetRangeSummary) return null;
+  return app.GetRangeSummary(start, end);
+}
+
 export async function GetKeyboardStats(start: string, end: string): Promise<any> {
   const app = getApp();
   if (!app?.GetKeyboardStats) return null;
@@ -45,6 +51,12 @@ export async function GetHeatmapData(start: string, end: string): Promise<any> {
   const app = getApp();
   if (!app?.GetHeatmapData) return null;
   return app.GetHeatmapData(start, end);
+}
+
+export async function GetHeatmapCurrent(): Promise<any> {
+  const app = getApp();
+  if (!app?.GetHeatmapCurrent) return null;
+  return app.GetHeatmapCurrent();
 }
 
 export async function GetConfig(): Promise<any> {
@@ -83,6 +95,30 @@ export async function GetEventCount(): Promise<number> {
   return app.GetEventCount();
 }
 
+export async function GetKeyCount(): Promise<number> {
+  const app = getApp();
+  if (!app?.GetKeyCount) return 0;
+  return app.GetKeyCount();
+}
+
+export async function GetMouseClickCount(): Promise<number> {
+  const app = getApp();
+  if (!app?.GetMouseClickCount) return 0;
+  return app.GetMouseClickCount();
+}
+
+export async function GetLastKeyEvent(): Promise<any> {
+  const app = getApp();
+  if (!app?.GetLastKeyEvent) return null;
+  return app.GetLastKeyEvent();
+}
+
+export async function GetDataVersion(): Promise<number> {
+  const app = getApp();
+  if (!app?.GetDataVersion) return 0;
+  return app.GetDataVersion();
+}
+
 export async function GetMouseTrail(hours: number): Promise<any[]> {
   const app = getApp();
   if (!app?.GetMouseTrail) return [];
@@ -93,4 +129,22 @@ export function BrowserOpenURL(url: string): void {
   try {
     (window as any)?.runtime?.BrowserOpenURL?.(url);
   } catch {}
+}
+
+export async function GetWeeklyReport(): Promise<any> {
+  const app = getApp();
+  if (!app?.GetWeeklyReport) return null;
+  return app.GetWeeklyReport();
+}
+
+export async function GetTypingRhythm(start: string, end: string): Promise<any[]> {
+  const app = getApp();
+  if (!app?.GetTypingRhythm) return [];
+  return app.GetTypingRhythm(start, end);
+}
+
+export async function SaveReportImage(base64Data: string): Promise<string> {
+  const app = getApp();
+  if (!app?.SaveReportImage) return '';
+  return app.SaveReportImage(base64Data);
 }

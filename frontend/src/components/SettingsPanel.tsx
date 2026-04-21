@@ -1,9 +1,33 @@
 import { useEffect, useState } from 'react';
 import { GetConfig, SaveConfig, GetMonitorStatus, ToggleMonitor, TestMonitor, GetEventCount, BrowserOpenURL } from '../wails-bindings';
 import { ErrorPage } from './ErrorPage';
+import { KeyboardDebug } from './KeyboardDebug';
 import { t } from '../i18n';
 import type { Lang } from '../i18n';
 import type { AppConfig } from '../types';
+
+function Modal({ open, onClose, children }: { open: boolean; onClose: () => void; children: React.ReactNode }) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
+      <div className="absolute inset-0" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }} />
+      <div
+        className="relative rounded-xl overflow-auto"
+        style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', width: '90vw', maxWidth: 900, maxHeight: '85vh', padding: 24 }}
+        onClick={e => e.stopPropagation()}
+      >
+        <button onClick={onClose}
+          className="absolute top-3 right-3 w-7 h-7 rounded-md flex items-center justify-center"
+          style={{ color: 'var(--muted)', backgroundColor: 'var(--surface)' }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+        {children}
+      </div>
+    </div>
+  );
+}
 
 interface SettingsPanelProps {
   lang: Lang;
@@ -18,6 +42,7 @@ export function SettingsPanel({ lang }: SettingsPanelProps) {
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
   const [eventCount, setEventCount] = useState(0);
   const [loadError, setLoadError] = useState('');
+  const [showKbDebug, setShowKbDebug] = useState(false);
 
   useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
@@ -135,7 +160,7 @@ export function SettingsPanel({ lang }: SettingsPanelProps) {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-lg flex items-center justify-center"
-                style={{ backgroundColor: monStatus.running ? 'var(--green-muted)' : 'var(--surface-2)' }}>
+                style={{ backgroundColor: monStatus.running ? 'var(--green-bg)' : 'var(--surface-2)' }}>
                 {monStatus.running ? (
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
@@ -158,7 +183,7 @@ export function SettingsPanel({ lang }: SettingsPanelProps) {
             <button onClick={handleToggle}
               className="px-4 py-1.5 rounded-lg text-xs font-semibold"
               style={{
-                backgroundColor: monStatus.running ? 'var(--red-muted)' : 'var(--accent-muted)',
+                backgroundColor: monStatus.running ? 'var(--red-bg)' : 'var(--accent-bg)',
                 color: monStatus.running ? 'var(--red)' : 'var(--accent)',
               }}>
               {monStatus.running ? t('set.stop', lang) : t('set.start', lang)}
@@ -171,7 +196,7 @@ export function SettingsPanel({ lang }: SettingsPanelProps) {
               <button onClick={handleTest} disabled={testing}
                 className="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5"
                 style={{
-                  backgroundColor: testing ? 'var(--surface-2)' : 'var(--accent-muted)',
+                  backgroundColor: testing ? 'var(--surface-2)' : 'var(--accent-bg)',
                   color: 'var(--accent)',
                   opacity: testing ? 0.7 : 1,
                 }}>
@@ -181,6 +206,15 @@ export function SettingsPanel({ lang }: SettingsPanelProps) {
                   </svg>
                 )}
                 {testing ? t('set.testing', lang) : t('set.testMonitor', lang)}
+              </button>
+
+              <button onClick={() => setShowKbDebug(true)}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5"
+                style={{ backgroundColor: 'var(--surface-2)', color: 'var(--muted)' }}>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 16h8"/>
+                </svg>
+                Keyboard Debug
               </button>
 
               {eventCount > 0 && (
@@ -207,7 +241,7 @@ export function SettingsPanel({ lang }: SettingsPanelProps) {
           {testResult && (
             <div className="text-xs px-3 py-2.5 rounded-lg flex items-center gap-2 mb-3"
               style={{
-                backgroundColor: testResult.success ? 'var(--green-muted)' : 'var(--red-muted)',
+                backgroundColor: testResult.success ? 'var(--green-bg)' : 'var(--red-bg)',
                 color: testResult.success ? 'var(--green)' : 'var(--red)',
               }}>
               {testResult.success ? (
@@ -227,7 +261,7 @@ export function SettingsPanel({ lang }: SettingsPanelProps) {
           {/* Accessibility warning */}
           {monStatus.access_err && (
             <div className="text-xs px-3 py-2.5 rounded-lg flex items-center justify-between"
-              style={{ backgroundColor: 'var(--amber-muted)', color: 'var(--amber)' }}>
+              style={{ backgroundColor: 'var(--amber-bg)', color: 'var(--amber)' }}>
               <div className="flex items-center gap-2">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
@@ -245,7 +279,7 @@ export function SettingsPanel({ lang }: SettingsPanelProps) {
           )}
 
           {toggleErr && (
-            <div className="mt-3 text-xs px-3 py-2.5 rounded-lg" style={{ backgroundColor: 'var(--red-muted)', color: 'var(--red)' }}>
+            <div className="mt-3 text-xs px-3 py-2.5 rounded-lg" style={{ backgroundColor: 'var(--red-bg)', color: 'var(--red)' }}>
               {toggleErr}
             </div>
           )}
@@ -304,13 +338,17 @@ export function SettingsPanel({ lang }: SettingsPanelProps) {
         <button onClick={handleSave}
           className="w-full py-2.5 rounded-lg text-sm font-semibold"
           style={{
-            backgroundColor: saved ? 'var(--green-muted)' : 'var(--accent)',
+            backgroundColor: saved ? 'var(--green-bg)' : 'var(--accent)',
             color: saved ? 'var(--green)' : '#fff',
-            border: saved ? '1px solid color-mix(in srgb, var(--green) 30%, transparent)' : 'none',
+            border: saved ? '1px solid var(--green-border)' : 'none',
           }}>
           {saved ? t('set.saved', lang) : t('set.save', lang)}
         </button>
       </div>
+
+      <Modal open={showKbDebug} onClose={() => setShowKbDebug(false)}>
+        <KeyboardDebug lang={lang} />
+      </Modal>
     </div>
   );
 }

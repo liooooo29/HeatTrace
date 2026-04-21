@@ -47,7 +47,7 @@ export function DateRangePicker({ startDate, endDate, onChange, lang }: DateRang
           <button key={p.label} onClick={() => applyPreset(p.days)}
             className="px-2.5 py-1 rounded-md text-[11px] font-medium"
             style={{
-              backgroundColor: isPreset(p.days) ? 'var(--accent-muted)' : 'transparent',
+              backgroundColor: isPreset(p.days) ? 'var(--accent-bg)' : 'transparent',
               color: isPreset(p.days) ? 'var(--accent)' : 'var(--muted)',
               fontWeight: isPreset(p.days) ? 600 : 500,
             }}>

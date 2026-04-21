@@ -1,6 +1,9 @@
 package analytics
 
-import "HeatTrace/storage"
+import (
+	"strings"
+	"HeatTrace/storage"
+)
 
 type KeyboardStats struct {
 	TotalKeys    int                `json:"total_keys"`
@@ -8,25 +11,6 @@ type KeyboardStats struct {
 	KeyFrequency []storage.KeyCount `json:"key_frequency"`
 	ModCombo     []ModComboCount    `json:"mod_combos"`
 	HourlyKeys   []HourlyCount      `json:"hourly_keys"`
-}
-
-// shiftedToBase maps shifted punctuation to base keys, for normalizing old data.
-var shiftedToBase = map[string]string{
-	"!": "1", "@": "2", "#": "3", "$": "4", "%": "5",
-	"^": "6", "&": "7", "*": "8", "(": "9", ")": "0",
-	"_": "-", "+": "=", "~": "`",
-	"{": "[", "}": "]", "|": "\\",
-	":": ";", "\"": "'",
-	"<": ",", ">": ".", "?": "/",
-}
-
-func normalizeKey(key string) string {
-	if len(key) == 1 {
-		if base, ok := shiftedToBase[key]; ok {
-			return base
-		}
-	}
-	return key
 }
 
 func ComputeKeyboardStats(days []storage.DayData) KeyboardStats {
@@ -43,11 +27,14 @@ func ComputeKeyboardStats(days []storage.DayData) KeyboardStats {
 				filteredKeys++
 				continue
 			}
-			normalizedKey := normalizeKey(k.Key)
-			keyFreq[normalizedKey]++
+			keyFreq[k.Key]++
 			if len(k.Modifiers) > 0 {
-				combo := joinModifiers(k.Modifiers) + "+" + normalizedKey
-				modCombo[combo]++
+				// Skip combos where the key itself is a modifier
+				lowerKey := strings.ToLower(k.Key)
+				if lowerKey != "shift" && lowerKey != "ctrl" && lowerKey != "alt" && lowerKey != "meta" {
+					combo := joinModifiers(k.Modifiers) + "+" + k.Key
+					modCombo[combo]++
+				}
 			}
 			hour := hourFromTimestamp(k.Timestamp)
 			hourly[hour]++

@@ -55,19 +55,19 @@ export function KeyboardPanel({ dateRange }: KeyboardPanelProps) {
       <div className="grid grid-cols-3 gap-4 mb-8">
         <div className="card p-5 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px]"
-            style={{ background: 'linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 50%, transparent))' }} />
+            style={{ background: 'linear-gradient(90deg, var(--accent), var(--accent-border))' }} />
           <div className="stat-value">{stats.total_keys.toLocaleString()}</div>
           <div className="stat-label">Total keys</div>
         </div>
         <div className="card p-5 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px]"
-            style={{ background: 'linear-gradient(90deg, var(--amber), color-mix(in srgb, var(--amber) 50%, transparent))' }} />
+            style={{ background: 'linear-gradient(90deg, var(--amber), var(--amber-bg))' }} />
           <div className="stat-value">{stats.filtered_keys.toLocaleString()}</div>
           <div className="stat-label">Filtered</div>
         </div>
         <div className="card p-5 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px]"
-            style={{ background: 'linear-gradient(90deg, var(--green), color-mix(in srgb, var(--green) 50%, transparent))' }} />
+            style={{ background: 'linear-gradient(90deg, var(--green), var(--green-border))' }} />
           <div className="stat-value">{stats.mod_combos.length}</div>
           <div className="stat-label">Key combos</div>
         </div>
@@ -108,7 +108,7 @@ export function KeyboardPanel({ dateRange }: KeyboardPanelProps) {
                   <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'var(--surface)' }} />
                   <Bar dataKey="count" radius={[0, 4, 4, 0]}>
                     {stats.key_frequency.map((_, i) => (
-                      <Cell key={i} fill={i === 0 ? 'var(--accent)' : 'color-mix(in srgb, var(--accent) 55%, transparent)'} />
+                      <Cell key={i} fill={i === 0 ? 'var(--accent)' : 'var(--accent-bg)'} />
                     ))}
                   </Bar>
                 </BarChart>

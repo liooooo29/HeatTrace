@@ -121,3 +121,58 @@ export interface MouseHeatPoint {
 }
 
 export type Tab = 'overview' | 'activity' | 'typing' | 'settings';
+
+export interface Persona {
+  id: string;
+  name: string;
+  name_zh: string;
+  emoji: string;
+  slogan: string;
+  slogan_zh: string;
+  color: string;
+}
+
+export interface WeatherDay {
+  date: string;
+  weather: string;
+  weather_zh: string;
+  icon: string;
+  label: string;
+  label_zh: string;
+}
+
+export interface DailyGridCell {
+  date: string;
+  hour: number;
+  keys: number;
+  value: number;
+}
+
+export interface WeekComparison {
+  keys_delta: number;
+  clicks_delta: number;
+  active_delta: number;
+  wpm_delta: number;
+}
+
+export interface WeeklyReport {
+  start_date: string;
+  end_date: string;
+  total_keys: number;
+  total_clicks: number;
+  total_distance_meters: number;
+  active_minutes: number;
+  avg_wpm: number;
+  app_count: number;
+  prev_week: WeekComparison | null;
+  daily_grid: DailyGridCell[] | null;
+  top_apps: AppUsagePoint[] | null;
+  persona: Persona;
+  weather_days: WeatherDay[] | null;
+}
+
+export interface RhythmPoint {
+  time: string;
+  cpm: number;
+  keys: number;
+}

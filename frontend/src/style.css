@@ -4,50 +4,33 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Fallback theme variables — overwritten by useTheme hook on load */
 :root {
-  --bg: #FFFBF5;
-  --card: #FFFFFF;
-  --card-hover: #FFF8F0;
-  --surface: #FEF3E2;
-  --surface-2: #FDE8C8;
-  --border: #E8D5B8;
-  --fg: #1C1917;
-  --fg-2: #44403C;
-  --muted: #78716C;
-  --muted-2: #A8A29E;
-  --accent: #D97706;
-  --accent-muted: rgba(217, 119, 6, 0.10);
-  --accent-hover: #B45309;
-  --green: #059669;
-  --green-muted: rgba(5, 150, 105, 0.10);
-  --red: #DC2626;
-  --red-muted: rgba(220, 38, 38, 0.10);
-  --amber: #D97706;
-  --amber-muted: rgba(217, 119, 6, 0.10);
-  --glow: rgba(217, 119, 6, 0.06);
-}
-
-.dark {
-  --bg: #0C0A09;
-  --card: #1C1917;
-  --card-hover: #292524;
-  --surface: #1C1917;
-  --surface-2: #292524;
-  --border: #3D3530;
-  --fg: #FAFAF9;
-  --fg-2: #D6D3D1;
-  --muted: #A8A29E;
-  --muted-2: #78716C;
-  --accent: #F59E0B;
-  --accent-muted: rgba(245, 158, 11, 0.12);
-  --accent-hover: #FBBF24;
-  --green: #34D399;
-  --green-muted: rgba(52, 211, 153, 0.12);
-  --red: #F87171;
-  --red-muted: rgba(248, 113, 113, 0.12);
-  --amber: #FBBF24;
-  --amber-muted: rgba(251, 191, 36, 0.12);
-  --glow: rgba(245, 158, 11, 0.06);
+  --bg: #09090B;
+  --card: #18181B;
+  --card-hover: #1F1F23;
+  --surface: #111114;
+  --surface-2: #1E1E22;
+  --border: #2E2E33;
+  --fg: #FAFAFA;
+  --fg-2: #C8C8CC;
+  --muted: #8A8A92;
+  --muted-2: #5C5C62;
+  --accent: #F97316;
+  --accent-hover: #FB923C;
+  --accent-bg: rgba(249, 115, 22, 0.10);
+  --accent-border: rgba(249, 115, 22, 0.28);
+  --green: #22C55E;
+  --green-bg: rgba(34, 197, 94, 0.10);
+  --green-border: rgba(34, 197, 94, 0.28);
+  --red: #EF4444;
+  --red-bg: rgba(239, 68, 68, 0.10);
+  --amber: #F59E0B;
+  --amber-bg: rgba(245, 158, 11, 0.10);
+  --glow: rgba(249, 115, 22, 0.05);
+  --scrim: rgba(0, 0, 0, 0.65);
+  --card-gradient: #18181B;
+  --nav-bg: #111114;
 }
 
 * {
@@ -64,41 +47,35 @@ body {
   line-height: 1.5;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--muted);
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
-/* Tabular numbers for data */
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+/* Tabular numbers */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
   font-family: 'Fira Code', monospace;
 }
 
-/* Smooth transitions on interactive elements */
+/* Theme switch is instant — no transition to avoid flash */
+
+/* Button interactions only */
 button, a, input, textarea, select {
-  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, opacity 150ms ease, transform 100ms ease, box-shadow 150ms ease;
   touch-action: manipulation;
 }
 
-button:active {
-  transform: scale(0.97);
-}
-
-button {
-  cursor: pointer;
-}
+button:active { opacity: 0.8; }
+button { cursor: pointer; }
 
 /* Focus ring */
 :focus-visible {
@@ -107,31 +84,31 @@ button {
   border-radius: 4px;
 }
 
-/* Card base — warm with subtle inner glow */
+/* Card — base, NO hover effect */
 .card {
-  background: linear-gradient(135deg, var(--card) 0%, color-mix(in srgb, var(--card) 96%, var(--accent) 4%) 100%);
+  background: var(--card);
   border: 1px solid var(--border);
   border-radius: 12px;
-  transition: background-color 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
 }
 
-.card:hover {
-  border-color: color-mix(in srgb, var(--accent) 25%, var(--border));
-  box-shadow: 0 0 20px color-mix(in srgb, var(--accent) 4%, transparent);
-}
-
-/* Accent glow card — for featured stats */
-.card-glow {
-  background: linear-gradient(135deg, var(--card) 0%, color-mix(in srgb, var(--card) 90%, var(--accent) 10%) 100%);
-  border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--border));
+/* Card with interactive hover — only for clickable cards */
+.card-interactive {
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: 12px;
-  box-shadow: 0 0 30px color-mix(in srgb, var(--accent) 6%, transparent);
-  transition: border-color 200ms ease, box-shadow 200ms ease;
+  cursor: pointer;
+}
+.card-interactive:hover {
+  border-color: var(--accent-border);
+  box-shadow: 0 0 20px var(--glow);
 }
 
-.card-glow:hover {
-  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
-  box-shadow: 0 0 40px color-mix(in srgb, var(--accent) 10%, transparent);
+/* Accent glow card — featured stats */
+.card-glow {
+  background: var(--card);
+  border: 1px solid var(--accent-border);
+  border-radius: 12px;
+  box-shadow: 0 0 30px var(--glow);
 }
 
 /* Section header */
@@ -144,7 +121,7 @@ button {
   margin-bottom: 12px;
 }
 
-/* Stat number — large, bold, with subtle gradient */
+/* Stat number */
 .stat-value {
   font-size: 28px;
   font-weight: 700;
@@ -177,7 +154,12 @@ button {
   margin-top: 2px;
 }
 
-/* Nav tab active indicator */
+/* Nav */
+.nav-bar {
+  background-color: var(--nav-bg);
+  border-bottom: 1px solid var(--border);
+}
+
 .nav-tab-active {
   position: relative;
 }
@@ -193,14 +175,7 @@ button {
   border-radius: 1px;
 }
 
-/* Subtle gradient border bottom for nav */
-.nav-bar {
-  background: linear-gradient(180deg, var(--card) 0%, var(--bg) 100%);
-  border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(12px);
-}
-
-/* Chart container inner glow */
+/* Chart container */
 .chart-card {
   background: var(--card);
   border: 1px solid var(--border);
@@ -213,17 +188,13 @@ button {
 .chart-card::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: 0; left: 0; right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 30%, transparent), transparent);
+  background: linear-gradient(90deg, transparent, var(--accent-border), transparent);
 }
 
-/* Recharts tooltip override */
-.recharts-tooltip-wrapper {
-  outline: none;
-}
+/* Recharts tooltip */
+.recharts-tooltip-wrapper { outline: none; }
 
 /* Badge */
 .badge {
@@ -237,27 +208,12 @@ button {
   font-family: 'Fira Code', monospace;
 }
 
-.badge-accent {
-  background: var(--accent-muted);
-  color: var(--accent);
-}
+.badge-accent { background: var(--accent-bg); color: var(--accent); }
+.badge-green { background: var(--green-bg); color: var(--green); }
+.badge-amber { background: var(--amber-bg); color: var(--amber); }
+.badge-red { background: var(--red-bg); color: var(--red); }
 
-.badge-green {
-  background: var(--green-muted);
-  color: var(--green);
-}
-
-.badge-amber {
-  background: var(--amber-muted);
-  color: var(--amber);
-}
-
-.badge-red {
-  background: var(--red-muted);
-  color: var(--red);
-}
-
-/* Skeleton loading shimmer */
+/* Skeleton */
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
@@ -270,7 +226,36 @@ button {
   border-radius: 8px;
 }
 
-/* Keyboard heatmap key */
+/* Keyboard debug key */
+.kb-key {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-family: 'Fira Code', monospace;
+  font-size: 11px;
+  user-select: none;
+  background: var(--surface-2);
+  color: var(--fg);
+  border: 1px solid var(--border);
+}
+.kb-key[data-active="true"] {
+  opacity: 0.7;
+}
+
+/* ECG pulse */
+@keyframes ecg-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+/* Share card preview */
+.share-card-preview {
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+/* Heatmap key */
 .heatmap-key {
   display: flex;
   flex-direction: column;
@@ -283,12 +268,10 @@ button {
   user-select: none;
   position: relative;
   overflow: hidden;
-  transition: background-color 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
 }
 
 .heatmap-key:hover {
-  border-color: color-mix(in srgb, var(--accent) 40%, var(--border)) !important;
-  box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 20%, transparent);
+  border-color: var(--accent-border) !important;
 }
 
 .heatmap-key-shift {
@@ -310,4 +293,23 @@ button {
   bottom: 2px;
   right: 3px;
   opacity: 0.8;
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  color: var(--muted-2);
+  font-size: 12px;
+  text-align: center;
+  gap: 8px;
+}
+
+/* Page transition */
+@keyframes keyfadeIn {
+  from { opacity: 0.3; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }

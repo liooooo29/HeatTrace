@@ -204,7 +204,7 @@ export function MouseTrail({ lang }: MouseTrailProps) {
             <button key={h} onClick={() => setHours(h)}
               className="px-2.5 py-1 rounded-md text-xs font-medium transition-colors duration-150"
               style={{
-                backgroundColor: hours === h ? 'var(--accent-muted)' : 'var(--surface)',
+                backgroundColor: hours === h ? 'var(--accent-bg)' : 'var(--surface)',
                 color: hours === h ? 'var(--accent)' : 'var(--muted)',
               }}>
               {t(`act.trail${h}h`, lang)}
@@ -215,7 +215,7 @@ export function MouseTrail({ lang }: MouseTrailProps) {
           <button onClick={playing ? undefined : handlePlay} disabled={playing}
             className="px-3 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-colors duration-150"
             style={{
-              backgroundColor: playing ? 'var(--surface-2)' : 'var(--accent-muted)',
+              backgroundColor: playing ? 'var(--surface-2)' : 'var(--accent-bg)',
               color: 'var(--accent)',
               opacity: playing ? 0.6 : 1,
             }}>

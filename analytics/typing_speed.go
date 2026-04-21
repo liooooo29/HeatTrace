@@ -49,7 +49,7 @@ func ComputeTypingSpeed(days []storage.DayData) TypingSpeed {
 	}
 	avgWPM := avgCPM / 5.0
 
-	var dailySpeed []DailySpeedPoint
+	dailySpeed := make([]DailySpeedPoint, 0)
 	for _, day := range days {
 		windows := groupIntoWindows(day.Keyboard)
 		var dayCPM float64
@@ -68,7 +68,7 @@ func ComputeTypingSpeed(days []storage.DayData) TypingSpeed {
 		})
 	}
 
-	var hourlySpeed []HourlySpeedPoint
+	hourlySpeed := make([]HourlySpeedPoint, 0)
 	for h := 0; h < 24; h++ {
 		cpm := 0.0
 		if hourlyMinutes[h] > 0 {
