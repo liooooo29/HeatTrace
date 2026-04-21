@@ -388,3 +388,10 @@ func (a *App) ShowWindow() {
 func (a *App) Quit() {
 	runtime.Quit(a.ctx)
 }
+
+func (a *App) ClearAllData() error {
+	if a.mon.IsRunning() {
+		a.mon.Stop()
+	}
+	return os.RemoveAll(config.DataDir())
+}

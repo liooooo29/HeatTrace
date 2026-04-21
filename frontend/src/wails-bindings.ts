@@ -113,6 +113,12 @@ export async function GetLastKeyEvent(): Promise<any> {
   return app.GetLastKeyEvent();
 }
 
+export async function ClearAllData(): Promise<void> {
+  const app = getApp();
+  if (!app?.ClearAllData) return;
+  return app.ClearAllData();
+}
+
 export async function GetDataVersion(): Promise<number> {
   const app = getApp();
   if (!app?.GetDataVersion) return 0;
