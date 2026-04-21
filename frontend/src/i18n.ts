@@ -90,6 +90,13 @@ const en = {
   'set.testSuccess': 'Listening OK',
   'set.testFail': 'No events detected',
   'set.eventCount': 'Events received',
+  'set.danger': 'Danger Zone',
+  'set.dangerDesc': 'Irreversible actions — proceed with caution',
+  'set.clearData': 'Clear All Data',
+  'set.clearTitle': 'Delete all data?',
+  'set.clearDesc': 'This will permanently delete all activity data, settings, and config. The app will restart.',
+  'set.confirmClear': 'Delete Everything',
+  'common.cancel': 'Cancel',
 
   // DateRangePicker
   'date.today': 'Today',
@@ -246,6 +253,13 @@ const zh = {
   'set.testSuccess': '监听正常',
   'set.testFail': '未检测到事件',
   'set.eventCount': '已接收事件',
+  'set.danger': '危险操作',
+  'set.dangerDesc': '不可逆操作 — 请谨慎操作',
+  'set.clearData': '清除所有数据',
+  'set.clearTitle': '删除所有数据？',
+  'set.clearDesc': '将永久删除所有活动数据、设置和配置。应用将重新启动。',
+  'set.confirmClear': '全部删除',
+  'common.cancel': '取消',
 
   'date.today': '今天',
   'date.7d': '7天',

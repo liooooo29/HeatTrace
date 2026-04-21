@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { GetConfig, SaveConfig, GetMonitorStatus, ToggleMonitor, TestMonitor, GetEventCount, BrowserOpenURL } from '../wails-bindings';
+import { GetConfig, SaveConfig, GetMonitorStatus, ToggleMonitor, TestMonitor, GetEventCount, BrowserOpenURL, ClearAllData } from '../wails-bindings';
 import { ErrorPage } from './ErrorPage';
 import { KeyboardDebug } from './KeyboardDebug';
 import { t } from '../i18n';
@@ -43,6 +43,8 @@ export function SettingsPanel({ lang }: SettingsPanelProps) {
   const [eventCount, setEventCount] = useState(0);
   const [loadError, setLoadError] = useState('');
   const [showKbDebug, setShowKbDebug] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [clearing, setClearing] = useState(false);
 
   useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
@@ -344,6 +346,58 @@ export function SettingsPanel({ lang }: SettingsPanelProps) {
           }}>
           {saved ? t('set.saved', lang) : t('set.save', lang)}
         </button>
+
+        {/* Clear Data */}
+        <div className="card p-5">
+          <div className="text-sm font-semibold mb-2" style={{ color: 'var(--fg)' }}>{t('set.danger', lang)}</div>
+          <div className="text-xs mb-3" style={{ color: 'var(--muted)' }}>{t('set.dangerDesc', lang)}</div>
+          <button onClick={() => setShowClearConfirm(true)}
+            className="px-4 py-2 rounded-lg text-xs font-semibold"
+            style={{ backgroundColor: 'var(--red-bg)', color: 'var(--red)', border: '1px solid color-mix(in srgb, var(--red) 20%, var(--border))' }}>
+            {t('set.clearData', lang)}
+          </button>
+        </div>
+
+        {/* Clear Confirmation Modal */}
+        {showClearConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setShowClearConfirm(false)}>
+            <div className="absolute inset-0" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }} />
+            <div className="relative rounded-xl p-6 text-center"
+              style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)', maxWidth: 360 }}
+              onClick={e => e.stopPropagation()}>
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4"
+                style={{ backgroundColor: 'var(--red-bg)' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                </svg>
+              </div>
+              <div className="text-sm font-semibold mb-1" style={{ color: 'var(--fg)' }}>{t('set.clearTitle', lang)}</div>
+              <div className="text-xs mb-5" style={{ color: 'var(--muted)' }}>{t('set.clearDesc', lang)}</div>
+              <div className="flex gap-3 justify-center">
+                <button onClick={() => setShowClearConfirm(false)}
+                  className="px-4 py-2 rounded-lg text-xs font-semibold"
+                  style={{ backgroundColor: 'var(--surface-2)', color: 'var(--muted)' }}>
+                  {t('common.cancel', lang)}
+                </button>
+                <button onClick={async () => {
+                  setClearing(true);
+                  try {
+                    await ClearAllData();
+                    setShowClearConfirm(false);
+                    window.location.reload();
+                  } catch (e) {
+                    console.error('Clear failed:', e);
+                  }
+                  setClearing(false);
+                }} disabled={clearing}
+                  className="px-4 py-2 rounded-lg text-xs font-semibold"
+                  style={{ backgroundColor: 'var(--red)', color: '#fff' }}>
+                  {clearing ? '...' : t('set.confirmClear', lang)}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <Modal open={showKbDebug} onClose={() => setShowKbDebug(false)}>
