@@ -156,6 +156,9 @@ button { cursor: pointer; }
 
 /* Nav */
 .nav-bar {
+  --wails-draggable: drag;
+  -webkit-user-select: none;
+  user-select: none;
   background-color: var(--nav-bg);
   border-bottom: 1px solid var(--border);
 }
