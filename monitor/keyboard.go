@@ -1,25 +1,39 @@
 package monitor
 
 import (
-	hook "github.com/robotn/gohook"
 	"fmt"
 	"log"
 	"os"
+	"sync"
 	"time"
+
+	hook "github.com/robotn/gohook"
+
 	"HeatTrace/storage"
 )
 
 var debugKeys = os.Getenv("HEATTRACE_DEBUG_KEY") != ""
 
+// hookMu serializes gohook Start/End calls — the C library is not safe
+// for concurrent or rapid re-entry.
+var hookMu sync.Mutex
+
 func (m *Monitor) startKeyboardListener() {
 	defer m.wg.Done()
+
+	hookMu.Lock()
 	evChan := hook.Start()
-	defer hook.End()
+	hookMu.Unlock()
+
+	defer func() {
+		hookMu.Lock()
+		hook.End()
+		hookMu.Unlock()
+	}()
 
 	for {
 		select {
 		case <-m.stopChan:
-			hook.End()
 			return
 		case ev := <-evChan:
 			ts := time.Now().UnixMilli()

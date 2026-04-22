@@ -152,7 +152,7 @@ export function TypingECG({ dateRange, lang }: TypingECGProps) {
 
       <div className="h-44">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={visibleData} margin={{ left: 0, right: 10, top: 5, bottom: 0 }}>
+          <LineChart data={visibleData} margin={{ left: 0, right: 30, top: 5, bottom: 0 }}>
             <defs>
               <filter id="ecg-glow">
                 <feGaussianBlur stdDeviation="3" result="blur" />

@@ -1,7 +1,10 @@
 package storage
 
 import (
+	"bytes"
+	"compress/gzip"
 	"encoding/json"
+	"io"
 	"os"
 	"path/filepath"
 	"sort"
@@ -34,11 +37,17 @@ func NewJSONStore(dataDir string) (*JSONStore, error) {
 		stopCh:   make(chan struct{}),
 	}
 	go s.flushLoop()
+	go s.compressOldData()
 	return s, nil
 }
 
 func (s *JSONStore) Stop() {
 	close(s.stopCh)
+	s.flushAll()
+}
+
+// FlushAll synchronously writes all dirty data to disk.
+func (s *JSONStore) FlushAll() {
 	s.flushAll()
 }
 
@@ -72,11 +81,79 @@ func (s *JSONStore) filePath(date string) string {
 	return filepath.Join(s.dataDir, date+".json")
 }
 
+func (s *JSONStore) filePathGz(date string) string {
+	return filepath.Join(s.dataDir, date+".json.gz")
+}
+
+// readFile reads a date's data, trying .json.gz first then .json.
+func (s *JSONStore) readFile(date string) ([]byte, error) {
+	// Try gzip first
+	if data, err := os.ReadFile(s.filePathGz(date)); err == nil {
+		return gunzip(data)
+	}
+	// Fall back to plain json
+	return os.ReadFile(s.filePath(date))
+}
+
+func gunzip(data []byte) ([]byte, error) {
+	r, err := gzip.NewReader(bytes.NewReader(data))
+	if err != nil {
+		return nil, err
+	}
+	defer r.Close()
+	return io.ReadAll(r)
+}
+
+func gzipData(data []byte) ([]byte, error) {
+	var buf bytes.Buffer
+	w := gzip.NewWriter(&buf)
+	if _, err := w.Write(data); err != nil {
+		return nil, err
+	}
+	if err := w.Close(); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+// compressOldData gzips all .json files older than today at startup.
+func (s *JSONStore) compressOldData() {
+	today := time.Now().Format("2006-01-02")
+	entries, err := os.ReadDir(s.dataDir)
+	if err != nil {
+		return
+	}
+	for _, e := range entries {
+		name := e.Name()
+		if !strings.HasSuffix(name, ".json") || e.IsDir() {
+			continue
+		}
+		date := strings.TrimSuffix(name, ".json")
+		if date >= today {
+			continue // keep today's file uncompressed
+		}
+		plain := filepath.Join(s.dataDir, name)
+		data, err := os.ReadFile(plain)
+		if err != nil {
+			continue
+		}
+		gzData, err := gzipData(data)
+		if err != nil {
+			continue
+		}
+		gzPath := s.filePathGz(date)
+		if err := os.WriteFile(gzPath, gzData, 0644); err != nil {
+			continue
+		}
+		os.Remove(plain)
+	}
+}
+
 func (s *JSONStore) loadOrCreate(date string) (*DayData, error) {
 	if cached, ok := s.dayCache[date]; ok {
 		return cached, nil
 	}
-	data, err := os.ReadFile(s.filePath(date))
+	data, err := s.readFile(date)
 	if err != nil {
 		if os.IsNotExist(err) {
 			day := &DayData{
@@ -197,12 +274,21 @@ func (s *JSONStore) ListDates() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	var dates []string
+	dateSet := make(map[string]struct{})
 	for _, e := range entries {
 		name := e.Name()
-		if strings.HasSuffix(name, ".json") && !e.IsDir() {
-			dates = append(dates, strings.TrimSuffix(name, ".json"))
+		if e.IsDir() {
+			continue
 		}
+		if strings.HasSuffix(name, ".json.gz") {
+			dateSet[strings.TrimSuffix(name, ".json.gz")] = struct{}{}
+		} else if strings.HasSuffix(name, ".json") {
+			dateSet[strings.TrimSuffix(name, ".json")] = struct{}{}
+		}
+	}
+	dates := make([]string, 0, len(dateSet))
+	for d := range dateSet {
+		dates = append(dates, d)
 	}
 	sort.Strings(dates)
 	return dates, nil
@@ -217,6 +303,7 @@ func (s *JSONStore) DeleteOlderThan(days int) error {
 	for _, d := range dates {
 		if d < cutoff {
 			os.Remove(s.filePath(d))
+			os.Remove(s.filePathGz(d))
 			s.mu.Lock()
 			delete(s.dayCache, d)
 			delete(s.dirty, d)

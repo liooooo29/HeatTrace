@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Dashboard } from './components/Dashboard';
 import { SettingsPanel } from './components/SettingsPanel';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { useTheme } from './hooks/useTheme';
+import { useTheme, accentPresets } from './hooks/useTheme';
 import { useLang } from './hooks/useLang';
 import { themes } from './themes';
 import { GetMonitorStatus, ToggleMonitor, BrowserOpenURL } from './wails-bindings';
@@ -17,7 +17,7 @@ function App() {
   const [monitorRunning, setMonitorRunning] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showThemePicker, setShowThemePicker] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, customAccent, setCustomAccent } = useTheme();
   const { lang, switchLang } = useLang();
 
   const refreshStatus = () => {
@@ -107,24 +107,63 @@ function App() {
             {showThemePicker && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowThemePicker(false)} />
-                <div className="absolute right-0 top-10 z-50 rounded-xl p-2 space-y-0.5"
-                  style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)', width: 180, boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
-                  {themes.map(t => (
-                    <button key={t.id}
-                      onClick={() => { setTheme(t.id); setShowThemePicker(false); }}
-                      className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-left"
-                      style={{
-                        backgroundColor: theme === t.id ? 'var(--accent-bg)' : 'transparent',
-                      }}>
-                      <div className="w-3 h-3 rounded-full shrink-0" style={{
-                        backgroundColor: t.vars['--accent'],
-                        border: theme === t.id ? '2px solid var(--accent)' : '1.5px solid var(--border)',
-                      }} />
-                      <span className="text-[11px] font-medium" style={{ color: theme === t.id ? 'var(--accent)' : 'var(--fg)' }}>
-                        {t.name}
-                      </span>
-                    </button>
-                  ))}
+                <div className="absolute right-0 top-10 z-50 rounded-xl overflow-hidden"
+                  style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)', width: 200, boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
+                  {/* Theme list */}
+                  <div className="p-2 space-y-0.5">
+                    {themes.map(t => (
+                      <button key={t.id}
+                        onClick={() => { setTheme(t.id); }}
+                        className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-left"
+                        style={{
+                          backgroundColor: theme === t.id ? 'var(--accent-bg)' : 'transparent',
+                        }}>
+                        <div className="w-3 h-3 rounded-full shrink-0" style={{
+                          backgroundColor: t.vars['--accent'],
+                          border: theme === t.id ? '2px solid var(--accent)' : '1.5px solid var(--border)',
+                        }} />
+                        <span className="text-[11px] font-medium" style={{ color: theme === t.id ? 'var(--accent)' : 'var(--fg)' }}>
+                          {t.name}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Accent color section */}
+                  <div className="px-3 py-2.5" style={{ borderTop: '1px solid var(--border)' }}>
+                    <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--muted-2)' }}>
+                      Accent Color
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {accentPresets.map(color => (
+                        <button key={color}
+                          onClick={() => setCustomAccent(customAccent === color ? '' : color)}
+                          className="w-5 h-5 rounded-full transition-transform hover:scale-125"
+                          style={{
+                            backgroundColor: color,
+                            border: customAccent === color ? '2px solid var(--fg)' : '1.5px solid var(--border)',
+                            transform: customAccent === color ? 'scale(1.15)' : undefined,
+                          }} />
+                      ))}
+                      {/* Native color picker */}
+                      <label className="w-5 h-5 rounded-full flex items-center justify-center cursor-pointer"
+                        style={{ border: '1.5px dashed var(--border)' }}>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="2.5" strokeLinecap="round">
+                          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        <input type="color" value={customAccent || '#FF6600'}
+                          onChange={e => setCustomAccent(e.target.value)}
+                          className="sr-only" />
+                      </label>
+                    </div>
+                    {customAccent && (
+                      <button onClick={() => setCustomAccent('')}
+                        className="text-[10px] mt-1.5 font-medium"
+                        style={{ color: 'var(--muted)' }}>
+                        Reset to default
+                      </button>
+                    )}
+                  </div>
                 </div>
               </>
             )}
@@ -145,33 +184,17 @@ function App() {
       <main className="flex-1 overflow-auto flex justify-center">
         <div className="w-full px-6 py-6" style={{ maxWidth: 960 }}>
           <ErrorBoundary lang={lang}>
-            <Dashboard dateRange={dr} lang={lang} monitorRunning={monitorRunning}
-              accessErr={accessErr} onMonitorChange={refreshStatus}
-              historyMode={historyMode} onToggleHistory={() => setHistoryMode(h => !h)}
-              onDateChange={(s, e) => setDateRange({ start: s, end: e })} />
+            {showSettings ? (
+              <SettingsPanel lang={lang} onBack={() => setShowSettings(false)} />
+            ) : (
+              <Dashboard dateRange={dr} lang={lang} monitorRunning={monitorRunning}
+                accessErr={accessErr} onMonitorChange={refreshStatus}
+                historyMode={historyMode} onToggleHistory={() => setHistoryMode(h => !h)}
+                onDateChange={(s, e) => setDateRange({ start: s, end: e })} />
+            )}
           </ErrorBoundary>
         </div>
       </main>
-
-      {/* Settings Modal */}
-      {showSettings && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setShowSettings(false)}>
-          <div className="absolute inset-0" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }} />
-          <div className="relative rounded-xl overflow-auto"
-            style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', width: '90vw', maxWidth: 520, maxHeight: '85vh', padding: 24 }}
-            onClick={e => e.stopPropagation()}>
-            <button onClick={() => setShowSettings(false)}
-              className="absolute top-3 right-3 w-8 h-8 rounded-md flex items-center justify-center"
-              style={{ color: 'var(--muted)', backgroundColor: 'var(--surface)' }}
-              aria-label="Close settings">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </button>
-            <SettingsPanel lang={lang} />
-          </div>
-        </div>
-      )}
     </div>
   );
 }

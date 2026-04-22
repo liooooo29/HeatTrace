@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"sync/atomic"
 	"time"
 
@@ -246,6 +247,79 @@ func (a *App) GetConfig() *config.Config {
 
 func (a *App) GetDefaultDataDir() string {
 	return filepath.Join(config.DataDir(), "data")
+}
+
+func (a *App) PickDataDir() string {
+	dir, err := runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{
+		Title:                "Select Data Folder",
+		CanCreateDirectories: true,
+	})
+	if err != nil {
+		return ""
+	}
+	return dir
+}
+
+func (a *App) SwitchDataDir(newDir string) error {
+	if newDir == "" {
+		newDir = filepath.Join(config.DataDir(), "data")
+	}
+	oldDir := a.cfg.EffectiveDataDir()
+	if oldDir == newDir {
+		return nil
+	}
+
+	// Flush old store so all in-memory data is persisted to disk
+	a.store.FlushAll()
+
+	// Copy all data files from old dir to new dir
+	if err := os.MkdirAll(newDir, 0755); err != nil {
+		return fmt.Errorf("create new dir: %w", err)
+	}
+	entries, err := os.ReadDir(oldDir)
+	if err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("read old dir: %w", err)
+	}
+	for _, e := range entries {
+		if e.IsDir() || !strings.HasSuffix(e.Name(), ".json") {
+			continue
+		}
+		src := filepath.Join(oldDir, e.Name())
+		dst := filepath.Join(newDir, e.Name())
+		data, err := os.ReadFile(src)
+		if err != nil {
+			return fmt.Errorf("read %s: %w", e.Name(), err)
+		}
+		if err := os.WriteFile(dst, data, 0644); err != nil {
+			return fmt.Errorf("write %s: %w", e.Name(), err)
+		}
+	}
+
+	// Stop monitor if running
+	wasRunning := a.mon.IsRunning()
+	if wasRunning {
+		a.mon.Stop()
+	}
+
+	// Switch to new store
+	a.store.Stop()
+	newStore, err := storage.NewJSONStore(newDir)
+	if err != nil {
+		return err
+	}
+	a.store = newStore
+	a.agg = storage.NewAggregator(newStore)
+	a.mon = monitor.New(newStore, a.fltr)
+
+	// Update config
+	a.cfg.DataDir = newDir
+	_ = config.Save(a.cfg)
+
+	// Restart monitor if it was running
+	if wasRunning {
+		_ = a.mon.Start()
+	}
+	return nil
 }
 
 func (a *App) SaveConfig(cfg config.Config) error {
