@@ -321,6 +321,12 @@ func (s *JSONStore) ListDates() ([]string, error) {
 			dateSet[strings.TrimSuffix(name, ".json")] = struct{}{}
 		}
 	}
+	// Also include dates from in-memory cache (may not be flushed to disk yet)
+	s.mu.RLock()
+	for d := range s.dayCache {
+		dateSet[d] = struct{}{}
+	}
+	s.mu.RUnlock()
 	dates := make([]string, 0, len(dateSet))
 	for d := range dateSet {
 		dates = append(dates, d)

@@ -17,9 +17,10 @@ const tooltipStyle = {
 interface TypingECGProps {
   dateRange: { start: string; end: string };
   lang: Lang;
+  dataVersion?: number;
 }
 
-export function TypingECG({ dateRange, lang }: TypingECGProps) {
+export function TypingECG({ dateRange, lang, dataVersion }: TypingECGProps) {
   const [data, setData] = useState<(RhythmPoint & { label: string })[]>([]);
   const [loading, setLoading] = useState(true);
   const animRef = useRef<number | null>(null);
@@ -78,7 +79,7 @@ export function TypingECG({ dateRange, lang }: TypingECGProps) {
       setLoading(false);
     }
     load();
-  }, [dateRange, lang]);
+  }, [dateRange, lang, dataVersion]);
 
   // Animate the ECG line sweeping in
   useEffect(() => {
