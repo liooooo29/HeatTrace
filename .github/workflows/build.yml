@@ -16,6 +16,13 @@ jobs:
           - os: ubuntu-22.04
             platform: linux
             output: HeatTrace
+            webkit: libwebkit2gtk-4.0-dev
+            tags: webkit2_40
+          - os: ubuntu-24.04
+            platform: linux
+            output: HeatTrace
+            webkit: libwebkit2gtk-4.1-dev
+            tags: webkit2_41
           - os: macos-latest
             platform: darwin
             output: HeatTrace.app
@@ -42,14 +49,20 @@ jobs:
         if: matrix.platform == 'linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev
+          sudo apt-get install -y libgtk-3-dev ${{ matrix.webkit }} \
+            libx11-dev libx11-xcb-dev
 
       - name: Build
+        if: matrix.platform != 'linux'
         run: wails build
+
+      - name: Build (Linux)
+        if: matrix.platform == 'linux'
+        run: wails build -tags ${{ matrix.tags }}
 
       - name: Package (Linux)
         if: matrix.platform == 'linux'
-        run: tar -czf HeatTrace-linux-amd64.tar.gz -C build/bin .
+        run: tar -czf HeatTrace-${{ matrix.os }}-amd64.tar.gz -C build/bin .
 
       - name: Package (macOS)
         if: matrix.platform == 'darwin'
@@ -61,11 +74,10 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: HeatTrace-${{ matrix.platform }}
+          name: HeatTrace-${{ matrix.os }}
           path: |
-            HeatTrace-linux-amd64.tar.gz
-            HeatTrace-darwin-amd64.tar.gz
-            HeatTrace-windows-amd64.zip
+            HeatTrace-*.tar.gz
+            HeatTrace-*.zip
 
   release:
     needs: build
