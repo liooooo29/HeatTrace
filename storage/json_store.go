@@ -25,7 +25,7 @@ type JSONStore struct {
 
 func NewJSONStore(dataDir string) (*JSONStore, error) {
 	if dataDir == "" {
-		dataDir = filepath.Join(config.DataDir(), "data")
+		dataDir = config.DataDir()
 	}
 	if err := os.MkdirAll(dataDir, 0755); err != nil {
 		return nil, err
