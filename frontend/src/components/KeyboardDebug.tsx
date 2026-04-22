@@ -3,7 +3,6 @@ import { GetLastKeyEvent } from '../wails-bindings';
 import type { Lang } from '../i18n';
 
 // Keyboard layout: [label, browserCode, widthUnits]
-// 1 unit ≈ 38px. Standard keys = 1u, modifiers scale proportionally.
 const ROWS: [string, string, number?][][] = [
   [ ['Esc','Escape'], ['F1','F1'], ['F2','F2'], ['F3','F3'], ['F4','F4'], ['F5','F5'], ['F6','F6'], ['F7','F7'], ['F8','F8'], ['F9','F9'], ['F10','F10'], ['F11','F11'], ['F12','F12'] ],
   [ ['`','Backquote'], ['1','Digit1'], ['2','Digit2'], ['3','Digit3'], ['4','Digit4'], ['5','Digit5'], ['6','Digit6'], ['7','Digit7'], ['8','Digit8'], ['9','Digit9'], ['0','Digit0'], ['-','Minus'], ['=','Equal'], ['⌫','Backspace',2] ],
@@ -23,25 +22,30 @@ const ARROWS: [string, string][][] = [
   [['←','ArrowLeft'], ['↓','ArrowDown'], ['→','ArrowRight']],
 ];
 
-const UNIT = 38;
 const GAP = 4;
+// Total units for main keyboard (all rows have same total width in units)
+const TOTAL_UNITS = 15;
+// Nav / arrow grids: 3 cols
+const NAV_COLS = 3;
 
-function Key({ label, code, w, active }: { label: string; code: string; w: number; active: boolean }) {
-  if (!label) return <div style={{ width: UNIT, height: UNIT }} />;
+function Key({ label, code, flexUnits, w, h, active }: { label: string; code: string; flexUnits?: number; w?: number; h: number; active: boolean }) {
+  if (!label) return <div style={{ width: w, height: h }} />;
   return (
     <div
       className="kb-key"
       data-active={active}
       style={{
+        flex: flexUnits,
         width: w,
-        height: UNIT,
+        height: h,
+        minWidth: 0,
         backgroundColor: active ? 'var(--accent)' : undefined,
         color: active ? '#fff' : undefined,
         borderColor: active ? 'var(--accent)' : undefined,
         boxShadow: active ? '0 0 12px var(--glow)' : undefined,
       }}
     >
-      <span style={{ fontWeight: label.length > 1 ? 500 : 400 }}>{label}</span>
+      <span style={{ fontWeight: label.length > 1 ? 500 : 400, fontSize: h < 30 ? 10 : undefined }}>{label}</span>
     </div>
   );
 }
@@ -52,7 +56,24 @@ export function KeyboardDebug({ lang }: { lang: Lang }) {
   const [lastGo, setLastGo] = useState<any>(null);
   const [log, setLog] = useState<string[]>([]);
   const logRef = useRef<string[]>([]);
-  const logBoxRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerW, setContainerW] = useState(700);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const ro = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        setContainerW(entry.contentRect.width);
+      }
+    });
+    ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, []);
+
+  // Compute key height from available width: main keyboard total = TOTAL_UNITS keys + (TOTAL_UNITS-1)*GAP
+  const mainKeyW = (containerW - (TOTAL_UNITS - 1) * GAP) / TOTAL_UNITS;
+  const keyH = Math.max(24, Math.round(mainKeyW * 0.85));
+  const navKeyW = Math.round(mainKeyW * 0.9);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -95,19 +116,13 @@ export function KeyboardDebug({ lang }: { lang: Lang }) {
   );
 
   return (
-    <div>
-      {/* Header */}
-      <div className="mb-5">
-        <h2 className="page-title">Keyboard Debug</h2>
-        <p className="page-subtitle">Press any key to compare browser event vs Go backend</p>
-      </div>
-
+    <div ref={containerRef}>
       {/* Info panels */}
-      <div className="grid grid-cols-2 gap-4 mb-5">
-        <div className="card p-4" style={{ borderLeft: '3px solid var(--muted-2)' }}>
-          <div className="section-title" style={{ marginBottom: 8 }}>Browser</div>
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="card p-3" style={{ borderLeft: '3px solid var(--muted-2)' }}>
+          <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--muted-2)' }}>Browser</div>
           {lastBrowser ? (
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               {field('code', lastBrowser.code)}
               {field('key', `"${lastBrowser.key}"`)}
               {(lastBrowser.shift || lastBrowser.ctrl || lastBrowser.alt) &&
@@ -115,10 +130,10 @@ export function KeyboardDebug({ lang }: { lang: Lang }) {
             </div>
           ) : <div className="text-xs" style={{ color: 'var(--muted-2)' }}>Waiting for input...</div>}
         </div>
-        <div className="card p-4" style={{ borderLeft: '3px solid var(--accent)' }}>
-          <div className="section-title" style={{ marginBottom: 8, color: 'var(--accent)' }}>Go Backend</div>
+        <div className="card p-3" style={{ borderLeft: '3px solid var(--accent)' }}>
+          <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--accent)' }}>Go backend</div>
           {lastGo ? (
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               {field('key', <span style={{ color: 'var(--accent)', fontWeight: 700, fontSize: 15 }}>{lastGo.key}</span>)}
               {field('keychar', <>{lastGo.keychar} <span style={{ color: 'var(--muted-2)' }}>(0x{lastGo.keychar?.toString(16).toUpperCase()})</span></>)}
               {field('rawcode', <>{lastGo.rawcode} <span style={{ color: 'var(--muted-2)' }}>(0x{lastGo.rawcode?.toString(16).toUpperCase()})</span></>)}
@@ -130,22 +145,22 @@ export function KeyboardDebug({ lang }: { lang: Lang }) {
       </div>
 
       {/* Keyboard */}
-      <div className="card p-4 mb-5">
+      <div className="card p-4 mb-4">
         <div className="flex flex-col items-center" style={{ gap: GAP }}>
           {ROWS.map((row, ri) => (
-            <div key={ri} className="flex" style={{ gap: GAP }}>
+            <div key={ri} className="flex w-full" style={{ gap: GAP }}>
               {row.map(([label, code, u]) => (
-                <Key key={code} label={label} code={code} w={(u || 1) * UNIT + ((u || 1) - 1) * GAP} active={pressed.has(code)} />
+                <Key key={code} label={label} code={code} flexUnits={u || 1} h={keyH} active={pressed.has(code)} />
               ))}
             </div>
           ))}
 
           {/* Nav + Arrows row */}
-          <div className="flex items-start" style={{ gap: GAP, marginTop: 8 }}>
+          <div className="flex items-start w-full" style={{ gap: GAP, marginTop: 8 }}>
             <div className="flex flex-col" style={{ gap: GAP }}>
               {NAV_ROW.map((row, ri) => (
                 <div key={ri} className="flex" style={{ gap: GAP }}>
-                  {row.map(([label, code]) => <Key key={code} label={label} code={code} w={UNIT} active={pressed.has(code)} />)}
+                  {row.map(([label, code]) => <Key key={code} label={label} code={code} w={navKeyW} h={keyH} active={pressed.has(code)} />)}
                 </div>
               ))}
             </div>
@@ -153,7 +168,7 @@ export function KeyboardDebug({ lang }: { lang: Lang }) {
             <div className="flex flex-col" style={{ gap: GAP }}>
               {ARROWS.map((row, ri) => (
                 <div key={ri} className="flex" style={{ gap: GAP }}>
-                  {row.map(([label, code]) => <Key key={code || Math.random()} label={label} code={code} w={UNIT} active={code ? pressed.has(code) : false} />)}
+                  {row.map(([label, code]) => <Key key={code || Math.random()} label={label} code={code} w={navKeyW} h={keyH} active={code ? pressed.has(code) : false} />)}
                 </div>
               ))}
             </div>
@@ -163,16 +178,16 @@ export function KeyboardDebug({ lang }: { lang: Lang }) {
 
       {/* Log */}
       {log.length > 0 && (
-        <div className="card p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="section-title" style={{ marginBottom: 0 }}>Event Log</div>
+        <div className="card p-3">
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--muted-2)' }}>Event Log</div>
             <button onClick={() => { logRef.current = []; setLog([]); }}
-              className="text-[10px] px-2.5 py-1 rounded-md font-medium"
+              className="text-[10px] px-2 py-0.5 rounded-md font-medium"
               style={{ color: 'var(--muted)', backgroundColor: 'var(--surface-2)' }}>
               Clear
             </button>
           </div>
-          <div ref={logBoxRef} className="font-mono text-[11px] space-y-1 max-h-44 overflow-auto pr-1" style={{ color: 'var(--fg-2)' }}>
+          <div className="font-mono text-[11px] space-y-0.5 max-h-36 overflow-auto pr-1" style={{ color: 'var(--fg-2)' }}>
             {log.map((l, i) => (
               <div key={i} className="px-2 py-0.5 rounded" style={{
                 backgroundColor: i === 0 ? 'var(--accent-bg)' : 'transparent',

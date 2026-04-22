@@ -71,6 +71,18 @@ export async function GetDefaultDataDir(): Promise<string> {
   return app.GetDefaultDataDir();
 }
 
+export async function SwitchDataDir(newDir: string): Promise<void> {
+  const app = getApp();
+  if (!app?.SwitchDataDir) return;
+  return app.SwitchDataDir(newDir);
+}
+
+export async function PickDataDir(): Promise<string> {
+  const app = getApp();
+  if (!app?.PickDataDir) return '';
+  return app.PickDataDir();
+}
+
 export async function SaveConfig(config: any): Promise<void> {
   const app = getApp();
   if (!app?.SaveConfig) return;
