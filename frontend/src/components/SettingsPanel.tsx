@@ -5,13 +5,20 @@ import { KeyboardDebug } from './KeyboardDebug';
 import { t } from '../i18n';
 import type { Lang } from '../i18n';
 import type { AppConfig } from '../types';
+import { themes } from '../themes';
+import { accentPresets } from '../hooks/useTheme';
 
 interface SettingsPanelProps {
   lang: Lang;
   onBack: () => void;
+  theme: string;
+  onThemeChange: (id: string) => void;
+  customAccent: string;
+  onAccentChange: (color: string) => void;
+  onLangChange: (lang: Lang) => void;
 }
 
-export function SettingsPanel({ lang, onBack }: SettingsPanelProps) {
+export function SettingsPanel({ lang, onBack, theme, onThemeChange, customAccent, onAccentChange, onLangChange }: SettingsPanelProps) {
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [monStatus, setMonStatus] = useState({ running: false, access_err: '' });
   const [toggleErr, setToggleErr] = useState('');
@@ -187,6 +194,80 @@ export function SettingsPanel({ lang, onBack }: SettingsPanelProps) {
       </div>
 
       <div className="space-y-5" style={{ maxWidth: 680 }}>
+        {/* Language */}
+        <div className="card p-5">
+          <div className="text-sm font-semibold mb-3" style={{ color: 'var(--fg)' }}>{t('set.language', lang)}</div>
+          <div className="flex gap-2">
+            {(['en', 'zh'] as Lang[]).map(l => (
+              <button key={l} onClick={() => onLangChange(l)}
+                className="px-4 py-2 rounded-lg text-sm font-medium"
+                style={{
+                  backgroundColor: lang === l ? 'var(--accent-bg)' : 'var(--surface)',
+                  color: lang === l ? 'var(--accent)' : 'var(--muted)',
+                  border: lang === l ? '1px solid var(--accent-border)' : '1px solid var(--border)',
+                }}>
+                {l === 'en' ? 'English' : '中文'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Theme */}
+        <div className="card p-5">
+          <div className="text-sm font-semibold mb-3" style={{ color: 'var(--fg)' }}>{t('set.theme', lang)}</div>
+          <div className="grid grid-cols-3 gap-2">
+            {themes.map(t => (
+              <button key={t.id} onClick={() => onThemeChange(t.id)}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-left"
+                style={{
+                  backgroundColor: theme === t.id ? 'var(--accent-bg)' : 'var(--surface)',
+                  border: theme === t.id ? '1px solid var(--accent-border)' : '1px solid var(--border)',
+                }}>
+                <div className="w-3 h-3 rounded-full shrink-0" style={{
+                  backgroundColor: t.vars['--accent'],
+                  border: theme === t.id ? '2px solid var(--accent)' : '1.5px solid var(--border)',
+                }} />
+                <span className="text-[11px] font-medium truncate" style={{ color: theme === t.id ? 'var(--accent)' : 'var(--fg)' }}>
+                  {t.name}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {/* Accent color */}
+          <div className="mt-4 pt-3" style={{ borderTop: '1px solid var(--border)' }}>
+            <div className="text-[11px] font-semibold mb-2" style={{ color: 'var(--muted)' }}>Accent Color</div>
+            <div className="flex flex-wrap gap-1.5">
+              {accentPresets.map(color => (
+                <button key={color}
+                  onClick={() => onAccentChange(customAccent === color ? '' : color)}
+                  className="w-6 h-6 rounded-full transition-transform hover:scale-125"
+                  style={{
+                    backgroundColor: color,
+                    border: customAccent === color ? '2px solid var(--fg)' : '1.5px solid var(--border)',
+                    transform: customAccent === color ? 'scale(1.15)' : undefined,
+                  }} />
+              ))}
+              <label className="w-6 h-6 rounded-full flex items-center justify-center cursor-pointer"
+                style={{ border: '1.5px dashed var(--border)' }}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="2.5" strokeLinecap="round">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                <input type="color" value={customAccent || '#FF6600'}
+                  onChange={e => onAccentChange(e.target.value)}
+                  className="sr-only" />
+              </label>
+            </div>
+            {customAccent && (
+              <button onClick={() => onAccentChange('')}
+                className="text-[10px] mt-1.5 font-medium"
+                style={{ color: 'var(--muted)' }}>
+                Reset to default
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* 1. Monitoring — status + toggle */}
         <div className="card p-5">
           <div className="flex items-center justify-between">
