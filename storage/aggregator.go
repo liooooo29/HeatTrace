@@ -42,8 +42,8 @@ func (a *Aggregator) GetDailySummary(date string) (*DailySummary, error) {
 		topKeys = topKeys[:10]
 	}
 
-	mouseDist := mouseDistancePixels(day.Mouse.Moves)
-	activeMin := calculateActiveMinutes(day.Keyboard, day.Mouse.Clicks)
+	mouseDist := MouseDistancePixels(day.Mouse.Moves)
+	activeMin := CalculateActiveMinutes(day.Keyboard, day.Mouse.Clicks)
 
 	return &DailySummary{
 		Date:            date,
@@ -100,8 +100,8 @@ func (a *Aggregator) GetRangeSummary(startDate, endDate string) (*DailySummary, 
 		topKeys = topKeys[:10]
 	}
 
-	mouseDist := mouseDistancePixels(allMoves)
-	activeMin := calculateActiveMinutes(allKeyEvents, allClicks)
+	mouseDist := MouseDistancePixels(allMoves)
+	activeMin := CalculateActiveMinutes(allKeyEvents, allClicks)
 
 	return &DailySummary{
 		Date:            startDate + " — " + endDate,
@@ -115,7 +115,8 @@ func (a *Aggregator) GetRangeSummary(startDate, endDate string) (*DailySummary, 
 	}, nil
 }
 
-func mouseDistancePixels(moves []MouseMove) float64 {
+// MouseDistancePixels calculates total mouse travel distance in meters.
+func MouseDistancePixels(moves []MouseMove) float64 {
 	var total float64
 	for i := 1; i < len(moves); i++ {
 		dx := float64(moves[i].X - moves[i-1].X)
@@ -125,7 +126,8 @@ func mouseDistancePixels(moves []MouseMove) float64 {
 	return total * 0.000264 // pixels to meters
 }
 
-func calculateActiveMinutes(keys []KeyEvent, clicks []MouseClick) int {
+// CalculateActiveMinutes returns the span of activity in minutes.
+func CalculateActiveMinutes(keys []KeyEvent, clicks []MouseClick) int {
 	if len(keys) == 0 && len(clicks) == 0 {
 		return 0
 	}

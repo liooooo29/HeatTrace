@@ -218,7 +218,7 @@ func determinePersona(days []storage.DayData, kb KeyboardStats, ms MouseStats, t
 	// Long sessions (3+ hours)
 	longSessions := 0
 	for _, day := range days {
-		minuteCount := calculateActiveMinutes(day.Keyboard, day.Mouse.Clicks)
+		minuteCount := storage.CalculateActiveMinutes(day.Keyboard, day.Mouse.Clicks)
 		if minuteCount >= 180 {
 			longSessions++
 		}

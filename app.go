@@ -41,7 +41,7 @@ func NewApp() (*App, error) {
 	}
 	agg := storage.NewAggregator(store)
 	fltr := filter.NewSensitiveFilter(cfg.BlacklistedApps, true)
-	mon := monitor.New(store, fltr)
+	mon := monitor.New(store, fltr, cfg.MouseSampleInterval)
 
 	return &App{
 		store: store,
@@ -56,6 +56,12 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 	// Start version counter loop
 	go a.dataVersionLoop()
+	// Prune old data if retention is configured
+	if a.cfg.DataRetentionDays > 0 {
+		if err := a.store.DeleteOlderThan(a.cfg.DataRetentionDays); err != nil {
+			log.Printf("Data retention cleanup failed: %v", err)
+		}
+	}
 	if !a.cfg.MonitorEnabled {
 		return
 	}
@@ -309,7 +315,7 @@ func (a *App) SwitchDataDir(newDir string) error {
 	}
 	a.store = newStore
 	a.agg = storage.NewAggregator(newStore)
-	a.mon = monitor.New(newStore, a.fltr)
+	a.mon = monitor.New(newStore, a.fltr, a.cfg.MouseSampleInterval)
 
 	// Update config
 	a.cfg.DataDir = newDir
@@ -472,5 +478,18 @@ func (a *App) ClearAllData() error {
 	if a.mon.IsRunning() {
 		a.mon.Stop()
 	}
-	return os.RemoveAll(config.DataDir())
+	dataDir := a.cfg.EffectiveDataDir()
+	if err := os.RemoveAll(dataDir); err != nil {
+		return err
+	}
+	// Recreate store so in-memory cache doesn't point at deleted directory
+	a.store.Stop()
+	newStore, err := storage.NewJSONStore(dataDir)
+	if err != nil {
+		return err
+	}
+	a.store = newStore
+	a.agg = storage.NewAggregator(newStore)
+	a.mon = monitor.New(newStore, a.fltr, a.cfg.MouseSampleInterval)
+	return nil
 }

@@ -1,6 +1,20 @@
 // Safe Wails bindings — gracefully handles missing runtime
 // Use these instead of direct imports from wailsjs/go/main/App
 
+import type {
+  DailySummary,
+  KeyboardStats,
+  MouseStats,
+  TypingSpeed,
+  UsageTime,
+  AppConfig,
+  HeatmapData,
+  WeeklyReport,
+  RhythmPoint,
+  LastKeyEvent,
+  MouseTrailPoint,
+} from './types';
+
 function getApp() {
   return (window as any)?.go?.main?.App;
 }
@@ -11,55 +25,55 @@ export async function GetToday(): Promise<string> {
   return app.GetToday();
 }
 
-export async function GetDailySummary(date: string): Promise<any> {
+export async function GetDailySummary(date: string): Promise<DailySummary | null> {
   const app = getApp();
   if (!app?.GetDailySummary) return null;
   return app.GetDailySummary(date);
 }
 
-export async function GetRangeSummary(start: string, end: string): Promise<any> {
+export async function GetRangeSummary(start: string, end: string): Promise<DailySummary | null> {
   const app = getApp();
   if (!app?.GetRangeSummary) return null;
   return app.GetRangeSummary(start, end);
 }
 
-export async function GetKeyboardStats(start: string, end: string): Promise<any> {
+export async function GetKeyboardStats(start: string, end: string): Promise<KeyboardStats | null> {
   const app = getApp();
   if (!app?.GetKeyboardStats) return null;
   return app.GetKeyboardStats(start, end);
 }
 
-export async function GetMouseStats(start: string, end: string): Promise<any> {
+export async function GetMouseStats(start: string, end: string): Promise<MouseStats | null> {
   const app = getApp();
   if (!app?.GetMouseStats) return null;
   return app.GetMouseStats(start, end);
 }
 
-export async function GetTypingSpeed(start: string, end: string): Promise<any> {
+export async function GetTypingSpeed(start: string, end: string): Promise<TypingSpeed | null> {
   const app = getApp();
   if (!app?.GetTypingSpeed) return null;
   return app.GetTypingSpeed(start, end);
 }
 
-export async function GetUsageTime(start: string, end: string): Promise<any> {
+export async function GetUsageTime(start: string, end: string): Promise<UsageTime | null> {
   const app = getApp();
   if (!app?.GetUsageTime) return null;
   return app.GetUsageTime(start, end);
 }
 
-export async function GetHeatmapData(start: string, end: string): Promise<any> {
+export async function GetHeatmapData(start: string, end: string): Promise<HeatmapData | null> {
   const app = getApp();
   if (!app?.GetHeatmapData) return null;
   return app.GetHeatmapData(start, end);
 }
 
-export async function GetHeatmapCurrent(): Promise<any> {
+export async function GetHeatmapCurrent(): Promise<HeatmapData | null> {
   const app = getApp();
   if (!app?.GetHeatmapCurrent) return null;
   return app.GetHeatmapCurrent();
 }
 
-export async function GetConfig(): Promise<any> {
+export async function GetConfig(): Promise<AppConfig | null> {
   const app = getApp();
   if (!app?.GetConfig) return null;
   return app.GetConfig();
@@ -83,7 +97,7 @@ export async function PickDataDir(): Promise<string> {
   return app.PickDataDir();
 }
 
-export async function SaveConfig(config: any): Promise<void> {
+export async function SaveConfig(config: AppConfig): Promise<void> {
   const app = getApp();
   if (!app?.SaveConfig) return;
   return app.SaveConfig(config);
@@ -125,7 +139,7 @@ export async function GetMouseClickCount(): Promise<number> {
   return app.GetMouseClickCount();
 }
 
-export async function GetLastKeyEvent(): Promise<any> {
+export async function GetLastKeyEvent(): Promise<LastKeyEvent | null> {
   const app = getApp();
   if (!app?.GetLastKeyEvent) return null;
   return app.GetLastKeyEvent();
@@ -149,7 +163,7 @@ export async function GetDataVersion(): Promise<number> {
   return app.GetDataVersion();
 }
 
-export async function GetMouseTrail(hours: number): Promise<any[]> {
+export async function GetMouseTrail(hours: number): Promise<MouseTrailPoint[]> {
   const app = getApp();
   if (!app?.GetMouseTrail) return [];
   return app.GetMouseTrail(hours);
@@ -161,13 +175,13 @@ export function BrowserOpenURL(url: string): void {
   } catch {}
 }
 
-export async function GetWeeklyReport(): Promise<any> {
+export async function GetWeeklyReport(): Promise<WeeklyReport | null> {
   const app = getApp();
   if (!app?.GetWeeklyReport) return null;
   return app.GetWeeklyReport();
 }
 
-export async function GetTypingRhythm(start: string, end: string): Promise<any[]> {
+export async function GetTypingRhythm(start: string, end: string): Promise<RhythmPoint[]> {
   const app = getApp();
   if (!app?.GetTypingRhythm) return [];
   return app.GetTypingRhythm(start, end);

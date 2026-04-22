@@ -46,13 +46,16 @@ func (m *Monitor) startKeyboardListener() {
 					log.Printf("[KEY] char=%d(0x%X) raw=%d(0x%X) mask=0x%04X → key=%q mods=%v",
 						ev.Keychar, ev.Keychar, ev.Rawcode, ev.Rawcode, ev.Mask, key, mods)
 				}
-				m.lastKeyEvent = LastKeyEvent{
+				lke := LastKeyEvent{
 					Key:       key,
 					Keychar:   int32(ev.Keychar),
 					Rawcode:   ev.Rawcode,
 					Mask:      ev.Mask,
 					Modifiers: mods,
 				}
+				m.mu.Lock()
+				m.lastKeyEvent = lke
+				m.mu.Unlock()
 				ke := storage.KeyEvent{
 					Timestamp: ts,
 					Key:       key,

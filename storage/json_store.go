@@ -15,12 +15,15 @@ import (
 	"HeatTrace/config"
 )
 
+const maxCacheDays = 7 // keep at most 7 days in memory
+
 type JSONStore struct {
 	mu       sync.RWMutex
 	dataDir  string
 	dayCache map[string]*DayData
 	dirty    map[string]bool
 	stopCh   chan struct{}
+	wg       sync.WaitGroup
 }
 
 func NewJSONStore(dataDir string) (*JSONStore, error) {
@@ -36,6 +39,7 @@ func NewJSONStore(dataDir string) (*JSONStore, error) {
 		dirty:    make(map[string]bool),
 		stopCh:   make(chan struct{}),
 	}
+	s.wg.Add(1)
 	go s.flushLoop()
 	go s.compressOldData()
 	return s, nil
@@ -43,6 +47,7 @@ func NewJSONStore(dataDir string) (*JSONStore, error) {
 
 func (s *JSONStore) Stop() {
 	close(s.stopCh)
+	s.wg.Wait()
 	s.flushAll()
 }
 
@@ -52,6 +57,7 @@ func (s *JSONStore) FlushAll() {
 }
 
 func (s *JSONStore) flushLoop() {
+	defer s.wg.Done()
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 	for {
@@ -180,7 +186,36 @@ func (s *JSONStore) loadOrCreate(date string) (*DayData, error) {
 		day.Mouse.Clicks = []MouseClick{}
 	}
 	s.dayCache[date] = &day
+	s.evictOldestCacheEntries()
 	return &day, nil
+}
+
+// evictOldestCacheEntries flushes and removes the oldest entries when cache exceeds maxCacheDays.
+// Must be called with s.mu held.
+func (s *JSONStore) evictOldestCacheEntries() {
+	if len(s.dayCache) <= maxCacheDays {
+		return
+	}
+	dates := make([]string, 0, len(s.dayCache))
+	for d := range s.dayCache {
+		dates = append(dates, d)
+	}
+	sort.Strings(dates) // oldest first
+	for _, d := range dates {
+		if len(s.dayCache) <= maxCacheDays {
+			break
+		}
+		if s.dirty[d] {
+			// Flush before evicting (best-effort, already under lock)
+			if day, ok := s.dayCache[d]; ok {
+				if data, err := json.Marshal(day); err == nil {
+					_ = os.WriteFile(s.filePath(d), data, 0644)
+				}
+			}
+			delete(s.dirty, d)
+		}
+		delete(s.dayCache, d)
+	}
 }
 
 func (s *JSONStore) flush(date string) error {
@@ -302,8 +337,8 @@ func (s *JSONStore) DeleteOlderThan(days int) error {
 	cutoff := time.Now().AddDate(0, 0, -days).Format("2006-01-02")
 	for _, d := range dates {
 		if d < cutoff {
-			os.Remove(s.filePath(d))
-			os.Remove(s.filePathGz(d))
+			_ = os.Remove(s.filePath(d))
+			_ = os.Remove(s.filePathGz(d))
 			s.mu.Lock()
 			delete(s.dayCache, d)
 			delete(s.dirty, d)

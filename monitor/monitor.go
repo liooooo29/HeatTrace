@@ -28,6 +28,7 @@ type Monitor struct {
 	lastKeyEvent    LastKeyEvent
 	heatmapCounts   map[string]int // in-memory heatmap key counts
 	heatmapMax      int            // max count for normalization
+	mouseInterval   time.Duration  // mouse sampling interval
 }
 
 type LastKeyEvent struct {
@@ -38,7 +39,11 @@ type LastKeyEvent struct {
 	Modifiers []string `json:"modifiers"`
 }
 
-func New(store storage.Store, f *filter.SensitiveFilter) *Monitor {
+func New(store storage.Store, f *filter.SensitiveFilter, mouseIntervalMs int) *Monitor {
+	interval := 100 * time.Millisecond
+	if mouseIntervalMs > 0 {
+		interval = time.Duration(mouseIntervalMs) * time.Millisecond
+	}
 	return &Monitor{
 		store:          store,
 		filter:         f,
@@ -48,6 +53,7 @@ func New(store storage.Store, f *filter.SensitiveFilter) *Monitor {
 		stopChan:       make(chan struct{}),
 		dataChanged:    make(chan struct{}, 1),
 		heatmapCounts:  make(map[string]int),
+		mouseInterval:  interval,
 	}
 }
 
