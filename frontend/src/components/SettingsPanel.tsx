@@ -33,7 +33,7 @@ export function SettingsPanel({ lang, onBack }: SettingsPanelProps) {
       try {
         const [cfg, status, defaultDir] = await Promise.all([GetConfig(), GetMonitorStatus(), GetDefaultDataDir()]);
         setConfig(cfg);
-        prevDataDirRef.current = cfg.data_dir || '';
+        prevDataDirRef.current = cfg?.data_dir || '';
         setMonStatus(status);
         setDefaultDataDir(defaultDir);
         setLoadError('');

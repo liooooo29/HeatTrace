@@ -48,7 +48,6 @@ export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonito
 
   // Data loading — today: real-time poll; range: load once
   useEffect(() => {
-    let timer: ReturnType<typeof setInterval>;
     const isSingleDay = dateRange.start === dateRange.end;
 
     async function load(showLoading = false) {
@@ -66,65 +65,36 @@ export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonito
     }
     load(initialLoad.current);
     initialLoad.current = false;
-    let keyTimer: ReturnType<typeof setInterval> | undefined;
-    let clickTimer: ReturnType<typeof setInterval> | undefined;
 
-    if (isSingleDay) {
-      timer = setInterval(() => load(false), 5000);
+    if (!isSingleDay) return;
 
-      // Poll key count — reload on keyboard changes
-      let lastKeyCount = -1;
-      keyTimer = setInterval(async () => {
-        try {
-          const count = await GetKeyCount();
-          if (count !== lastKeyCount) {
-            if (lastKeyCount >= 0) load(false);
-            lastKeyCount = count;
-          }
-        } catch {}
-      }, 200);
-
-      // Poll mouse click count — reload on clicks
-      let lastClickCount = -1;
-      clickTimer = setInterval(async () => {
-        try {
-          const count = await GetMouseClickCount();
-          if (count !== lastClickCount) {
-            if (lastClickCount >= 0) load(false);
-            lastClickCount = count;
-          }
+    // Single consolidated poller: checks key + click counts, reloads on change
+    let lastKeyCount = -1;
+    let lastClickCount = -1;
+    const poller = setInterval(async () => {
+      try {
+        const [keyCount, clickCount] = await Promise.all([GetKeyCount(), GetMouseClickCount()]);
+        if ((keyCount !== lastKeyCount && lastKeyCount >= 0) ||
+            (clickCount !== lastClickCount && lastClickCount >= 0)) {
+          load(false);
+          // Also refresh heatmap
+          const hm = await GetHeatmapCurrent();
+          if (hm?.keyboard_layout?.keys) setHeatmapKeys(hm.keyboard_layout.keys);
+        }
+        lastKeyCount = keyCount;
+        lastClickCount = clickCount;
       } catch {}
-    }, 500);
-    }
+    }, 1000);
 
-    return () => {
-      clearInterval(timer);
-      clearInterval(keyTimer);
-      clearInterval(clickTimer);
-    };
+    return () => clearInterval(poller);
   }, [dateRange]);
 
-  // Heatmap — reload on date change
+  // Heatmap — initial load on date change
   useEffect(() => {
     GetHeatmapData(dateRange.start, dateRange.end).then(hm => {
       if (hm?.keyboard_layout?.keys) setHeatmapKeys(hm.keyboard_layout.keys);
     }).catch(() => {});
   }, [dateRange]);
-
-  useEffect(() => {
-    let lastKeyCount = -1;
-    const timer = setInterval(async () => {
-      try {
-        const count = await GetKeyCount();
-        if (count !== lastKeyCount && lastKeyCount >= 0) {
-          const hm = await GetHeatmapCurrent();
-          if (hm?.keyboard_layout?.keys) setHeatmapKeys(hm.keyboard_layout.keys);
-        }
-        lastKeyCount = count;
-      } catch {}
-    }, 300);
-    return () => clearInterval(timer);
-  }, []);
 
   // WPM, yesterday comparison, top apps — load on date change
   useEffect(() => {
@@ -280,7 +250,7 @@ export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonito
           {t('dash.noData', lang)}
         </div>
         <div className="text-xs" style={{ color: 'var(--muted)' }}>
-          {monitorRunning ? t('dash.noDataDesc', lang) : t('dash.noDataDesc', lang)}
+          {t('dash.noDataDesc', lang)}
         </div>
         {!monitorRunning && (
           <button

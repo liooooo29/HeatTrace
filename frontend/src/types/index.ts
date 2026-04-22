@@ -177,3 +177,18 @@ export interface RhythmPoint {
   cpm: number;
   keys: number;
 }
+
+export interface LastKeyEvent {
+  key: string;
+  keychar: number;
+  rawcode: number;
+  mask: number;
+  modifiers: string[];
+}
+
+export interface MouseTrailPoint {
+  x: number;
+  y: number;
+  screen_w: number;
+  screen_h: number;
+}

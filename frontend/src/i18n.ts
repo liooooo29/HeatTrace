@@ -106,11 +106,6 @@ const en = {
   'set.confirmUninstall': 'Uninstall & Close',
   'common.cancel': 'Cancel',
 
-  // DateRangePicker
-  'date.today': 'Today',
-  'date.7d': '7d',
-  'date.30d': '30d',
-
   // Banner
   'banner.access': 'Accessibility permission required for monitoring.',
   'banner.openSystem': 'Open System Settings',
@@ -276,10 +271,6 @@ const zh = {
   'set.uninstallModalDesc': '将停止监控、删除所有数据和配置，然后关闭应用。',
   'set.confirmUninstall': '卸载并关闭',
   'common.cancel': '取消',
-
-  'date.today': '今天',
-  'date.7d': '7天',
-  'date.30d': '30天',
 
   'banner.access': '监控需要辅助功能权限。',
   'banner.openSystem': '打开系统设置',

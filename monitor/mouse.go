@@ -9,7 +9,7 @@ import (
 func (m *Monitor) startMouseSampler() {
 	defer m.wg.Done()
 
-	interval := 100 * time.Millisecond
+	interval := m.mouseInterval
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 

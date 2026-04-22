@@ -1,9 +1,6 @@
 package analytics
 
-import (
-	"math"
-	"HeatTrace/storage"
-)
+import "HeatTrace/storage"
 
 type MouseStats struct {
 	TotalClicks   int              `json:"total_clicks"`
@@ -35,7 +32,7 @@ func ComputeMouseStats(days []storage.DayData) MouseStats {
 		totalMoves += len(day.Mouse.Moves)
 		totalClicks += len(day.Mouse.Clicks)
 
-		dayDist := calculateDistance(day.Mouse.Moves)
+		dayDist := storage.MouseDistancePixels(day.Mouse.Moves)
 		totalDistance += dayDist
 		dailyDist = append(dailyDist, DailyDistPoint{Date: day.Date, Distance: dayDist})
 
@@ -58,14 +55,4 @@ func ComputeMouseStats(days []storage.DayData) MouseStats {
 		RightClicks:   rightClicks,
 		DailyDistance: dailyDist,
 	}
-}
-
-func calculateDistance(moves []storage.MouseMove) float64 {
-	var total float64
-	for i := 1; i < len(moves); i++ {
-		dx := float64(moves[i].X - moves[i-1].X)
-		dy := float64(moves[i].Y - moves[i-1].Y)
-		total += math.Sqrt(dx*dx + dy*dy)
-	}
-	return total * 0.000264
 }
