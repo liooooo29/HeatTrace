@@ -36,6 +36,7 @@ export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonito
   const [configInfo, setConfigInfo] = useState<any>(null);
   const [showWeekly, setShowWeekly] = useState(false);
   const [heatmapKeys, setHeatmapKeys] = useState<KeyHeatPoint[]>([]);
+  const [dataVersion, setDataVersion] = useState(0);
   const [avgWPM, setAvgWPM] = useState(0);
   const [yesterdayKeys, setYesterdayKeys] = useState(0);
   const [topApps, setTopApps] = useState<any[]>([]);
@@ -77,6 +78,7 @@ export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonito
         if ((keyCount !== lastKeyCount && lastKeyCount >= 0) ||
             (clickCount !== lastClickCount && lastClickCount >= 0)) {
           load(false);
+          setDataVersion(v => v + 1);
           // Also refresh heatmap
           const hm = await GetHeatmapCurrent();
           if (hm?.keyboard_layout?.keys) setHeatmapKeys(hm.keyboard_layout.keys);
@@ -410,7 +412,7 @@ export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonito
 
       {/* Typing ECG — real-time rhythm */}
       <div className="mb-6">
-        <TypingECG dateRange={dateRange} lang={lang} />
+        <TypingECG dateRange={dateRange} lang={lang} dataVersion={dataVersion} />
       </div>
 
       {/* Keyboard Heatmap */}

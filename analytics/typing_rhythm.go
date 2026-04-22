@@ -28,10 +28,10 @@ func ComputeTypingRhythm(days []storage.DayData) []RhythmPoint {
 				continue
 			}
 			hour := hourFromTimestamp(k.Timestamp)
-			min5 := int((k.Timestamp % 3600000) / 300000) * 5
-			key := fmt.Sprintf("%s %02d:%02d", day.Date, hour, min5)
+			minute := int((k.Timestamp % 3600000) / 60000)
+			key := fmt.Sprintf("%s %02d:%02d", day.Date, hour, minute)
 			if _, ok := windows[key]; !ok {
-				windows[key] = &window{date: day.Date, hour: hour, min: min5}
+				windows[key] = &window{date: day.Date, hour: hour, min: minute}
 			}
 			windows[key].keys++
 		}
@@ -40,7 +40,7 @@ func ComputeTypingRhythm(days []storage.DayData) []RhythmPoint {
 	result := make([]RhythmPoint, 0, len(windows))
 	for key, w := range windows {
 		_ = key
-		cpm := float64(w.keys) / 5.0
+		cpm := float64(w.keys)
 		result = append(result, RhythmPoint{
 			Time: fmt.Sprintf("%s %02d:%02d", w.date, w.hour, w.min),
 			CPM:  cpm,
