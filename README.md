@@ -9,7 +9,7 @@
 [![Build](https://github.com/liooooo29/HeatTrace/actions/workflows/build.yml/badge.svg)](https://github.com/liooooo29/HeatTrace/actions/workflows/build.yml)
 ![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey)
 
-Keystrokes, mouse distance, typing speed, app usage — all tracked locally on your machine.
+Keystrokes, mouse distance, typing speed — all tracked locally on your machine.
 
 </div>
 
@@ -21,7 +21,6 @@ Keystrokes, mouse distance, typing speed, app usage — all tracked locally on y
 - **Typing ECG** — heartbeat-style visualization of your coding rhythm
 - **Keyboard heatmap** — see which keys you hit most, per-layout
 - **Weekly report** — activity trends, top apps, shareable cards
-- **App usage** — track time spent per application
 - **Custom themes** — 13 dark themes + accent color picker
 - **100% local** — no cloud, no account, data stays on your disk
 
