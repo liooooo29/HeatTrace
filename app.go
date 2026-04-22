@@ -246,7 +246,7 @@ func (a *App) GetConfig() *config.Config {
 }
 
 func (a *App) GetDefaultDataDir() string {
-	return filepath.Join(config.DataDir(), "data")
+	return config.DataDir()
 }
 
 func (a *App) PickDataDir() string {
@@ -262,7 +262,7 @@ func (a *App) PickDataDir() string {
 
 func (a *App) SwitchDataDir(newDir string) error {
 	if newDir == "" {
-		newDir = filepath.Join(config.DataDir(), "data")
+		newDir = config.DataDir()
 	}
 	oldDir := a.cfg.EffectiveDataDir()
 	if oldDir == newDir {

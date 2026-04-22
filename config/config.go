@@ -35,12 +35,30 @@ func DataDir() string {
 	case "windows":
 		return filepath.Join(os.Getenv("APPDATA"), "HeatTrace")
 	default:
-		return filepath.Join(home, ".config", "heattrace")
+		dataHome := os.Getenv("XDG_DATA_HOME")
+		if dataHome == "" {
+			dataHome = filepath.Join(home, ".local", "share")
+		}
+		return filepath.Join(dataHome, "heattrace")
+	}
+}
+
+func ConfigDir() string {
+	home, _ := os.UserHomeDir()
+	switch runtime.GOOS {
+	case "darwin", "windows":
+		return DataDir()
+	default:
+		configHome := os.Getenv("XDG_CONFIG_HOME")
+		if configHome == "" {
+			configHome = filepath.Join(home, ".config")
+		}
+		return filepath.Join(configHome, "heattrace")
 	}
 }
 
 func ConfigPath() string {
-	return filepath.Join(DataDir(), "config.json")
+	return filepath.Join(ConfigDir(), "config.json")
 }
 
 func Load() (*Config, error) {
@@ -64,11 +82,11 @@ func (cfg *Config) EffectiveDataDir() string {
 	if cfg.DataDir != "" {
 		return cfg.DataDir
 	}
-	return filepath.Join(DataDir(), "data")
+	return DataDir()
 }
 
 func Save(cfg *Config) error {
-	dir := DataDir()
+	dir := ConfigDir()
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return err
 	}
