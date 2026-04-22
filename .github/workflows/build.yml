@@ -76,7 +76,18 @@ jobs:
 
       - name: Package (macOS)
         if: matrix.platform == 'darwin'
-        run: tar -czf HeatTrace-darwin-amd64.tar.gz -C build/bin .
+        run: |
+          brew install create-dmg
+          create-dmg \
+            --volname "HeatTrace" \
+            --window-pos 200 120 \
+            --window-size 600 400 \
+            --icon-size 100 \
+            --icon "HeatTrace.app" 175 190 \
+            --hide-extension "HeatTrace.app" \
+            --app-drop-link 425 190 \
+            "HeatTrace-darwin-amd64.dmg" \
+            "build/bin/HeatTrace.app"
 
       - name: Package (Windows)
         if: matrix.platform == 'windows'
@@ -88,6 +99,7 @@ jobs:
           path: |
             HeatTrace-*.tar.gz
             HeatTrace-*.zip
+            HeatTrace-*.dmg
 
   release:
     needs: build
