@@ -60,7 +60,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev ${{ matrix.webkit }} \
-            libx11-dev libx11-xcb-dev libxkbcommon-x11-dev
+            libx11-dev libx11-xcb-dev libxkbcommon-x11-dev xvfb
 
       - name: Build
         if: matrix.platform != 'linux'
@@ -68,7 +68,7 @@ jobs:
 
       - name: Build (Linux)
         if: matrix.platform == 'linux'
-        run: wails build -tags ${{ matrix.tags }}
+        run: xvfb-run wails build -tags ${{ matrix.tags }}
 
       - name: Package (Linux)
         if: matrix.platform == 'linux'
