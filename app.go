@@ -467,11 +467,16 @@ func (a *App) GetToday() string {
 }
 
 func (a *App) ShowWindow() {
-	runtime.WindowShow(a.ctx)
+	if a.ctx != nil {
+		runtime.WindowUnminimise(a.ctx)
+		runtime.WindowShow(a.ctx)
+	}
 }
 
 func (a *App) Quit() {
-	runtime.Quit(a.ctx)
+	if a.ctx != nil {
+		runtime.Quit(a.ctx)
+	}
 }
 
 func (a *App) ClearAllData() error {
