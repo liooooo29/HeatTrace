@@ -2,9 +2,7 @@ export interface DailySummary {
   date: string;
   total_keys: number;
   filtered_keys: number;
-  mouse_move_count: number;
   mouse_click_count: number;
-  mouse_distance_meters: number;
   active_minutes: number;
   top_keys: KeyCount[];
 }
@@ -30,26 +28,6 @@ export interface ModComboCount {
 export interface HourlyCount {
   hour: number;
   count: number;
-}
-
-export interface MouseStats {
-  total_clicks: number;
-  total_moves: number;
-  total_distance_meters: number;
-  click_heatmap: ClickPoint[];
-  left_clicks: number;
-  right_clicks: number;
-  daily_distance: DailyDistPoint[];
-}
-
-export interface ClickPoint {
-  x: number;
-  y: number;
-}
-
-export interface DailyDistPoint {
-  date: string;
-  distance: number;
 }
 
 export interface TypingSpeed {
@@ -89,7 +67,6 @@ export interface AppUsagePoint {
 
 export interface AppConfig {
   monitor_enabled: boolean;
-  mouse_sample_interval_ms: number;
   blacklisted_apps: string[];
   theme: string;
   data_retention_days: number;
@@ -161,7 +138,6 @@ export interface WeeklyReport {
   end_date: string;
   total_keys: number;
   total_clicks: number;
-  total_distance_meters: number;
   active_minutes: number;
   avg_wpm: number;
   app_count: number;
@@ -184,11 +160,4 @@ export interface LastKeyEvent {
   rawcode: number;
   mask: number;
   modifiers: string[];
-}
-
-export interface MouseTrailPoint {
-  x: number;
-  y: number;
-  screen_w: number;
-  screen_h: number;
 }

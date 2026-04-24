@@ -360,22 +360,6 @@ export function SettingsPanel({ lang, onBack, theme, onThemeChange, customAccent
           <div className="space-y-4">
             <label className="flex items-center justify-between">
               <div>
-                <div className="text-sm" style={{ color: 'var(--fg)' }}>{t('set.mouseInterval', lang)}</div>
-                <div className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>{t('set.mouseIntervalDesc', lang)}</div>
-              </div>
-              <div className="flex items-center gap-2">
-                <input type="number" value={config.mouse_sample_interval_ms}
-                  onChange={e => setConfig({ ...config, mouse_sample_interval_ms: parseInt(e.target.value) || 100 })}
-                  className="w-20 rounded-lg px-3 py-1.5 text-sm border tabular-nums text-right"
-                  style={inputStyle} />
-                <span className="text-xs font-medium" style={{ color: 'var(--muted)' }}>{t('common.ms', lang)}</span>
-              </div>
-            </label>
-
-            <div className="h-px" style={{ backgroundColor: 'var(--border)' }} />
-
-            <label className="flex items-center justify-between">
-              <div>
                 <div className="text-sm" style={{ color: 'var(--fg)' }}>{t('set.retention', lang)}</div>
                 <div className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>{t('set.retentionDesc', lang)}</div>
               </div>

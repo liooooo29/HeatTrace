@@ -8,22 +8,20 @@ import (
 )
 
 type Config struct {
-	MonitorEnabled      bool     `json:"monitor_enabled"`
-	MouseSampleInterval int      `json:"mouse_sample_interval_ms"`
-	BlacklistedApps     []string `json:"blacklisted_apps"`
-	Theme               string   `json:"theme"`
-	DataRetentionDays   int      `json:"data_retention_days"`
-	DataDir             string   `json:"data_dir,omitempty"` // empty = default path
+	MonitorEnabled    bool     `json:"monitor_enabled"`
+	BlacklistedApps   []string `json:"blacklisted_apps"`
+	Theme             string   `json:"theme"`
+	DataRetentionDays int      `json:"data_retention_days"`
+	DataDir           string   `json:"data_dir,omitempty"` // empty = default path
 }
 
 func DefaultConfig() *Config {
 	return &Config{
-		MonitorEnabled:      true,
-		MouseSampleInterval: 100,
-		BlacklistedApps:     []string{},
-		Theme:               "auto",
-		DataRetentionDays:   90,
-		DataDir:             "",
+		MonitorEnabled:    true,
+		BlacklistedApps:   []string{},
+		Theme:             "auto",
+		DataRetentionDays: 90,
+		DataDir:           "",
 	}
 }
 

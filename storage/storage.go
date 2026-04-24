@@ -8,14 +8,6 @@ type KeyEvent struct {
 	Filtered  bool     `json:"filtered,omitempty"`
 }
 
-type MouseMove struct {
-	Timestamp int64 `json:"ts"`
-	X         int   `json:"x"`
-	Y         int   `json:"y"`
-	ScreenW   int   `json:"screen_w"`
-	ScreenH   int   `json:"screen_h"`
-}
-
 type MouseClick struct {
 	Timestamp int64  `json:"ts"`
 	X         int    `json:"x"`
@@ -25,7 +17,6 @@ type MouseClick struct {
 }
 
 type MouseData struct {
-	Moves  []MouseMove  `json:"moves"`
 	Clicks []MouseClick `json:"clicks"`
 }
 
@@ -44,16 +35,13 @@ type DailySummary struct {
 	Date            string     `json:"date"`
 	TotalKeys       int        `json:"total_keys"`
 	FilteredKeys    int        `json:"filtered_keys"`
-	MouseMoveCount  int        `json:"mouse_move_count"`
 	MouseClickCount int        `json:"mouse_click_count"`
-	MouseDistance   float64    `json:"mouse_distance_meters"`
 	ActiveMinutes   int        `json:"active_minutes"`
 	TopKeys         []KeyCount `json:"top_keys"`
 }
 
 type Store interface {
 	SaveKeyEvent(date string, event KeyEvent) error
-	SaveMouseMove(date string, event MouseMove) error
 	SaveMouseClick(date string, event MouseClick) error
 	LoadDay(date string) (*DayData, error)
 	LoadDateRange(startDate, endDate string) ([]DayData, error)

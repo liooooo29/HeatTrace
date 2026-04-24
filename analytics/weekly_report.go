@@ -52,7 +52,6 @@ type WeeklyReport struct {
 	EndDate       string           `json:"end_date"`
 	TotalKeys     int              `json:"total_keys"`
 	TotalClicks   int              `json:"total_clicks"`
-	TotalDistance float64          `json:"total_distance_meters"`
 	ActiveMinutes int              `json:"active_minutes"`
 	AvgWPM        float64          `json:"avg_wpm"`
 	AppCount      int              `json:"app_count"`
@@ -77,13 +76,12 @@ func ComputeWeeklyReport(thisWeek, prevWeek []storage.DayData) WeeklyReport {
 
 	// Aggregate this week
 	keyboardStats := ComputeKeyboardStats(thisWeek)
-	mouseStats := ComputeMouseStats(thisWeek)
+	clickStats := computeClickStats(thisWeek)
 	typingSpeed := ComputeTypingSpeed(thisWeek)
 	usageTime := ComputeUsageTime(thisWeek)
 
 	report.TotalKeys = keyboardStats.TotalKeys
-	report.TotalClicks = mouseStats.TotalClicks
-	report.TotalDistance = mouseStats.TotalDistance
+	report.TotalClicks = clickStats.totalClicks
 	report.ActiveMinutes = usageTime.TotalMinutes
 	report.AvgWPM = typingSpeed.AverageWPM
 	report.AppCount = len(usageTime.AppUsage)
@@ -135,25 +133,37 @@ func ComputeWeeklyReport(thisWeek, prevWeek []storage.DayData) WeeklyReport {
 	// Previous week comparison
 	if len(prevWeek) > 0 {
 		prevKB := ComputeKeyboardStats(prevWeek)
-		prevMS := ComputeMouseStats(prevWeek)
+		prevCS := computeClickStats(prevWeek)
 		prevTS := ComputeTypingSpeed(prevWeek)
 		prevUT := ComputeUsageTime(prevWeek)
 
 		report.PrevWeek = &WeekComparison{
 			KeysDelta:   pctDelta(float64(keyboardStats.TotalKeys), float64(prevKB.TotalKeys)),
-			ClicksDelta: pctDelta(float64(mouseStats.TotalClicks), float64(prevMS.TotalClicks)),
+			ClicksDelta: pctDelta(float64(clickStats.totalClicks), float64(prevCS.totalClicks)),
 			ActiveDelta: pctDelta(float64(usageTime.TotalMinutes), float64(prevUT.TotalMinutes)),
 			WPMDelta:    pctDelta(typingSpeed.AverageWPM, prevTS.AverageWPM),
 		}
 	}
 
 	// Persona
-	report.Persona = determinePersona(thisWeek, keyboardStats, mouseStats, typingSpeed, usageTime)
+	report.Persona = determinePersona(thisWeek, keyboardStats, typingSpeed, usageTime)
 
 	// Weather
 	report.WeatherDays = determineWeather(thisWeek, usageTime)
 
 	return report
+}
+
+type clickStats struct {
+	totalClicks int
+}
+
+func computeClickStats(days []storage.DayData) clickStats {
+	var total int
+	for _, day := range days {
+		total += len(day.Mouse.Clicks)
+	}
+	return clickStats{totalClicks: total}
 }
 
 func pctDelta(current, prev float64) int {
@@ -165,7 +175,7 @@ func pctDelta(current, prev float64) int {
 
 // --- Persona logic ---
 
-func determinePersona(days []storage.DayData, kb KeyboardStats, ms MouseStats, ts TypingSpeed, ut UsageTime) Persona {
+func determinePersona(days []storage.DayData, kb KeyboardStats, ts TypingSpeed, ut UsageTime) Persona {
 	// Count hourly activity
 	hourlyKeys := make(map[int]int)
 	for _, day := range days {
@@ -207,12 +217,6 @@ func determinePersona(days []storage.DayData, kb KeyboardStats, ms MouseStats, t
 			(strings.HasSuffix(lower, "+c") || strings.HasSuffix(lower, "+v")) {
 			copyPasteCount += combo.Count
 		}
-	}
-
-	// Mouse distance ratio
-	mouseRatio := 0.0
-	if kb.TotalKeys > 0 {
-		mouseRatio = ms.TotalDistance / float64(kb.TotalKeys)
 	}
 
 	// Long sessions (3+ hours)
@@ -278,13 +282,6 @@ func determinePersona(days []storage.DayData, kb KeyboardStats, ms MouseStats, t
 			ID: "ninja", Name: "Copy-Paste Ninja", NameZh: "复制粘贴忍者",
 			Emoji: "🥷", Slogan: "Efficiency is the art of not repeating yourself", SloganZh: "效率就是不重复自己",
 			Color: "#A78BFA",
-		}
-	}
-	if mouseRatio > 0.05 {
-		return Persona{
-			ID: "mouse_maestro", Name: "Mouse Maestro", NameZh: "鼠标流宗师",
-			Emoji: "🖱️", Slogan: "Your cursor paints the screen", SloganZh: "光标就是你的画笔",
-			Color: "#FB923C",
 		}
 	}
 	if morningRatio > 0.35 {
