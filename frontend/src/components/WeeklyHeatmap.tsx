@@ -37,7 +37,7 @@ export function WeeklyHeatmap({ grid }: WeeklyHeatmapProps) {
           <div style={{ height: 18 }} />
           {Array.from({ length: 24 }, (_, h) => (
             <div key={h} className="flex items-center justify-end pr-1"
-              style={{ height: 14, fontSize: 9, color: 'var(--muted-2)', fontFamily: 'Fira Code' }}>
+              style={{ height: 14, fontSize: 9, color: 'var(--text-disabled)', fontFamily: "'Space Mono', monospace" }}>
               {h % 6 === 0 ? `${h}` : ''}
             </div>
           ))}
@@ -48,7 +48,7 @@ export function WeeklyHeatmap({ grid }: WeeklyHeatmapProps) {
           const dowLabel = DOW_LABELS[dow === 0 ? 6 : dow - 1];
           return (
             <div key={date} className="flex-1">
-              <div className="text-center mb-1" style={{ fontSize: 9, color: 'var(--muted)', fontFamily: 'Fira Code', height: 18 }}>
+              <div className="text-center mb-1" style={{ fontSize: 9, color: 'var(--text-secondary)', fontFamily: "'Space Mono', monospace", height: 18 }}>
                 {dowLabel}
               </div>
               <div className="flex flex-col gap-px">
@@ -61,8 +61,8 @@ export function WeeklyHeatmap({ grid }: WeeklyHeatmapProps) {
                         height: 14,
                         borderRadius: 2,
                         backgroundColor: intensity > 0
-                          ? `color-mix(in srgb, var(--accent) ${Math.round(intensity * 80 + 5)}%, var(--surface))`
-                          : 'var(--surface)',
+                          ? `color-mix(in srgb, var(--accent) ${Math.round(intensity * 80 + 5)}%, var(--surface-raised))`
+                          : 'var(--surface-raised)',
                       }}
                       title={`${date} ${h}:00 — ${Math.round(val * 100)}% activity`}
                     />

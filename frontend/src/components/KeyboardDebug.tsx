@@ -2,7 +2,6 @@ import { useEffect, useState, useRef } from 'react';
 import { GetLastKeyEvent } from '../wails-bindings';
 import type { Lang } from '../i18n';
 
-// Keyboard layout: [label, browserCode, widthUnits]
 const ROWS: [string, string, number?][][] = [
   [ ['Esc','Escape'], ['F1','F1'], ['F2','F2'], ['F3','F3'], ['F4','F4'], ['F5','F5'], ['F6','F6'], ['F7','F7'], ['F8','F8'], ['F9','F9'], ['F10','F10'], ['F11','F11'], ['F12','F12'] ],
   [ ['`','Backquote'], ['1','Digit1'], ['2','Digit2'], ['3','Digit3'], ['4','Digit4'], ['5','Digit5'], ['6','Digit6'], ['7','Digit7'], ['8','Digit8'], ['9','Digit9'], ['0','Digit0'], ['-','Minus'], ['=','Equal'], ['⌫','Backspace',2] ],
@@ -23,9 +22,7 @@ const ARROWS: [string, string][][] = [
 ];
 
 const GAP = 4;
-// Total units for main keyboard (all rows have same total width in units)
 const TOTAL_UNITS = 15;
-// Nav / arrow grids: 3 cols
 const NAV_COLS = 3;
 
 function Key({ label, code, flexUnits, w, h, active }: { label: string; code: string; flexUnits?: number; w?: number; h: number; active: boolean }) {
@@ -42,7 +39,6 @@ function Key({ label, code, flexUnits, w, h, active }: { label: string; code: st
         backgroundColor: active ? 'var(--accent)' : undefined,
         color: active ? '#fff' : undefined,
         borderColor: active ? 'var(--accent)' : undefined,
-        boxShadow: active ? '0 0 12px var(--glow)' : undefined,
       }}
     >
       <span style={{ fontWeight: label.length > 1 ? 500 : 400, fontSize: h < 30 ? 10 : undefined }}>{label}</span>
@@ -70,7 +66,6 @@ export function KeyboardDebug({ lang }: { lang: Lang }) {
     return () => ro.disconnect();
   }, []);
 
-  // Compute key height from available width: main keyboard total = TOTAL_UNITS keys + (TOTAL_UNITS-1)*GAP
   const mainKeyW = (containerW - (TOTAL_UNITS - 1) * GAP) / TOTAL_UNITS;
   const keyH = Math.max(24, Math.round(mainKeyW * 0.85));
   const navKeyW = Math.round(mainKeyW * 0.9);
@@ -110,8 +105,8 @@ export function KeyboardDebug({ lang }: { lang: Lang }) {
 
   const field = (label: string, value: React.ReactNode) => (
     <div className="flex items-baseline gap-2">
-      <span className="text-[10px] uppercase tracking-wider shrink-0" style={{ color: 'var(--muted-2)', width: 60 }}>{label}</span>
-      <span className="font-mono text-[13px]" style={{ color: 'var(--fg)' }}>{value}</span>
+      <span style={{ fontFamily: "'Space Mono', monospace", fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-disabled)', width: 60, flexShrink: 0 }}>{label}</span>
+      <span style={{ fontFamily: "'Space Mono', monospace", fontSize: 13, color: 'var(--text-primary)' }}>{value}</span>
     </div>
   );
 
@@ -119,8 +114,8 @@ export function KeyboardDebug({ lang }: { lang: Lang }) {
     <div ref={containerRef}>
       {/* Info panels */}
       <div className="grid grid-cols-2 gap-4 mb-4">
-        <div className="card p-3" style={{ borderLeft: '3px solid var(--muted-2)' }}>
-          <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--muted-2)' }}>Browser</div>
+        <div className="card p-3" style={{ borderLeft: '2px solid var(--text-disabled)' }}>
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-disabled)', marginBottom: 8 }}>Browser</div>
           {lastBrowser ? (
             <div className="space-y-1">
               {field('code', lastBrowser.code)}
@@ -128,19 +123,19 @@ export function KeyboardDebug({ lang }: { lang: Lang }) {
               {(lastBrowser.shift || lastBrowser.ctrl || lastBrowser.alt) &&
                 field('mods', [lastBrowser.shift && 'Shift', lastBrowser.ctrl && 'Ctrl', lastBrowser.alt && 'Alt'].filter(Boolean).join(' + '))}
             </div>
-          ) : <div className="text-xs" style={{ color: 'var(--muted-2)' }}>Waiting for input...</div>}
+          ) : <div style={{ fontSize: 12, color: 'var(--text-disabled)' }}>Waiting for input...</div>}
         </div>
-        <div className="card p-3" style={{ borderLeft: '3px solid var(--accent)' }}>
-          <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--accent)' }}>Go backend</div>
+        <div className="card p-3" style={{ borderLeft: '2px solid var(--accent)' }}>
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--accent)', marginBottom: 8 }}>Go backend</div>
           {lastGo ? (
             <div className="space-y-1">
               {field('key', <span style={{ color: 'var(--accent)', fontWeight: 700, fontSize: 15 }}>{lastGo.key}</span>)}
-              {field('keychar', <>{lastGo.keychar} <span style={{ color: 'var(--muted-2)' }}>(0x{lastGo.keychar?.toString(16).toUpperCase()})</span></>)}
-              {field('rawcode', <>{lastGo.rawcode} <span style={{ color: 'var(--muted-2)' }}>(0x{lastGo.rawcode?.toString(16).toUpperCase()})</span></>)}
+              {field('keychar', <>{lastGo.keychar} <span style={{ color: 'var(--text-disabled)' }}>(0x{lastGo.keychar?.toString(16).toUpperCase()})</span></>)}
+              {field('rawcode', <>{lastGo.rawcode} <span style={{ color: 'var(--text-disabled)' }}>(0x{lastGo.rawcode?.toString(16).toUpperCase()})</span></>)}
               {field('mask', <span>0x{lastGo.mask?.toString(16).toUpperCase().padStart(4, '0')}</span>)}
               {lastGo.modifiers?.length > 0 && field('mods', lastGo.modifiers.join(' + '))}
             </div>
-          ) : <div className="text-xs" style={{ color: 'var(--muted-2)' }}>Monitor must be running</div>}
+          ) : <div style={{ fontSize: 12, color: 'var(--text-disabled)' }}>Monitor must be running</div>}
         </div>
       </div>
 
@@ -155,7 +150,6 @@ export function KeyboardDebug({ lang }: { lang: Lang }) {
             </div>
           ))}
 
-          {/* Nav + Arrows row */}
           <div className="flex items-start w-full" style={{ gap: GAP, marginTop: 8 }}>
             <div className="flex flex-col" style={{ gap: GAP }}>
               {NAV_ROW.map((row, ri) => (
@@ -180,18 +174,28 @@ export function KeyboardDebug({ lang }: { lang: Lang }) {
       {log.length > 0 && (
         <div className="card p-3">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--muted-2)' }}>Event Log</div>
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-disabled)' }}>Event Log</div>
             <button onClick={() => { logRef.current = []; setLog([]); }}
-              className="text-[10px] px-2 py-0.5 rounded-md font-medium"
-              style={{ color: 'var(--muted)', backgroundColor: 'var(--surface-2)' }}>
+              style={{
+                fontFamily: "'Space Mono', monospace",
+                fontSize: 10,
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+                color: 'var(--text-secondary)',
+                background: 'none',
+                border: '1px solid var(--border-visible)',
+                borderRadius: 999,
+                padding: '2px 8px',
+              }}>
               Clear
             </button>
           </div>
-          <div className="font-mono text-[11px] space-y-0.5 max-h-36 overflow-auto pr-1" style={{ color: 'var(--fg-2)' }}>
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 11, maxHeight: 144, overflow: 'auto' }}>
             {log.map((l, i) => (
-              <div key={i} className="px-2 py-0.5 rounded" style={{
-                backgroundColor: i === 0 ? 'var(--accent-bg)' : 'transparent',
-                color: i === 0 ? 'var(--accent)' : 'var(--fg-2)',
+              <div key={i} style={{
+                padding: '2px 8px',
+                color: i === 0 ? 'var(--accent)' : 'var(--text-secondary)',
+                backgroundColor: i === 0 ? 'var(--accent-subtle)' : 'transparent',
               }}>{l}</div>
             ))}
           </div>

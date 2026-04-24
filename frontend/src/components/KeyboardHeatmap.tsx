@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import type { KeyHeatPoint } from '../types';
 
 const ROWS: [string, string?][][][] = [
@@ -56,21 +56,20 @@ function getDisplayLabel(key: string): string {
   }
 }
 
-// Smooth heatmap: opacity-based accent tint, text color adapts
+// Nothing heatmap: opacity-based accent tint
 function getHeatBg(value: number): string {
-  if (value <= 0) return 'var(--surface-2)';
-  // 6 levels of opacity: 8%, 18%, 30%, 45%, 62%, 80%
+  if (value <= 0) return 'var(--surface-raised)';
   const opacities = [0.08, 0.18, 0.30, 0.45, 0.62, 0.80];
   const idx = Math.min(Math.floor(value * 6), 5);
-  return `color-mix(in srgb, var(--accent) ${Math.round(opacities[idx] * 100)}%, var(--surface-2))`;
+  return `color-mix(in srgb, var(--accent) ${Math.round(opacities[idx] * 100)}%, var(--surface-raised))`;
 }
 
 function getHeatFg(value: number): { label: string; count: string } {
-  if (value <= 0) return { label: 'var(--muted-2)', count: 'transparent' };
-  if (value < 0.3) return { label: 'var(--muted)', count: 'var(--muted-2)' };
-  if (value < 0.6) return { label: 'var(--fg-2)', count: 'var(--accent)' };
-  if (value < 0.8) return { label: 'var(--fg)', count: 'var(--accent-hover)' };
-  return { label: '#FFFFFF', count: '#FFFFFF' };
+  if (value <= 0) return { label: 'var(--text-disabled)', count: 'transparent' };
+  if (value < 0.3) return { label: 'var(--text-secondary)', count: 'var(--text-disabled)' };
+  if (value < 0.6) return { label: 'var(--text-primary)', count: 'var(--accent)' };
+  if (value < 0.8) return { label: 'var(--text-display)', count: 'var(--accent)' };
+  return { label: 'var(--text-display)', count: 'var(--text-display)' };
 }
 
 const KEY_ALIASES: Record<string, string[]> = {
@@ -102,18 +101,18 @@ function KeyCell({ baseKey, shiftedKey, count, value, width }: {
       style={{
         width,
         backgroundColor: getHeatBg(value),
-        border: `1px solid ${value > 0.5 ? 'color-mix(in srgb, var(--accent) 30%, var(--border))' : 'var(--border)'}`,
+        border: `1px solid ${value > 0.5 ? 'color-mix(in srgb, var(--accent) 20%, var(--border))' : 'var(--border)'}`,
       }}
       title={`${baseKey}${hasShift ? ` / ${shiftedKey}` : ''}: ${count.toLocaleString()}`}
     >
       {hasShift && (
-        <span className="heatmap-key-shift" style={{ color: fg.label, opacity: 0.5 }}>
+        <span className="heatmap-key-shift" style={{ color: fg.label }}>
           {shiftedKey}
         </span>
       )}
       <span
         className="heatmap-key-base"
-        style={{ color: fg.label, fontWeight: value > 0.5 ? 600 : 400 }}
+        style={{ color: fg.label, fontWeight: value > 0.5 ? 700 : 400 }}
       >
         {baseKey.length > 1 ? getDisplayLabel(baseKey) : baseKey.toUpperCase()}
       </span>
@@ -144,12 +143,11 @@ export function KeyboardHeatmap({ keys }: { keys: KeyHeatPoint[] }) {
 
   const maxCount = useMemo(() => Math.max(...keys.map(k => k.count), 1), [keys]);
 
-  // Color legend
   const levels = [0, 0.17, 0.33, 0.5, 0.67, 0.83, 1.0];
 
   return (
     <div className="chart-card p-4">
-      <div className="space-y-1">
+      <div className="space-y-0.5">
         {ROWS.map((row, ri) => (
           <div key={ri} className="flex gap-0.5 justify-center">
             {row.map((group, gi) => (
@@ -176,21 +174,21 @@ export function KeyboardHeatmap({ keys }: { keys: KeyHeatPoint[] }) {
         ))}
       </div>
 
-      {/* Color legend */}
+      {/* Color legend — opacity ramp */}
       <div className="flex items-center justify-center gap-3 mt-4">
-        <span className="text-[10px]" style={{ color: 'var(--muted-2)' }}>Less</span>
+        <span className="bracket-legend">[LESS]</span>
         <div className="flex gap-0.5">
           {levels.map((v, i) => (
             <div key={i} style={{
               width: 20,
-              height: 8,
-              borderRadius: 2,
+              height: 6,
+              borderRadius: 1,
               backgroundColor: getHeatBg(v),
               border: '1px solid var(--border)',
             }} />
           ))}
         </div>
-        <span className="text-[10px]" style={{ color: 'var(--muted-2)' }}>More</span>
+        <span className="bracket-legend">[MORE]</span>
       </div>
     </div>
   );

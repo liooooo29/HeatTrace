@@ -5,20 +5,17 @@ import { KeyboardDebug } from './KeyboardDebug';
 import { t } from '../i18n';
 import type { Lang } from '../i18n';
 import type { AppConfig } from '../types';
-import { themes } from '../themes';
-import { accentPresets } from '../hooks/useTheme';
+import type { ThemeMode } from '../themes';
 
 interface SettingsPanelProps {
   lang: Lang;
   onBack: () => void;
-  theme: string;
-  onThemeChange: (id: string) => void;
-  customAccent: string;
-  onAccentChange: (color: string) => void;
+  mode: ThemeMode;
+  onToggleMode: () => void;
   onLangChange: (lang: Lang) => void;
 }
 
-export function SettingsPanel({ lang, onBack, theme, onThemeChange, customAccent, onAccentChange, onLangChange }: SettingsPanelProps) {
+export function SettingsPanel({ lang, onBack, mode, onToggleMode, onLangChange }: SettingsPanelProps) {
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [monStatus, setMonStatus] = useState({ running: false, access_err: '' });
   const [toggleErr, setToggleErr] = useState('');
@@ -59,7 +56,6 @@ export function SettingsPanel({ lang, onBack, theme, onThemeChange, customAccent
     return () => clearInterval(timer);
   }, []);
 
-  // Live event counter when monitoring is active
   useEffect(() => {
     if (!monStatus.running) return;
     const interval = setInterval(async () => {
@@ -71,16 +67,13 @@ export function SettingsPanel({ lang, onBack, theme, onThemeChange, customAccent
     return () => clearInterval(interval);
   }, [monStatus.running]);
 
-  // Auto-save config on change (debounced 500ms), but exclude data_dir (handled below)
   useEffect(() => {
     if (!config) return;
     if (prevDataDirRef.current !== null && (config.data_dir || '') !== prevDataDirRef.current) return;
     const timer = setTimeout(handleSave, 500);
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config]);
 
-  // Live-switch data directory when changed
   useEffect(() => {
     if (!config || prevDataDirRef.current === null) return;
     const newDir = config.data_dir || '';
@@ -98,7 +91,6 @@ export function SettingsPanel({ lang, onBack, theme, onThemeChange, customAccent
       setSwitchingDir(false);
     }, 800);
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config?.data_dir]);
 
   const handleSave = async () => {
@@ -165,25 +157,23 @@ export function SettingsPanel({ lang, onBack, theme, onThemeChange, customAccent
   if (!config) return (
     <div>
       <div className="mb-6"><h2 className="page-title">{t('set.title', lang)}</h2></div>
-      <div className="max-w-lg space-y-4">{[1,2,3].map(i => <div key={i} className="skeleton h-20" />)}</div>
+      <div className="loading-text">[LOADING...]</div>
     </div>
   );
-
-  const inputStyle = {
-    backgroundColor: 'var(--surface)',
-    borderColor: 'var(--border)',
-    color: 'var(--fg)',
-  };
 
   return (
     <div>
       {/* Header with back button */}
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-8">
         <button onClick={onBack}
-          className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-          style={{ color: 'var(--muted)', backgroundColor: 'var(--surface)' }}
+          style={{
+            width: 40, height: 40,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'var(--text-secondary)',
+            background: 'none', border: 'none',
+          }}
           title={t('common.cancel', lang)}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="15 18 9 12 15 6"/>
           </svg>
         </button>
@@ -193,287 +183,216 @@ export function SettingsPanel({ lang, onBack, theme, onThemeChange, customAccent
         </div>
       </div>
 
-      <div className="space-y-5" style={{ maxWidth: 680 }}>
-        {/* Language */}
-        <div className="card p-5">
-          <div className="text-sm font-semibold mb-3" style={{ color: 'var(--fg)' }}>{t('set.language', lang)}</div>
+      <div style={{ maxWidth: 680 }}>
+        {/* Language — list row */}
+        <div className="list-row">
+          <span className="label">{t('set.language', lang)}</span>
           <div className="flex gap-2">
             {(['en', 'zh'] as Lang[]).map(l => (
               <button key={l} onClick={() => onLangChange(l)}
-                className="px-4 py-2 rounded-lg text-sm font-medium"
+                className="btn-base btn-xs"
                 style={{
-                  backgroundColor: lang === l ? 'var(--accent-bg)' : 'var(--surface)',
-                  color: lang === l ? 'var(--accent)' : 'var(--muted)',
-                  border: lang === l ? '1px solid var(--accent-border)' : '1px solid var(--border)',
+                  color: lang === l ? 'var(--text-display)' : 'var(--text-secondary)',
+                  backgroundColor: lang === l ? 'var(--text-display)' : 'transparent',
+                  border: lang === l ? 'none' : '1px solid var(--border-visible)',
                 }}>
-                {l === 'en' ? 'English' : '中文'}
+                {l === 'en' ? 'EN' : 'ZH'}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Theme */}
-        <div className="card p-5">
-          <div className="text-sm font-semibold mb-3" style={{ color: 'var(--fg)' }}>{t('set.theme', lang)}</div>
-          <div className="grid grid-cols-3 gap-2">
-            {themes.map(t => (
-              <button key={t.id} onClick={() => onThemeChange(t.id)}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg text-left"
-                style={{
-                  backgroundColor: theme === t.id ? 'var(--accent-bg)' : 'var(--surface)',
-                  border: theme === t.id ? '1px solid var(--accent-border)' : '1px solid var(--border)',
-                }}>
-                <div className="w-3 h-3 rounded-full shrink-0" style={{
-                  backgroundColor: t.vars['--accent'],
-                  border: theme === t.id ? '2px solid var(--accent)' : '1.5px solid var(--border)',
-                }} />
-                <span className="text-[11px] font-medium truncate" style={{ color: theme === t.id ? 'var(--accent)' : 'var(--fg)' }}>
-                  {t.name}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          {/* Accent color */}
-          <div className="mt-4 pt-3" style={{ borderTop: '1px solid var(--border)' }}>
-            <div className="text-[11px] font-semibold mb-2" style={{ color: 'var(--muted)' }}>Accent Color</div>
-            <div className="flex flex-wrap gap-1.5">
-              {accentPresets.map(color => (
-                <button key={color}
-                  onClick={() => onAccentChange(customAccent === color ? '' : color)}
-                  className="w-6 h-6 rounded-full transition-transform hover:scale-125"
-                  style={{
-                    backgroundColor: color,
-                    border: customAccent === color ? '2px solid var(--fg)' : '1.5px solid var(--border)',
-                    transform: customAccent === color ? 'scale(1.15)' : undefined,
-                  }} />
-              ))}
-              <label className="w-6 h-6 rounded-full flex items-center justify-center cursor-pointer"
-                style={{ border: '1.5px dashed var(--border)' }}>
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="2.5" strokeLinecap="round">
-                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-                <input type="color" value={customAccent || '#FF6600'}
-                  onChange={e => onAccentChange(e.target.value)}
-                  className="sr-only" />
-              </label>
-            </div>
-            {customAccent && (
-              <button onClick={() => onAccentChange('')}
-                className="text-[10px] mt-1.5 font-medium"
-                style={{ color: 'var(--muted)' }}>
-                Reset to default
-              </button>
-            )}
-          </div>
+        {/* Appearance — dark/light toggle */}
+        <div className="list-row">
+          <span className="label">{t('set.appearance', lang)}</span>
+          <button onClick={onToggleMode}
+            className="toggle-track"
+            data-on={mode === 'light'}>
+            <div className="toggle-thumb" />
+          </button>
         </div>
 
-        {/* 1. Monitoring — status + toggle */}
-        <div className="card p-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center"
-                style={{ backgroundColor: monStatus.running ? 'var(--green-bg)' : 'var(--surface-2)' }}>
-                {monStatus.running ? (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
-                  </svg>
-                ) : (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
-                  </svg>
-                )}
-              </div>
-              <div>
-                <div className="text-sm font-medium" style={{ color: 'var(--fg)' }}>
-                  {monStatus.running ? t('set.active', lang) : t('set.paused', lang)}
-                </div>
-                <div className="text-xs" style={{ color: 'var(--muted)' }}>
-                  {monStatus.running
-                    ? `${t('set.tracking', lang)}${eventCount > 0 ? ` · ${eventCount} ${t('set.eventCount', lang)}` : ''}`
-                    : t('set.trackingPaused', lang)}
-                </div>
-              </div>
-            </div>
+        {/* Monitoring status */}
+        <div className="list-row">
+          <span className="label">{t('set.monitoring', lang)}</span>
+          <div className="flex items-center gap-3">
+            <span className="label" style={{
+              color: monStatus.running ? 'var(--success)' : 'var(--text-disabled)',
+            }}>
+              {monStatus.running
+                ? `${t('set.active', lang)}${eventCount > 0 ? ` · ${eventCount}` : ''}`
+                : t('set.paused', lang)}
+            </span>
             <button onClick={handleToggle}
-              className="px-4 py-1.5 rounded-lg text-xs font-semibold"
+              className="btn-base btn-xs"
               style={{
-                backgroundColor: monStatus.running ? 'var(--red-bg)' : 'var(--accent-bg)',
-                color: monStatus.running ? 'var(--red)' : 'var(--accent)',
+                color: monStatus.running ? 'var(--accent)' : 'var(--text-secondary)',
+                background: 'none',
+                border: `1px solid ${monStatus.running ? 'var(--accent)' : 'var(--border-visible)'}`,
               }}>
               {monStatus.running ? t('set.stop', lang) : t('set.start', lang)}
             </button>
           </div>
+        </div>
 
-          {toggleErr && (
-            <div className="mt-3 text-xs px-3 py-2.5 rounded-lg" style={{ backgroundColor: 'var(--red-bg)', color: 'var(--red)' }}>
-              {toggleErr}
-            </div>
-          )}
+        {toggleErr && (
+          <div className="label label-accent" style={{ padding: '8px 12px' }}>
+            {toggleErr}
+          </div>
+        )}
 
-          {/* Accessibility warning */}
-          {monStatus.access_err && (
-            <div className="mt-3 text-xs px-3 py-2.5 rounded-lg flex items-center justify-between"
-              style={{ backgroundColor: 'var(--amber-bg)', color: 'var(--amber)' }}>
-              <div className="flex items-center gap-2">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                  <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-                </svg>
-                <span>{t('set.accessWarn', lang)}</span>
-              </div>
-              <button
-                onClick={() => BrowserOpenURL('x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility')}
-                className="px-2 py-0.5 rounded text-[11px] font-semibold shrink-0"
-                style={{ backgroundColor: 'var(--amber)', color: '#000' }}>
-                {t('set.openSettings', lang)}
-              </button>
-            </div>
-          )}
+        {monStatus.access_err && (
+          <div className="list-row" style={{ borderBottom: 'none' }}>
+            <span className="label label-warning">
+              {t('set.accessWarn', lang)}
+            </span>
+            <button
+              onClick={() => BrowserOpenURL('x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility')}
+              className="btn-base btn-xs"
+              style={{
+                color: 'var(--text-display)',
+                backgroundColor: 'var(--accent)',
+                border: 'none',
+              }}>
+              {t('set.openSettings', lang)}
+            </button>
+          </div>
+        )}
 
-          {/* Test row — compact, secondary action */}
-          {monStatus.running && (
-            <div className="mt-3 flex items-center gap-2">
+        {/* Test button — inline */}
+        {monStatus.running && (
+          <div className="list-row" style={{ borderBottom: 'none' }}>
+            <span />
+            <div className="flex items-center gap-2">
               <button onClick={handleTest} disabled={testing}
-                className="px-2.5 py-1 rounded-md text-[11px] font-medium flex items-center gap-1.5"
-                style={{ backgroundColor: 'var(--surface-2)', color: 'var(--muted)' }}>
-                {testing && (
-                  <svg className="animate-spin" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-                  </svg>
-                )}
+                className="btn-base btn-xs btn-secondary">
                 {testing ? t('set.testing', lang) : t('set.testMonitor', lang)}
               </button>
               {testResult && (
-                <span className="text-[11px] font-medium" style={{ color: testResult.success ? 'var(--green)' : 'var(--red)' }}>
+                <span className="label" style={{
+                  fontSize: 10,
+                  color: testResult.success ? 'var(--success)' : 'var(--accent)',
+                }}>
                   {testResult.message}
                 </span>
               )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* 2. Configuration */}
-        <div className="card p-5">
-          <div className="text-sm font-semibold mb-4" style={{ color: 'var(--fg)' }}>{t('set.config', lang)}</div>
+        {/* Divider */}
+        <div style={{ borderTop: '1px solid var(--border)', margin: '8px 0' }} />
 
-          <div className="space-y-4">
-            <label className="flex items-center justify-between">
-              <div>
-                <div className="text-sm" style={{ color: 'var(--fg)' }}>{t('set.retention', lang)}</div>
-                <div className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>{t('set.retentionDesc', lang)}</div>
-              </div>
-              <div className="flex items-center gap-2">
-                <input type="number" value={config.data_retention_days}
-                  onChange={e => setConfig({ ...config, data_retention_days: parseInt(e.target.value) || 90 })}
-                  className="w-20 rounded-lg px-3 py-1.5 text-sm border tabular-nums text-right"
-                  style={inputStyle} />
-                <span className="text-xs font-medium" style={{ color: 'var(--muted)' }}>{t('set.days', lang)}</span>
-              </div>
-            </label>
-
-            <div className="h-px" style={{ backgroundColor: 'var(--border)' }} />
-
-            {/* Data directory — single input + browse button */}
-            <div>
-              <div className="text-sm mb-1" style={{ color: 'var(--fg)' }}>{t('set.dataDir', lang)}</div>
-              <div className="text-xs mb-2" style={{ color: 'var(--muted)' }}>{t('set.dataDirDesc', lang)}</div>
-
-              <div className="flex gap-2">
-                <input type="text" value={config.data_dir || ''}
-                  onChange={e => setConfig({ ...config, data_dir: e.target.value })}
-                  placeholder={defaultDataDir}
-                  className="flex-1 min-w-0 rounded-lg px-3 py-1.5 text-xs border font-mono"
-                  style={inputStyle} />
-                <button onClick={handlePickDirectory}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium shrink-0 flex items-center gap-1.5"
-                  style={{ backgroundColor: 'var(--surface-2)', color: 'var(--muted)' }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-                  </svg>
-                  Browse
-                </button>
-                {switchingDir && (
-                  <svg className="animate-spin shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2">
-                    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-                  </svg>
-                )}
-              </div>
-              <div className="text-[10px] mt-1" style={{ color: 'var(--muted-2)' }}>
-                {t('set.dataDirDefault', lang)}: {defaultDataDir}
-              </div>
-            </div>
+        {/* Configuration */}
+        <div className="list-row">
+          <div>
+            <span className="label">{t('set.retention', lang)}</span>
+            <div className="label label-disabled" style={{ fontSize: 11, marginTop: 2 }}>{t('set.retentionDesc', lang)}</div>
+          </div>
+          <div className="flex items-center gap-2">
+            <input type="number" value={config.data_retention_days}
+              onChange={e => setConfig({ ...config, data_retention_days: parseInt(e.target.value) || 90 })}
+              className="nd-input tabular-nums"
+              style={{ width: 60, textAlign: 'right', borderBottom: 'none' }} />
+            <span className="label label-disabled">{t('set.days', lang)}</span>
           </div>
         </div>
 
-        {/* 4. Danger zone — visually separated */}
-        <div className="pt-4" style={{ borderTop: '1px solid var(--border)' }}>
-          <div className="card p-4" style={{ borderColor: 'var(--red-bg)' }}>
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                style={{ backgroundColor: 'var(--red-bg)' }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
-                </svg>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-xs font-semibold" style={{ color: 'var(--red)' }}>{t('set.uninstall', lang)}</div>
-                <div className="text-[11px] mt-0.5" style={{ color: 'var(--muted)' }}>{t('set.uninstallDesc', lang)}</div>
-              </div>
-              <button onClick={() => setShowClearConfirm(v => !v)}
-                className="px-3 py-1.5 rounded-lg text-[11px] font-semibold shrink-0"
-                style={{
-                  backgroundColor: showClearConfirm ? 'var(--red)' : 'var(--red-bg)',
-                  color: showClearConfirm ? '#fff' : 'var(--red)',
-                }}>
-                {showClearConfirm ? t('common.cancel', lang) : t('set.uninstallBtn', lang)}
-              </button>
-            </div>
-
-            {showClearConfirm && (
-              <div className="mt-3 pt-3 flex items-center gap-3"
-                style={{ borderTop: '1px solid var(--red-bg)' }}>
-                <div className="flex-1">
-                  <div className="text-[11px] font-medium" style={{ color: 'var(--red)' }}>{t('set.uninstallTitle', lang)}</div>
-                  <div className="text-[10px] mt-0.5" style={{ color: 'var(--muted)' }}>{t('set.uninstallModalDesc', lang)}</div>
-                </div>
-                <button onClick={async () => {
-                  setClearing(true);
-                  try {
-                    await ClearAllData();
-                    setShowClearConfirm(false);
-                    await Quit();
-                  } catch (e) {
-                    console.error('Clear failed:', e);
-                  }
-                  setClearing(false);
-                }} disabled={clearing}
-                  className="px-3 py-1.5 rounded-lg text-[11px] font-semibold shrink-0"
-                  style={{ backgroundColor: 'var(--red)', color: '#fff' }}>
-                  {clearing ? '...' : t('set.confirmUninstall', lang)}
-                </button>
-              </div>
+        {/* Data directory */}
+        <div className="list-row" style={{ alignItems: 'flex-start' }}>
+          <div style={{ flexShrink: 0 }}>
+            <span className="label">{t('set.dataDir', lang)}</span>
+            <div className="label label-disabled" style={{ fontSize: 11, marginTop: 2 }}>{t('set.dataDirDesc', lang)}</div>
+          </div>
+          <div className="flex items-center gap-2" style={{ flex: 1, minWidth: 0 }}>
+            <input type="text" value={config.data_dir || ''}
+              onChange={e => setConfig({ ...config, data_dir: e.target.value })}
+              placeholder={defaultDataDir}
+              className="nd-input"
+              style={{ flex: 1, minWidth: 0, fontSize: 11 }} />
+            <button onClick={handlePickDirectory}
+              className="btn-base btn-xs btn-secondary"
+              style={{ flexShrink: 0 }}>
+              Browse
+            </button>
+            {switchingDir && (
+              <span className="label label-disabled" style={{ fontSize: 10 }}>[...]</span>
             )}
           </div>
         </div>
-      </div>
 
-      {/* Advanced — keyboard debug (collapsed, full width) */}
-      <div className="mt-4">
-        <button onClick={() => setShowKbDebug(v => !v)}
-          className="text-xs font-medium flex items-center gap-1.5 px-1 py-1"
-          style={{ color: 'var(--muted)' }}>
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-            style={{ transform: showKbDebug ? 'rotate(90deg)' : undefined, transition: 'transform 0.15s' }}>
-            <polyline points="9 18 15 12 9 6"/>
-          </svg>
-          Keyboard Debug
-        </button>
-        {showKbDebug && (
-          <div className="mt-2">
-            <KeyboardDebug lang={lang} />
+        <div className="bracket-legend" style={{ marginTop: -4, marginBottom: 8 }}>
+          {t('set.dataDirDefault', lang)}: {defaultDataDir}
+        </div>
+
+        {/* Divider */}
+        <div style={{ borderTop: '1px solid var(--border)', margin: '8px 0' }} />
+
+        {/* Danger zone — accent border */}
+        <div className="list-row" style={{ borderBottom: 'none' }}>
+          <div>
+            <span className="label label-accent">{t('set.uninstall', lang)}</span>
+            <div className="label label-disabled" style={{ fontSize: 11, marginTop: 2 }}>{t('set.uninstallDesc', lang)}</div>
+          </div>
+          <button onClick={() => setShowClearConfirm(v => !v)}
+            className="btn-base btn-xs btn-destructive"
+            style={{
+              color: showClearConfirm ? '#fff' : 'var(--accent)',
+              backgroundColor: showClearConfirm ? 'var(--accent)' : 'transparent',
+            }}>
+            {showClearConfirm ? t('common.cancel', lang) : t('set.uninstallBtn', lang)}
+          </button>
+        </div>
+
+        {showClearConfirm && (
+          <div style={{ padding: '12px 0', display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ flex: 1 }}>
+              <div className="label label-accent">{t('set.uninstallTitle', lang)}</div>
+              <div className="label label-disabled" style={{ fontSize: 10, marginTop: 2 }}>{t('set.uninstallModalDesc', lang)}</div>
+            </div>
+            <button onClick={async () => {
+              setClearing(true);
+              try {
+                await ClearAllData();
+                setShowClearConfirm(false);
+                await Quit();
+              } catch (e) {
+                console.error('Clear failed:', e);
+              }
+              setClearing(false);
+            }} disabled={clearing}
+              className="btn-base btn-xs"
+              style={{
+                color: '#fff',
+                backgroundColor: 'var(--accent)',
+                border: 'none',
+              }}>
+              {clearing ? '...' : t('set.confirmUninstall', lang)}
+            </button>
           </div>
         )}
+
+        {/* Keyboard debug — collapsible */}
+        <div className="mt-6">
+          <button onClick={() => setShowKbDebug(v => !v)}
+            className="label label-disabled"
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+            }}>
+            <span style={{ fontSize: 9, transition: 'transform 0.15s', transform: showKbDebug ? 'rotate(90deg)' : undefined }}>▶</span>
+            Keyboard Debug
+          </button>
+          {showKbDebug && (
+            <div className="mt-3">
+              <KeyboardDebug lang={lang} />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
