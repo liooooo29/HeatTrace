@@ -13,7 +13,6 @@ type Monitor struct {
 	store           storage.Store
 	filter          *filter.SensitiveFilter
 	keyChan         chan storage.KeyEvent
-	mouseMoveChan   chan storage.MouseMove
 	mouseClickChan  chan storage.MouseClick
 	stopChan        chan struct{}
 	dataChanged     chan struct{} // signal when data is saved
@@ -24,11 +23,9 @@ type Monitor struct {
 	eventCount      int64 // total events (for test verification)
 	keyCount        int64 // keyboard events only
 	mouseClickCount int64 // mouse click events only
-	mouseMoveCount  int64 // mouse move events only
 	lastKeyEvent    LastKeyEvent
 	heatmapCounts   map[string]int // in-memory heatmap key counts
 	heatmapMax      int            // max count for normalization
-	mouseInterval   time.Duration  // mouse sampling interval
 }
 
 type LastKeyEvent struct {
@@ -39,21 +36,15 @@ type LastKeyEvent struct {
 	Modifiers []string `json:"modifiers"`
 }
 
-func New(store storage.Store, f *filter.SensitiveFilter, mouseIntervalMs int) *Monitor {
-	interval := 100 * time.Millisecond
-	if mouseIntervalMs > 0 {
-		interval = time.Duration(mouseIntervalMs) * time.Millisecond
-	}
+func New(store storage.Store, f *filter.SensitiveFilter) *Monitor {
 	return &Monitor{
 		store:          store,
 		filter:         f,
 		keyChan:        make(chan storage.KeyEvent, 1000),
-		mouseMoveChan:  make(chan storage.MouseMove, 1000),
 		mouseClickChan: make(chan storage.MouseClick, 1000),
 		stopChan:       make(chan struct{}),
 		dataChanged:    make(chan struct{}, 1),
 		heatmapCounts:  make(map[string]int),
-		mouseInterval:  interval,
 	}
 }
 
@@ -77,10 +68,9 @@ func (m *Monitor) Start() error {
 	atomic.StoreInt64(&m.eventCount, 0)
 	m.stopChan = make(chan struct{})
 
-	m.wg.Add(3)
+	m.wg.Add(2)
 	go m.writeLoop()
 	go m.startKeyboardListener()
-	go m.startMouseSampler()
 
 	return nil
 }
@@ -127,11 +117,6 @@ func (m *Monitor) KeyCount() int64 {
 // MouseClickCount returns the number of mouse click events processed.
 func (m *Monitor) MouseClickCount() int64 {
 	return atomic.LoadInt64(&m.mouseClickCount)
-}
-
-// MouseMoveCount returns the number of mouse move events processed.
-func (m *Monitor) MouseMoveCount() int64 {
-	return atomic.LoadInt64(&m.mouseMoveCount)
 }
 
 // LastKeyEvent returns the most recent keyboard event details.
@@ -197,11 +182,6 @@ func (m *Monitor) writeLoop() {
 				if !ev.Filtered && ev.Key != "" {
 					m.IncrementHeatmapKey(ev.Key)
 				}
-		case ev := <-m.mouseMoveChan:
-			date := dateFromTimestamp(ev.Timestamp)
-			_ = m.store.SaveMouseMove(date, ev)
-			atomic.AddInt64(&m.eventCount, 1)
-			atomic.AddInt64(&m.mouseMoveCount, 1)
 		case ev := <-m.mouseClickChan:
 			date := dateFromTimestamp(ev.Timestamp)
 			_ = m.store.SaveMouseClick(date, ev)

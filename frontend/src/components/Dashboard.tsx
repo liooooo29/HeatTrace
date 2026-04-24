@@ -208,7 +208,6 @@ export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonito
               <div className="text-xs font-semibold mb-2" style={{ color: 'var(--muted)' }}>{t('setup.configTitle', lang)}</div>
               <div className="card p-3 text-xs" style={{ color: 'var(--fg-2)' }}>
                 {t('setup.configDesc', lang)
-                  .replace('{interval}', configInfo.mouse_sample_interval_ms)
                   .replace('{days}', configInfo.data_retention_days)
                   .replace('{count}', configInfo.blacklisted_apps?.length || '0')}
                 {(!configInfo.blacklisted_apps || configInfo.blacklisted_apps.length === 0) &&

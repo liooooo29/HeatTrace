@@ -58,11 +58,6 @@ func ComputeHeatmapData(days []storage.DayData) HeatmapData {
 		for _, c := range day.Mouse.Clicks {
 			mousePoints = append(mousePoints, MouseHeatPoint{X: c.X, Y: c.Y, Value: 1})
 		}
-		for _, m := range day.Mouse.Moves {
-			if m.Timestamp%5000 == 0 {
-				mousePoints = append(mousePoints, MouseHeatPoint{X: m.X, Y: m.Y, Value: 0.3})
-			}
-		}
 	}
 
 	var keyPoints []KeyHeatPoint

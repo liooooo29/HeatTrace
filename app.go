@@ -41,7 +41,7 @@ func NewApp() (*App, error) {
 	}
 	agg := storage.NewAggregator(store)
 	fltr := filter.NewSensitiveFilter(cfg.BlacklistedApps, true)
-	mon := monitor.New(store, fltr, cfg.MouseSampleInterval)
+	mon := monitor.New(store, fltr)
 
 	return &App{
 		store: store,
@@ -93,7 +93,11 @@ func (a *App) dataVersionLoop() {
 	loop:
 		for {
 			select {
-			case <-ch:
+			case _, ok := <-ch:
+				if !ok {
+					drain.Stop()
+					return
+				}
 				drain.Reset(200 * time.Millisecond)
 			case <-drain.C:
 				break loop
@@ -130,15 +134,6 @@ func (a *App) GetKeyboardStats(startDate, endDate string) (*analytics.KeyboardSt
 		return nil, err
 	}
 	stats := analytics.ComputeKeyboardStats(days)
-	return &stats, nil
-}
-
-func (a *App) GetMouseStats(startDate, endDate string) (*analytics.MouseStats, error) {
-	days, err := a.store.LoadDateRange(startDate, endDate)
-	if err != nil {
-		return nil, err
-	}
-	stats := analytics.ComputeMouseStats(days)
 	return &stats, nil
 }
 
@@ -315,7 +310,7 @@ func (a *App) SwitchDataDir(newDir string) error {
 	}
 	a.store = newStore
 	a.agg = storage.NewAggregator(newStore)
-	a.mon = monitor.New(newStore, a.fltr, a.cfg.MouseSampleInterval)
+	a.mon = monitor.New(newStore, a.fltr)
 
 	// Update config
 	a.cfg.DataDir = newDir
@@ -413,51 +408,6 @@ func (a *App) ToggleMonitor() bool {
 	return a.cfg.MonitorEnabled
 }
 
-type MouseTrailPoint struct {
-	X     int `json:"x"`
-	Y     int `json:"y"`
-	ScreenW int `json:"screen_w"`
-	ScreenH int `json:"screen_h"`
-}
-
-func (a *App) GetMouseTrail(hours int) []MouseTrailPoint {
-	if hours <= 0 {
-		hours = 1
-	}
-	now := time.Now()
-	start := now.Add(-time.Duration(hours) * time.Hour)
-	startDate := start.Format("2006-01-02")
-	endDate := now.Format("2006-01-02")
-	startMs := start.UnixMilli()
-
-	days, err := a.store.LoadDateRange(startDate, endDate)
-	if err != nil {
-		return nil
-	}
-
-	var trail []MouseTrailPoint
-	// Downsample: take every Nth point to keep ~500 points max
-	const maxPoints = 500
-	for _, day := range days {
-		for _, m := range day.Mouse.Moves {
-			if m.Timestamp >= startMs {
-				trail = append(trail, MouseTrailPoint{
-					X: m.X, Y: m.Y, ScreenW: m.ScreenW, ScreenH: m.ScreenH,
-				})
-			}
-		}
-	}
-	if len(trail) > maxPoints {
-		step := len(trail) / maxPoints
-		var sampled []MouseTrailPoint
-		for i := 0; i < len(trail); i += step {
-			sampled = append(sampled, trail[i])
-		}
-		trail = sampled
-	}
-	return trail
-}
-
 func (a *App) IsMonitoring() bool {
 	return a.mon.IsRunning()
 }
@@ -495,6 +445,6 @@ func (a *App) ClearAllData() error {
 	}
 	a.store = newStore
 	a.agg = storage.NewAggregator(newStore)
-	a.mon = monitor.New(newStore, a.fltr, a.cfg.MouseSampleInterval)
+	a.mon = monitor.New(newStore, a.fltr)
 	return nil
 }

@@ -17,6 +17,10 @@ import (
 
 const maxCacheDays = 7 // keep at most 7 days in memory
 
+const (
+	maxKeysPerDay = 100000
+)
+
 type JSONStore struct {
 	mu       sync.RWMutex
 	dataDir  string
@@ -165,7 +169,7 @@ func (s *JSONStore) loadOrCreate(date string) (*DayData, error) {
 			day := &DayData{
 				Date:     date,
 				Keyboard: []KeyEvent{},
-				Mouse:    MouseData{Moves: []MouseMove{}, Clicks: []MouseClick{}},
+				Mouse:    MouseData{Clicks: []MouseClick{}},
 			}
 			s.dayCache[date] = day
 			return day, nil
@@ -178,9 +182,6 @@ func (s *JSONStore) loadOrCreate(date string) (*DayData, error) {
 	}
 	if day.Keyboard == nil {
 		day.Keyboard = []KeyEvent{}
-	}
-	if day.Mouse.Moves == nil {
-		day.Mouse.Moves = []MouseMove{}
 	}
 	if day.Mouse.Clicks == nil {
 		day.Mouse.Clicks = []MouseClick{}
@@ -251,19 +252,10 @@ func (s *JSONStore) SaveKeyEvent(date string, event KeyEvent) error {
 	if err != nil {
 		return err
 	}
-	day.Keyboard = append(day.Keyboard, event)
-	s.dirty[date] = true
-	return nil
-}
-
-func (s *JSONStore) SaveMouseMove(date string, event MouseMove) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	day, err := s.loadOrCreate(date)
-	if err != nil {
-		return err
+	if len(day.Keyboard) >= maxKeysPerDay {
+		return nil
 	}
-	day.Mouse.Moves = append(day.Mouse.Moves, event)
+	day.Keyboard = append(day.Keyboard, event)
 	s.dirty[date] = true
 	return nil
 }

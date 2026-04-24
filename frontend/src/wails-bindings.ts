@@ -4,7 +4,6 @@
 import type {
   DailySummary,
   KeyboardStats,
-  MouseStats,
   TypingSpeed,
   UsageTime,
   AppConfig,
@@ -12,7 +11,6 @@ import type {
   WeeklyReport,
   RhythmPoint,
   LastKeyEvent,
-  MouseTrailPoint,
 } from './types';
 
 function getApp() {
@@ -41,12 +39,6 @@ export async function GetKeyboardStats(start: string, end: string): Promise<Keyb
   const app = getApp();
   if (!app?.GetKeyboardStats) return null;
   return app.GetKeyboardStats(start, end);
-}
-
-export async function GetMouseStats(start: string, end: string): Promise<MouseStats | null> {
-  const app = getApp();
-  if (!app?.GetMouseStats) return null;
-  return app.GetMouseStats(start, end);
 }
 
 export async function GetTypingSpeed(start: string, end: string): Promise<TypingSpeed | null> {
@@ -161,12 +153,6 @@ export async function GetDataVersion(): Promise<number> {
   const app = getApp();
   if (!app?.GetDataVersion) return 0;
   return app.GetDataVersion();
-}
-
-export async function GetMouseTrail(hours: number): Promise<MouseTrailPoint[]> {
-  const app = getApp();
-  if (!app?.GetMouseTrail) return [];
-  return app.GetMouseTrail(hours);
 }
 
 export function BrowserOpenURL(url: string): void {
