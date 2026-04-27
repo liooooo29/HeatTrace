@@ -716,3 +716,43 @@ button { cursor: pointer; }
   letter-spacing: 0.06em;
   color: var(--text-disabled);
 }
+
+/* Top Keys — Bar layout */
+.topkey-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.topkey-bar-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-display);
+  min-width: 48px;
+  text-align: right;
+}
+
+.topkey-bar-track {
+  flex: 1;
+  height: 6px;
+  background: var(--border);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.topkey-bar-fill {
+  height: 100%;
+  background: var(--text-display);
+  border-radius: 1px;
+  transition: width 0.3s ease-out;
+}
+
+.topkey-bar-count {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: var(--text-secondary);
+  min-width: 48px;
+  text-align: right;
+}
