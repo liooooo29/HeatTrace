@@ -79,7 +79,26 @@ jobs:
 
       - name: Package (Linux)
         if: matrix.platform == 'linux'
-        run: tar -czf HeatTrace-${{ matrix.os }}-amd64.tar.gz -C build/bin .
+        run: |
+          # Download appimagetool
+          curl -fsSL -o appimagetool https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool
+
+          # Create AppDir
+          APP_DIR=build/AppDir
+          mkdir -p "$APP_DIR/usr/bin" "$APP_DIR/usr/share/icons/hicolor/512x512/apps" "$APP_DIR/usr/share/applications"
+
+          cp build/bin/HeatTrace "$APP_DIR/usr/bin/heattrace"
+          chmod +x "$APP_DIR/usr/bin/heattrace"
+          cp build/appicon.png "$APP_DIR/usr/share/icons/hicolor/512x512/apps/heattrace.png"
+
+          printf '[Desktop Entry]\nName=HeatTrace\nExec=heattrace\nIcon=heattrace\nType=Application\nCategories=Utility;Development;\nComment=Desktop activity tracker for keyboard & mouse\nTerminal=false\nStartupNotify=false\n' > "$APP_DIR/usr/share/applications/heattrace.desktop"
+
+          cp "$APP_DIR/usr/share/applications/heattrace.desktop" "$APP_DIR/heattrace.desktop"
+          cp build/appicon.png "$APP_DIR/heattrace.png"
+          ln -sf "usr/bin/heattrace" "$APP_DIR/AppRun"
+
+          ./appimagetool "$APP_DIR" HeatTrace-${{ matrix.os }}-amd64.AppImage
 
       - name: Package (macOS)
         if: matrix.platform == 'darwin'
@@ -104,7 +123,7 @@ jobs:
         with:
           name: HeatTrace-${{ matrix.os }}
           path: |
-            HeatTrace-*.tar.gz
+            HeatTrace-*.AppImage
             HeatTrace-*.zip
             HeatTrace-*.dmg
 
