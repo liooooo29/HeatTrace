@@ -99,44 +99,47 @@ function App() {
           }}>HeatTrace</span>
         </div>
 
-        <div className="flex items-center gap-3 nav-no-drag">
-          {/* Dark/Light toggle — bracket style */}
-          <button onClick={toggleMode}
-            className="bracket-legend"
-            style={{ padding: '4px 0' }}>
-            [{mode === 'dark' ? 'DARK' : 'LIGHT'}]
+        <div className="flex items-center gap-2 nav-no-drag">
+          {/* Dark/Light toggle */}
+          <button onClick={toggleMode} className="nav-icon-btn"
+            aria-label={mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
+            {mode === 'dark' ? (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+              </svg>
+            ) : (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+              </svg>
+            )}
           </button>
 
-          {/* Settings — ghost */}
-          <button onClick={() => setShowSettings(true)}
-            style={{ color: 'var(--text-secondary)', background: 'none', border: 'none', padding: 4 }}
+          {/* Settings */}
+          <button onClick={() => setShowSettings(true)} className="nav-icon-btn"
             aria-label={t('nav.settings', lang)} title={t('nav.settings', lang)}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
             </svg>
           </button>
 
-          {/* Window controls — Nothing monochrome */}
-          <div className="flex items-center gap-2 ml-1">
+          {/* Window controls */}
+          <div className="flex items-center gap-1 ml-1">
             <button onClick={() => WindowMinimise()}
-              className="window-control"
-              aria-label="Minimise">
+              className="nav-icon-btn" aria-label="Minimise">
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.2">
-                <line x1="1" y1="5" x2="9" y2="5"/>
+                <line x1="2" y1="5" x2="8" y2="5"/>
               </svg>
             </button>
             <button onClick={() => WindowToggleMaximise()}
-              className="window-control"
-              aria-label="Maximise">
+              className="nav-icon-btn" aria-label="Maximise">
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.2">
-                <rect x="1" y="1" width="8" height="8" rx="0.5"/>
+                <rect x="1.5" y="1.5" width="7" height="7" rx="0.5"/>
               </svg>
             </button>
             <button onClick={() => WindowHide()}
-              className="window-control"
-              aria-label="Close">
+              className="nav-icon-btn" aria-label="Close">
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.2">
-                <line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/>
+                <line x1="2" y1="2" x2="8" y2="8"/><line x1="8" y1="2" x2="2" y2="8"/>
               </svg>
             </button>
           </div>

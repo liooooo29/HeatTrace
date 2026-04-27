@@ -7,7 +7,7 @@ interface SegmentedBarProps {
 
 export function SegmentedBar({ value, max, segments = 24, status = 'default' }: SegmentedBarProps) {
   const ratio = Math.min(value / max, 1);
-  const filledCount = Math.round(ratio * segments);
+  const filledCount = value > 0 ? Math.max(Math.round(ratio * segments), 1) : 0;
 
   return (
     <div className="segmented-bar" role="progressbar" aria-valuenow={value} aria-valuemax={max}>
