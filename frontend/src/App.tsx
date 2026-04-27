@@ -7,6 +7,7 @@ import { useLang } from './hooks/useLang';
 import { GetMonitorStatus, ToggleMonitor, BrowserOpenURL } from './wails-bindings';
 import { WindowMinimise, WindowToggleMaximise, WindowHide } from '../wailsjs/runtime/runtime';
 import { t } from './i18n';
+import heattraceIcon from './assets/images/heattrace-icon.png';
 
 function App() {
   const today = new Date().toISOString().slice(0, 10);
@@ -86,21 +87,8 @@ function App() {
       {/* Nav — Nothing style */}
       <nav className="nav-bar flex items-center justify-between px-5 h-11 shrink-0">
         <div className="flex items-center gap-3">
-          {/* Logo — gradient heat bars */}
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <defs>
-              <linearGradient id="g1" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stopColor="#C75B2A"/><stop offset="100%" stopColor="#FF8C5A"/></linearGradient>
-              <linearGradient id="g2" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stopColor="#B84420"/><stop offset="100%" stopColor="#FF6B35"/></linearGradient>
-              <linearGradient id="g3" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stopColor="#8B1A3A"/><stop offset="100%" stopColor="#E94560"/></linearGradient>
-              <linearGradient id="g4" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stopColor="#6B1040"/><stop offset="100%" stopColor="#D63A5A"/></linearGradient>
-              <linearGradient id="g5" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stopColor="#4A0E35"/><stop offset="100%" stopColor="#C22B50"/></linearGradient>
-            </defs>
-            <rect x="1" y="12" width="3" height="10" rx="1.5" fill="url(#g1)"/>
-            <rect x="5.5" y="8" width="3" height="14" rx="1.5" fill="url(#g2)"/>
-            <rect x="10" y="5" width="3" height="17" rx="1.5" fill="url(#g3)"/>
-            <rect x="14.5" y="9" width="3" height="13" rx="1.5" fill="url(#g4)"/>
-            <rect x="19" y="11" width="3" height="11" rx="1.5" fill="url(#g5)"/>
-          </svg>
+          {/* Logo */}
+          <img src={heattraceIcon} alt="HeatTrace" width={22} height={22} style={{ borderRadius: 5 }} />
           <span style={{
             fontFamily: "'Space Grotesk', system-ui, sans-serif",
             fontSize: 14,
