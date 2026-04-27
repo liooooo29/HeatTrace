@@ -88,14 +88,21 @@ export function WeeklyReport({ lang, onBack }: { lang: Lang; onBack: () => void 
           width: 420,
           border: '1px solid #222222',
         }}>
-          {/* Logo */}
+          {/* Logo — gradient heat bars */}
           <div className="flex items-center justify-center gap-2 mb-10">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <rect x="1" y="14" width="2.5" height="8" rx="1.25" fill="#ff8c5a"/>
-              <rect x="5.5" y="10" width="2.5" height="12" rx="1.25" fill="#ff6b35"/>
-              <rect x="10" y="13" width="2.5" height="9" rx="1.25" fill="#e94560"/>
-              <rect x="14.5" y="8" width="2.5" height="14" rx="1.25" fill="#e94560"/>
-              <rect x="19" y="11" width="2.5" height="11" rx="1.25" fill="#d63a5a"/>
+              <defs>
+                <linearGradient id="wr-g1" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stopColor="#C75B2A"/><stop offset="100%" stopColor="#FF8C5A"/></linearGradient>
+                <linearGradient id="wr-g2" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stopColor="#B84420"/><stop offset="100%" stopColor="#FF6B35"/></linearGradient>
+                <linearGradient id="wr-g3" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stopColor="#8B1A3A"/><stop offset="100%" stopColor="#E94560"/></linearGradient>
+                <linearGradient id="wr-g4" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stopColor="#6B1040"/><stop offset="100%" stopColor="#D63A5A"/></linearGradient>
+                <linearGradient id="wr-g5" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stopColor="#4A0E35"/><stop offset="100%" stopColor="#C22B50"/></linearGradient>
+              </defs>
+              <rect x="1" y="12" width="3" height="10" rx="1.5" fill="url(#wr-g1)"/>
+              <rect x="5.5" y="8" width="3" height="14" rx="1.5" fill="url(#wr-g2)"/>
+              <rect x="10" y="5" width="3" height="17" rx="1.5" fill="url(#wr-g3)"/>
+              <rect x="14.5" y="9" width="3" height="13" rx="1.5" fill="url(#wr-g4)"/>
+              <rect x="19" y="11" width="3" height="11" rx="1.5" fill="url(#wr-g5)"/>
             </svg>
             <span style={{
               fontFamily: "'Space Grotesk', system-ui, sans-serif",

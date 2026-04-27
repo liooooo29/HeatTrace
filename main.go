@@ -19,6 +19,9 @@ import (
 //go:embed all:frontend/dist
 var assets embed.FS
 
+//go:embed build/appicon.png
+var iconPNG []byte
+
 func main() {
 	// Single-instance lock (platform-specific)
 	lockDir := filepath.Join(os.TempDir(), "heattrace")
@@ -70,6 +73,7 @@ func main() {
 			},
 			Linux: &linux.Options{
 				ProgramName: "HeatTrace",
+				Icon:        iconPNG,
 			},
 			Bind: []interface{}{
 				app,

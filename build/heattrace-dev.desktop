@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=HeatTrace (Dev)
+Comment=Local keyboard & mouse activity tracker — dev build
+Exec=/home/liooooo/work/HeatTrace/build/bin/HeatTrace-dev-linux-amd64
+Icon=heattrace
+Type=Application
+Categories=Utility;Monitor;
+StartupWMClass=HeatTrace-dev-linux-amd64
