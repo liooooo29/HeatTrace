@@ -5,12 +5,9 @@ package main
 import (
 	"context"
 	"embed"
-	"fmt"
 	"log"
 	"os"
-	"os/signal"
 	"path/filepath"
-	"syscall"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -23,23 +20,16 @@ import (
 var assets embed.FS
 
 func main() {
-	// Single-instance lock via flock
+	// Single-instance lock (platform-specific)
 	lockDir := filepath.Join(os.TempDir(), "heattrace")
 	_ = os.MkdirAll(lockDir, 0755)
 	lockFile := filepath.Join(lockDir, "instance.lock")
-	lockF, err := os.OpenFile(lockFile, os.O_CREATE|os.O_RDWR, 0644)
+	cleanup, err := acquireInstanceLock(lockFile)
 	if err != nil {
-		log.Fatal("Failed to create lock file: ", err)
-	}
-	if err := syscall.Flock(int(lockF.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err != nil {
-		fmt.Println("HeatTrace is already running.")
+		log.Println("HeatTrace is already running.")
 		os.Exit(0)
 	}
-	defer func() {
-		syscall.Flock(int(lockF.Fd()), syscall.LOCK_UN)
-		lockF.Close()
-		os.Remove(lockFile)
-	}()
+	defer cleanup()
 
 	app, err := NewApp()
 	if err != nil {
@@ -47,12 +37,7 @@ func main() {
 	}
 
 	// Handle Ctrl+C / SIGTERM — force quit
-	sigCh := make(chan os.Signal, 1)
-	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
-	go func() {
-		<-sigCh
-		os.Exit(0)
-	}()
+	setupSignalHandler()
 
 	tray := NewTray(app,
 		func() { app.ShowWindow() },
