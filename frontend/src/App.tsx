@@ -150,16 +150,19 @@ function App() {
       <main className="flex-1 overflow-auto flex justify-center">
         <div className="w-full px-6 py-6" style={{ maxWidth: 960 }}>
           <ErrorBoundary lang={lang}>
-            {showSettings ? (
-              <SettingsPanel lang={lang} onBack={() => setShowSettings(false)}
-                mode={mode} onToggleMode={toggleMode}
-                onLangChange={l => switchLang(l)} />
-            ) : (
-              <Dashboard dateRange={dr} lang={lang} monitorRunning={monitorRunning}
-                accessErr={accessErr} onMonitorChange={refreshStatus}
-                historyMode={historyMode} onToggleHistory={() => setHistoryMode(h => !h)}
-                onDateChange={(s, e) => setDateRange({ start: s, end: e })} />
-            )}
+            <div className="page-stack">
+              <div className={showSettings ? 'page-hidden' : 'page-visible'}>
+                <Dashboard dateRange={dr} lang={lang} monitorRunning={monitorRunning}
+                  accessErr={accessErr} onMonitorChange={refreshStatus}
+                  historyMode={historyMode} onToggleHistory={() => setHistoryMode(h => !h)}
+                  onDateChange={(s, e) => setDateRange({ start: s, end: e })} />
+              </div>
+              <div className={showSettings ? 'page-visible' : 'page-hidden'}>
+                <SettingsPanel lang={lang} onBack={() => setShowSettings(false)}
+                  mode={mode} onToggleMode={toggleMode}
+                  onLangChange={l => switchLang(l)} />
+              </div>
+            </div>
           </ErrorBoundary>
         </div>
       </main>
