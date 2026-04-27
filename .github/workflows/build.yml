@@ -69,9 +69,6 @@ jobs:
           sudo apt-get install -y libgtk-3-dev ${{ matrix.webkit }} \
             libx11-dev libx11-xcb-dev libxkbcommon-x11-dev xvfb
 
-      - name: Generate Wails bindings
-        run: wails generate module
-
       - name: Build
         if: matrix.platform != 'linux'
         run: wails build
