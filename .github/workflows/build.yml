@@ -100,6 +100,19 @@ jobs:
 
           ./appimagetool "$APP_DIR" HeatTrace-${{ matrix.os }}-amd64.AppImage
 
+          # Create .deb package
+          DEB_DIR=build/heattrace_1.0.0_amd64
+          mkdir -p "$DEB_DIR/DEBIAN" "$DEB_DIR/usr/bin" "$DEB_DIR/usr/share/icons/hicolor/512x512/apps" "$DEB_DIR/usr/share/applications"
+
+          cp build/bin/HeatTrace "$DEB_DIR/usr/bin/heattrace"
+          chmod +x "$DEB_DIR/usr/bin/heattrace"
+          cp build/appicon.png "$DEB_DIR/usr/share/icons/hicolor/512x512/apps/heattrace.png"
+          cp "$APP_DIR/usr/share/applications/heattrace.desktop" "$DEB_DIR/usr/share/applications/heattrace.desktop"
+
+          printf 'Package: heattrace\nVersion: 1.0.0\nArchitecture: amd64\nMaintainer: liooooo29 <1741196223@qq.com>\nDescription: Desktop activity tracker for keyboard & mouse\n HeatTrace monitors keyboard and mouse activity in real-time, providing heatmaps, typing analytics, and daily dashboards.\nSection: utils\nPriority: optional\n' > "$DEB_DIR/DEBIAN/control"
+
+          dpkg-deb --build "$DEB_DIR" heattrace_${{ matrix.os }}_amd64.deb
+
       - name: Package (macOS)
         if: matrix.platform == 'darwin'
         run: |
@@ -126,6 +139,7 @@ jobs:
             HeatTrace-*.AppImage
             HeatTrace-*.zip
             HeatTrace-*.dmg
+            heattrace_*.deb
 
   release:
     needs: build
