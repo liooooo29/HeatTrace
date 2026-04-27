@@ -392,33 +392,24 @@ export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonito
         </div>
       )}
 
-      {/* Top Keys — flat list */}
+      {/* Top Keys — Bar list */}
       {(summary.top_keys?.length ?? 0) > 0 && (
         <div>
           <h3 className="section-title">{t('dash.topKeys', lang)}</h3>
-          <div>
-            {(summary.top_keys ?? []).slice(0, 10).map((k, i) => {
-              const maxCount = summary.top_keys?.[0]?.count || 1;
-              const ratio = k.count / maxCount;
-              const displayKey = formatKeyName(k.key);
-              return (
-                <div key={k.key}
-                  className="list-row"
-                  style={{ opacity: i === 0 ? 1 : 0.4 + 0.6 * ratio }}>
-                  <span className="text-mono-bold" style={{
-                    fontSize: 14,
-                    minWidth: displayKey.length > 2 ? 'auto' : '2ch',
-                    textAlign: 'center',
-                  }}>
-                    {displayKey}
-                  </span>
-                  <span className="badge badge-accent">
-                    {k.count.toLocaleString()}
-                  </span>
+          {(summary.top_keys ?? []).slice(0, 10).map((k, i) => {
+            const maxCount = summary.top_keys![0].count || 1;
+            const pct = (k.count / maxCount) * 100;
+            return (
+              <div key={k.key} className="topkey-bar-row"
+                style={{ opacity: i === 0 ? 1 : 0.4 + 0.6 * (k.count / maxCount) }}>
+                <span className="topkey-bar-label">{formatKeyName(k.key)}</span>
+                <div className="topkey-bar-track">
+                  <div className="topkey-bar-fill" style={{ width: `${pct}%` }} />
                 </div>
-              );
-            })}
-          </div>
+                <span className="topkey-bar-count">{k.count.toLocaleString()}</span>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
