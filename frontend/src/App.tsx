@@ -86,13 +86,13 @@ function App() {
       {/* Nav — Nothing style */}
       <nav className="nav-bar flex items-center justify-between px-5 h-11 shrink-0">
         <div className="flex items-center gap-3">
-          {/* Logo — Nothing style: H frame + pulse */}
+          {/* Logo — heat bars */}
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <rect x="4" y="4" width="3" height="16" rx="1" stroke="var(--text-secondary)" strokeWidth="1" fill="none"/>
-            <rect x="17" y="4" width="3" height="16" rx="1" stroke="var(--text-secondary)" strokeWidth="1" fill="none"/>
-            <line x1="1" y1="12" x2="23" y2="12" stroke="var(--text-display)" strokeWidth="1.2" strokeLinecap="round"/>
-            <polyline points="8,12 10,12 11,8 12,4 13,16 14,8 15,12 17,12" fill="none" stroke="var(--text-display)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-            <circle cx="12" cy="3.5" r="1.5" fill="#D71921"/>
+            <rect x="1" y="14" width="2.5" height="8" rx="1.25" fill="#ff8c5a"/>
+            <rect x="5.5" y="10" width="2.5" height="12" rx="1.25" fill="#ff6b35"/>
+            <rect x="10" y="13" width="2.5" height="9" rx="1.25" fill="#e94560"/>
+            <rect x="14.5" y="8" width="2.5" height="14" rx="1.25" fill="#e94560"/>
+            <rect x="19" y="11" width="2.5" height="11" rx="1.25" fill="#d63a5a"/>
           </svg>
           <span style={{
             fontFamily: "'Space Grotesk', system-ui, sans-serif",
