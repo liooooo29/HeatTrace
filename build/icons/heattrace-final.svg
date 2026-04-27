@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="final">
+  <title id="final">HeatTrace - Activity Heat Bars</title>
+  <defs>
+    <linearGradient id="bgF" x1="0" y1="0" x2="0.1" y2="1">
+      <stop offset="0%" stop-color="#0f0f0f"/>
+      <stop offset="100%" stop-color="#171717"/>
+    </linearGradient>
+
+    <!-- Each bar: dark bottom → warm bright top -->
+    <!-- Bar 1 (leftmost): warm orange -->
+    <linearGradient id="b1" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#3a1a10"/>
+      <stop offset="60%" stop-color="#ff7a3a"/>
+      <stop offset="100%" stop-color="#ffb070"/>
+    </linearGradient>
+    <!-- Bar 2: orange-coral -->
+    <linearGradient id="b2" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#3a1218"/>
+      <stop offset="60%" stop-color="#ff6b35"/>
+      <stop offset="100%" stop-color="#ff9060"/>
+    </linearGradient>
+    <!-- Bar 3: coral-pink -->
+    <linearGradient id="b3" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#301020"/>
+      <stop offset="60%" stop-color="#e94560"/>
+      <stop offset="100%" stop-color="#ff6070"/>
+    </linearGradient>
+    <!-- Bar 4 (tallest): hot pink -->
+    <linearGradient id="b4" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#2a0e28"/>
+      <stop offset="60%" stop-color="#e94560"/>
+      <stop offset="100%" stop-color="#ff5070"/>
+    </linearGradient>
+    <!-- Bar 5: deep pink -->
+    <linearGradient id="b5" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#280c25"/>
+      <stop offset="60%" stop-color="#d63a5a"/>
+      <stop offset="100%" stop-color="#e95070"/>
+    </linearGradient>
+    <!-- Bar 6 (rightmost): magenta -->
+    <linearGradient id="b6" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#250a22"/>
+      <stop offset="60%" stop-color="#c73050"/>
+      <stop offset="100%" stop-color="#d64060"/>
+    </linearGradient>
+
+    <filter id="topGlow" x="-60%" y="-100%" width="220%" height="300%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="8"/>
+    </filter>
+
+    <radialGradient id="auraF" cx="50%" cy="45%" r="50%">
+      <stop offset="0%" stop-color="#ff6b35" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="transparent"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="108" fill="url(#bgF)"/>
+
+  <!-- Ambient warmth -->
+  <circle cx="256" cy="240" r="200" fill="url(#auraF)"/>
+
+  <!-- 6 bars - natural asymmetric heights -->
+  <!-- Heights: 150, 230, 175, 280, 195, 130 -->
+  <!-- Bar width: 42px, gap: 22px, base Y = 385 -->
+
+  <!-- Glow layer -->
+  <g filter="url(#topGlow)" opacity="0.2">
+    <rect x="75"  y="235" width="42" height="150" rx="21" fill="url(#b1)"/>
+    <rect x="139" y="155" width="42" height="230" rx="21" fill="url(#b2)"/>
+    <rect x="203" y="210" width="42" height="175" rx="21" fill="url(#b3)"/>
+    <rect x="267" y="105" width="42" height="280" rx="21" fill="url(#b4)"/>
+    <rect x="331" y="190" width="42" height="195" rx="21" fill="url(#b5)"/>
+    <rect x="395" y="255" width="42" height="130" rx="21" fill="url(#b6)"/>
+  </g>
+
+  <!-- Solid bars -->
+  <rect x="75"  y="235" width="42" height="150" rx="21" fill="url(#b1)"/>
+  <rect x="139" y="155" width="42" height="230" rx="21" fill="url(#b2)"/>
+  <rect x="203" y="210" width="42" height="175" rx="21" fill="url(#b3)"/>
+  <rect x="267" y="105" width="42" height="280" rx="21" fill="url(#b4)"/>
+  <rect x="331" y="190" width="42" height="195" rx="21" fill="url(#b5)"/>
+  <rect x="395" y="255" width="42" height="130" rx="21" fill="url(#b6)"/>
+</svg>
