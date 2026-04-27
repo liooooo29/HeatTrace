@@ -7,7 +7,8 @@ import { useLang } from './hooks/useLang';
 import { GetMonitorStatus, ToggleMonitor, BrowserOpenURL } from './wails-bindings';
 import { WindowMinimise, WindowToggleMaximise, WindowHide } from '../wailsjs/runtime/runtime';
 import { t } from './i18n';
-import heattraceIcon from './assets/images/heattrace-icon.png';
+import heattraceIconDark from './assets/images/heattrace-icon.png';
+import heattraceIconLight from './assets/images/heattrace-icon-light.png';
 
 function App() {
   const today = new Date().toISOString().slice(0, 10);
@@ -88,7 +89,7 @@ function App() {
       <nav className="nav-bar flex items-center justify-between px-5 h-11 shrink-0">
         <div className="flex items-center gap-3">
           {/* Logo */}
-          <img src={heattraceIcon} alt="HeatTrace" width={22} height={22} style={{ borderRadius: 5 }} />
+          <img src={mode === 'dark' ? heattraceIconDark : heattraceIconLight} alt="HeatTrace" width={22} height={22} style={{ borderRadius: 5 }} />
           <span style={{
             fontFamily: "'Space Grotesk', system-ui, sans-serif",
             fontSize: 14,

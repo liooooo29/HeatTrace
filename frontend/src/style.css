@@ -64,6 +64,16 @@ body {
   line-height: 1.5;
 }
 
+/* Theme crossfade — content-only, fast and smooth */
+@keyframes theme-crossfade {
+  0%   { opacity: 1; }
+  35%  { opacity: 0; }
+  100% { opacity: 1; }
+}
+.theme-crossfading {
+  animation: theme-crossfade 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

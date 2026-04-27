@@ -25,7 +25,20 @@ export function useTheme() {
   }, [mode]);
 
   const toggleMode = useCallback(() => {
-    setModeState(m => m === 'dark' ? 'light' : 'dark');
+    // Fade content, swap variables at the low point, then fade back in
+    const main = document.querySelector('main');
+    if (main) {
+      main.classList.remove('theme-crossfading');
+      void main.offsetWidth;
+      main.classList.add('theme-crossfading');
+      // Swap variables at ~87ms (35% of 250ms) when opacity is near 0
+      setTimeout(() => {
+        setModeState(m => m === 'dark' ? 'light' : 'dark');
+      }, 87);
+      setTimeout(() => main.classList.remove('theme-crossfading'), 260);
+    } else {
+      setModeState(m => m === 'dark' ? 'light' : 'dark');
+    }
   }, []);
 
   const setMode = useCallback((m: ThemeMode) => {

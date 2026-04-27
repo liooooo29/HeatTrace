@@ -3,7 +3,8 @@ import { GetWeeklyReport, SaveReportImage } from '../wails-bindings';
 import { t } from '../i18n';
 import type { Lang } from '../i18n';
 import type { WeeklyReport as WeeklyReportType } from '../types';
-import heattraceIcon from '../assets/images/heattrace-icon.png';
+import heattraceIconDark from '../assets/images/heattrace-icon.png';
+import heattraceIconLight from '../assets/images/heattrace-icon-light.png';
 
 export function WeeklyReport({ lang, onBack }: { lang: Lang; onBack: () => void }) {
   const [report, setReport] = useState<WeeklyReportType | null>(null);
@@ -11,6 +12,15 @@ export function WeeklyReport({ lang, onBack }: { lang: Lang; onBack: () => void 
   const [exporting, setExporting] = useState(false);
   const [exported, setExported] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     GetWeeklyReport().then(setReport).catch(console.error).finally(() => setLoading(false));
@@ -80,43 +90,42 @@ export function WeeklyReport({ lang, onBack }: { lang: Lang; onBack: () => void 
         </button>
       </div>
 
-      {/* Share card — Nothing style: pure black, minimal */}
+      {/* Share card — theme-aware */}
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <div ref={cardRef} style={{
-          background: '#000000',
+          background: isDark ? '#000000' : '#FFFFFF',
           borderRadius: 16,
           padding: '48px 40px',
           width: 420,
-          border: '1px solid #222222',
+          border: `1px solid ${isDark ? '#222222' : '#E8E8E8'}`,
         }}>
           {/* Logo */}
           <div className="flex items-center justify-center gap-2 mb-10">
-            <img src={heattraceIcon} alt="HeatTrace" width={20} height={20} style={{ borderRadius: 4 }} />
+            <img src={isDark ? heattraceIconDark : heattraceIconLight} alt="HeatTrace" width={20} height={20} style={{ borderRadius: 4 }} />
             <span style={{
               fontFamily: "'Space Grotesk', system-ui, sans-serif",
               fontSize: 14,
               fontWeight: 500,
-              color: '#FFFFFF',
+              color: isDark ? '#FFFFFF' : '#000000',
             }}>HeatTrace</span>
           </div>
 
           {/* Persona */}
           <div className="text-center mb-10">
-            {/* Doto initial with dot-grid background */}
             <div style={{
               width: 72, height: 72, margin: '0 auto 16px',
               borderRadius: 12,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              backgroundImage: 'radial-gradient(circle, #333333 1px, transparent 1px)',
+              backgroundImage: `radial-gradient(circle, ${isDark ? '#333333' : '#CCCCCC'} 1px, transparent 1px)`,
               backgroundSize: '8px 8px',
-              backgroundColor: '#111111',
-              border: '1px solid #222222',
+              backgroundColor: isDark ? '#111111' : '#F0F0F0',
+              border: `1px solid ${isDark ? '#222222' : '#E8E8E8'}`,
             }}>
               <span style={{
                 fontFamily: "'Doto', 'Space Mono', monospace",
                 fontSize: 36,
                 fontWeight: 700,
-                color: '#FFFFFF',
+                color: isDark ? '#FFFFFF' : '#000000',
                 lineHeight: 1,
               }}>{personaName.charAt(0)}</span>
             </div>
@@ -124,31 +133,31 @@ export function WeeklyReport({ lang, onBack }: { lang: Lang; onBack: () => void 
               fontFamily: "'Space Grotesk', system-ui, sans-serif",
               fontSize: 22,
               fontWeight: 500,
-              color: '#FFFFFF',
+              color: isDark ? '#FFFFFF' : '#000000',
               marginBottom: 4,
             }}>{personaName}</div>
             <div style={{
               fontFamily: "'Space Mono', monospace",
               fontSize: 12,
-              color: '#666666',
+              color: isDark ? '#666666' : '#999999',
             }}>{personaSlogan}</div>
           </div>
 
           {/* 2 Big Stats */}
           <div className="flex justify-center gap-16 mb-6">
             <div className="text-center">
-              <div className="display-md" style={{ color: '#FFFFFF' }}>
+              <div className="display-md" style={{ color: isDark ? '#FFFFFF' : '#000000' }}>
                 {report.total_keys >= 1000 ? `${(report.total_keys / 1000).toFixed(1)}K` : report.total_keys}
               </div>
-              <div className="label" style={{ color: '#666666', marginTop: 6 }}>
+              <div className="label" style={{ color: isDark ? '#666666' : '#999999', marginTop: 6 }}>
                 {t('report.cardKeys', lang)}
               </div>
             </div>
             <div className="text-center">
-              <div className="display-md" style={{ color: '#FFFFFF' }}>
+              <div className="display-md" style={{ color: isDark ? '#FFFFFF' : '#000000' }}>
                 {formatMinutes(report.active_minutes)}
               </div>
-              <div className="label" style={{ color: '#666666', marginTop: 6 }}>
+              <div className="label" style={{ color: isDark ? '#666666' : '#999999', marginTop: 6 }}>
                 {t('report.cardActive', lang)}
               </div>
             </div>
@@ -156,14 +165,14 @@ export function WeeklyReport({ lang, onBack }: { lang: Lang; onBack: () => void 
 
           {/* vs last week */}
           {report.prev_week && (report.prev_week.keys_delta !== 0 || report.prev_week.active_delta !== 0) && (
-            <div className="text-center" style={{ fontSize: 12, color: '#999999', marginBottom: 24 }}>
+            <div className="text-center" style={{ fontSize: 12, color: isDark ? '#999999' : '#666666', marginBottom: 24 }}>
               {report.prev_week.keys_delta !== 0 && (
                 <span style={{ color: report.prev_week.keys_delta > 0 ? 'var(--success)' : 'var(--accent)' }}>
                   {report.prev_week.keys_delta > 0 ? '+' : ''}{report.prev_week.keys_delta}% {t('report.cardVsKeys', lang)}
                 </span>
               )}
               {report.prev_week.keys_delta !== 0 && report.prev_week.active_delta !== 0 && (
-                <span style={{ color: '#666666' }}> · </span>
+                <span style={{ color: isDark ? '#666666' : '#999999' }}> · </span>
               )}
               {report.prev_week.active_delta !== 0 && (
                 <span style={{ color: report.prev_week.active_delta > 0 ? 'var(--success)' : 'var(--accent)' }}>
@@ -175,9 +184,9 @@ export function WeeklyReport({ lang, onBack }: { lang: Lang; onBack: () => void 
 
           {/* Date */}
           <div className="text-center bracket-legend" style={{
-            color: '#666666',
+            color: isDark ? '#666666' : '#999999',
             paddingTop: 20,
-            borderTop: '1px solid #222222',
+            borderTop: `1px solid ${isDark ? '#222222' : '#E8E8E8'}`,
           }}>
             {report.start_date} — {report.end_date}
           </div>
