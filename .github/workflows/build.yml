@@ -39,12 +39,19 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Cache node_modules
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Cache pnpm store
         uses: actions/cache@v4
         with:
-          path: frontend/node_modules
-          key: npm-${{ matrix.os }}-${{ hashFiles('frontend/package-lock.json') }}
-          restore-keys: npm-${{ matrix.os }}-
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ matrix.os }}-${{ hashFiles('frontend/pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ matrix.os }}-
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: frontend
 
       - name: Cache Wails
         uses: actions/cache@v4
