@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=HeatTrace
+Comment=Local keyboard & mouse activity tracker
+Exec=HeatTrace
+Icon=heattrace
+Type=Application
+Categories=Utility;Monitor;
+StartupWMClass=HeatTrace
