@@ -100,26 +100,6 @@ button { cursor: pointer; }
   outline-offset: 2px;
 }
 
-/* Window controls — monochrome, Nothing style */
-.window-control {
-  width: 14px;
-  height: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  border: 1px solid var(--border-visible);
-  background: transparent;
-  color: var(--text-disabled);
-  padding: 0;
-  cursor: pointer;
-  transition: border-color 0.15s ease-out, color 0.15s ease-out;
-}
-.window-control:hover {
-  border-color: var(--text-secondary);
-  color: var(--text-primary);
-}
-
 /* ═══════════════════════════════════════════
    COMPONENTS
    ═══════════════════════════════════════════ */
@@ -428,6 +408,27 @@ button { cursor: pointer; }
 }
 
 .bracket-nav button:hover {
+  color: var(--text-primary);
+}
+
+/* Nav icon button — circular, consistent hit target */
+.nav-icon-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  padding: 0;
+  cursor: pointer;
+  transition: border-color 0.15s ease-out, color 0.15s ease-out;
+}
+
+.nav-icon-btn:hover {
+  border-color: var(--border-visible);
   color: var(--text-primary);
 }
 

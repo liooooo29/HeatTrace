@@ -340,14 +340,14 @@ export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonito
           <span className="label">{t('dash.active', lang)}</span>
           <span className="label" style={{ color: 'var(--text-primary)' }}>
             {formatMinutes(summary.active_minutes)}
-            <span style={{ color: 'var(--text-disabled)', marginLeft: 4 }}>/ 24h</span>
+            <span style={{ color: 'var(--text-disabled)', marginLeft: 4 }}>/ {daysDiff === 1 ? '24h' : `${daysDiff}d`}</span>
           </span>
         </div>
         <SegmentedBar
           value={summary.active_minutes}
-          max={1440}
+          max={daysDiff * 1440}
           segments={24}
-          status={summary.active_minutes > 720 ? 'warning' : 'default'}
+          status={summary.active_minutes > daysDiff * 720 ? 'warning' : 'default'}
         />
       </div>
 
