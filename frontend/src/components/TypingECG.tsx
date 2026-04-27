@@ -104,8 +104,8 @@ export function TypingECG({ dateRange, lang, dataVersion }: TypingECGProps) {
 
   if (data.length === 0) {
     return (
-      <div className="chart-card flex items-center justify-center"
-        style={{ color: 'var(--text-disabled)', fontSize: 13, minHeight: 192 }}>
+      <div className="chart-card flex items-center justify-center dot-grid-subtle"
+        style={{ color: 'var(--text-disabled)', fontSize: 13, minHeight: 192, borderRadius: 12 }}>
         {t('report.noRhythm', lang)}
       </div>
     );

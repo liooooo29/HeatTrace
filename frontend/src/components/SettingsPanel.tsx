@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { GetConfig, SaveConfig, GetMonitorStatus, ToggleMonitor, TestMonitor, GetEventCount, BrowserOpenURL, ClearAllData, Quit, GetDefaultDataDir, SwitchDataDir, PickDataDir } from '../wails-bindings';
 import { ErrorPage } from './ErrorPage';
 import { KeyboardDebug } from './KeyboardDebug';
+import { SegmentedSpinner } from './SegmentedSpinner';
 import { t } from '../i18n';
 import type { Lang } from '../i18n';
 import type { AppConfig } from '../types';
@@ -157,7 +158,7 @@ export function SettingsPanel({ lang, onBack, mode, onToggleMode, onLangChange }
   if (!config) return (
     <div>
       <div className="mb-6"><h2 className="page-title">{t('set.title', lang)}</h2></div>
-      <div className="loading-text">[LOADING...]</div>
+      <div className="loading-text flex items-center gap-3">[LOADING...]<SegmentedSpinner /></div>
     </div>
   );
 
@@ -166,12 +167,7 @@ export function SettingsPanel({ lang, onBack, mode, onToggleMode, onLangChange }
       {/* Header with back button */}
       <div className="flex items-center gap-3 mb-8">
         <button onClick={onBack}
-          style={{
-            width: 40, height: 40,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'var(--text-secondary)',
-            background: 'none', border: 'none',
-          }}
+          className="back-btn"
           title={t('common.cancel', lang)}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="15 18 9 12 15 6"/>
@@ -287,7 +283,7 @@ export function SettingsPanel({ lang, onBack, mode, onToggleMode, onLangChange }
         <div className="list-row">
           <div>
             <span className="label">{t('set.retention', lang)}</span>
-            <div className="label label-disabled" style={{ fontSize: 11, marginTop: 2 }}>{t('set.retentionDesc', lang)}</div>
+            <div className="label-desc">{t('set.retentionDesc', lang)}</div>
           </div>
           <div className="flex items-center gap-2">
             <input type="number" value={config.data_retention_days}
@@ -302,7 +298,7 @@ export function SettingsPanel({ lang, onBack, mode, onToggleMode, onLangChange }
         <div className="list-row" style={{ alignItems: 'flex-start' }}>
           <div style={{ flexShrink: 0 }}>
             <span className="label">{t('set.dataDir', lang)}</span>
-            <div className="label label-disabled" style={{ fontSize: 11, marginTop: 2 }}>{t('set.dataDirDesc', lang)}</div>
+            <div className="label-desc">{t('set.dataDirDesc', lang)}</div>
           </div>
           <div className="flex items-center gap-2" style={{ flex: 1, minWidth: 0 }}>
             <input type="text" value={config.data_dir || ''}
@@ -316,7 +312,7 @@ export function SettingsPanel({ lang, onBack, mode, onToggleMode, onLangChange }
               Browse
             </button>
             {switchingDir && (
-              <span className="label label-disabled" style={{ fontSize: 10 }}>[...]</span>
+              <span className="label-desc" style={{ fontSize: 10 }}>[...]</span>
             )}
           </div>
         </div>
@@ -332,7 +328,7 @@ export function SettingsPanel({ lang, onBack, mode, onToggleMode, onLangChange }
         <div className="list-row" style={{ borderBottom: 'none' }}>
           <div>
             <span className="label label-accent">{t('set.uninstall', lang)}</span>
-            <div className="label label-disabled" style={{ fontSize: 11, marginTop: 2 }}>{t('set.uninstallDesc', lang)}</div>
+            <div className="label-desc">{t('set.uninstallDesc', lang)}</div>
           </div>
           <button onClick={() => setShowClearConfirm(v => !v)}
             className="btn-base btn-xs btn-destructive"
@@ -348,7 +344,7 @@ export function SettingsPanel({ lang, onBack, mode, onToggleMode, onLangChange }
           <div style={{ padding: '12px 0', display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ flex: 1 }}>
               <div className="label label-accent">{t('set.uninstallTitle', lang)}</div>
-              <div className="label label-disabled" style={{ fontSize: 10, marginTop: 2 }}>{t('set.uninstallModalDesc', lang)}</div>
+              <div className="label-desc" style={{ fontSize: 10 }}>{t('set.uninstallModalDesc', lang)}</div>
             </div>
             <button onClick={async () => {
               setClearing(true);

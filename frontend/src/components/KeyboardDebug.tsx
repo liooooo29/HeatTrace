@@ -105,8 +105,8 @@ export function KeyboardDebug({ lang }: { lang: Lang }) {
 
   const field = (label: string, value: React.ReactNode) => (
     <div className="flex items-baseline gap-2">
-      <span style={{ fontFamily: "'Space Mono', monospace", fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-disabled)', width: 60, flexShrink: 0 }}>{label}</span>
-      <span style={{ fontFamily: "'Space Mono', monospace", fontSize: 13, color: 'var(--text-primary)' }}>{value}</span>
+      <span className="label-disabled" style={{ fontSize: 10, width: 60, flexShrink: 0 }}>{label}</span>
+      <span className="text-mono" style={{ fontSize: 13, color: 'var(--text-primary)' }}>{value}</span>
     </div>
   );
 
@@ -114,8 +114,8 @@ export function KeyboardDebug({ lang }: { lang: Lang }) {
     <div ref={containerRef}>
       {/* Info panels */}
       <div className="grid grid-cols-2 gap-4 mb-4">
-        <div className="card p-3" style={{ borderLeft: '2px solid var(--text-disabled)' }}>
-          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-disabled)', marginBottom: 8 }}>Browser</div>
+        <div className="card p-3 card-disabled-left">
+          <div className="label-disabled" style={{ fontSize: 10, marginBottom: 8 }}>Browser</div>
           {lastBrowser ? (
             <div className="space-y-1">
               {field('code', lastBrowser.code)}
@@ -123,10 +123,10 @@ export function KeyboardDebug({ lang }: { lang: Lang }) {
               {(lastBrowser.shift || lastBrowser.ctrl || lastBrowser.alt) &&
                 field('mods', [lastBrowser.shift && 'Shift', lastBrowser.ctrl && 'Ctrl', lastBrowser.alt && 'Alt'].filter(Boolean).join(' + '))}
             </div>
-          ) : <div style={{ fontSize: 12, color: 'var(--text-disabled)' }}>Waiting for input...</div>}
+          ) : <div className="text-body-sm" style={{ color: 'var(--text-disabled)' }}>Waiting for input...</div>}
         </div>
-        <div className="card p-3" style={{ borderLeft: '2px solid var(--accent)' }}>
-          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--accent)', marginBottom: 8 }}>Go backend</div>
+        <div className="card p-3 card-accent-left">
+          <div className="label-accent" style={{ fontSize: 10, marginBottom: 8 }}>Go backend</div>
           {lastGo ? (
             <div className="space-y-1">
               {field('key', <span style={{ color: 'var(--accent)', fontWeight: 700, fontSize: 15 }}>{lastGo.key}</span>)}
@@ -135,7 +135,7 @@ export function KeyboardDebug({ lang }: { lang: Lang }) {
               {field('mask', <span>0x{lastGo.mask?.toString(16).toUpperCase().padStart(4, '0')}</span>)}
               {lastGo.modifiers?.length > 0 && field('mods', lastGo.modifiers.join(' + '))}
             </div>
-          ) : <div style={{ fontSize: 12, color: 'var(--text-disabled)' }}>Monitor must be running</div>}
+          ) : <div className="text-body-sm" style={{ color: 'var(--text-disabled)' }}>Monitor must be running</div>}
         </div>
       </div>
 
@@ -174,7 +174,7 @@ export function KeyboardDebug({ lang }: { lang: Lang }) {
       {log.length > 0 && (
         <div className="card p-3">
           <div className="flex items-center justify-between mb-2">
-            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-disabled)' }}>Event Log</div>
+            <div className="label-disabled" style={{ fontSize: 10 }}>Event Log</div>
             <button onClick={() => { logRef.current = []; setLog([]); }}
               style={{
                 fontFamily: "'Space Mono', monospace",
@@ -190,7 +190,7 @@ export function KeyboardDebug({ lang }: { lang: Lang }) {
               Clear
             </button>
           </div>
-          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 11, maxHeight: 144, overflow: 'auto' }}>
+          <div className="text-mono" style={{ fontSize: 11, maxHeight: 144, overflow: 'auto' }}>
             {log.map((l, i) => (
               <div key={i} style={{
                 padding: '2px 8px',
