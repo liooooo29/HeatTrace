@@ -7,4 +7,4 @@ frontend/dist
 frontend/.npmrc
 frontend/package-lock.json
 frontend/package.json.md5
-frontend/wailsjs/
+frontend/wailsjs/go/
