@@ -317,7 +317,7 @@ export function SettingsPanel({ lang, onBack, mode, onToggleMode, onLangChange }
           </div>
         </div>
 
-        <div className="bracket-legend" style={{ marginTop: -4, marginBottom: 8 }}>
+        <div className="bracket-legend" style={{ marginBottom: 8 }}>
           {t('set.dataDirDefault', lang)}: {defaultDataDir}
         </div>
 
