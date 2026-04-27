@@ -90,8 +90,12 @@ export function WeeklyReport({ lang, onBack }: { lang: Lang; onBack: () => void 
         }}>
           {/* Logo */}
           <div className="flex items-center justify-center gap-2 mb-10">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <rect x="4" y="4" width="3" height="16" rx="1" stroke="#333333" strokeWidth="1" fill="none"/>
+              <rect x="17" y="4" width="3" height="16" rx="1" stroke="#333333" strokeWidth="1" fill="none"/>
+              <line x1="1" y1="12" x2="23" y2="12" stroke="#FFFFFF" strokeWidth="1.2" strokeLinecap="round"/>
+              <polyline points="8,12 10,12 11,8 12,4 13,16 14,8 15,12 17,12" fill="none" stroke="#FFFFFF" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+              <circle cx="12" cy="3.5" r="1.5" fill="#D71921"/>
             </svg>
             <span style={{
               fontFamily: "'Space Grotesk', system-ui, sans-serif",

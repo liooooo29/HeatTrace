@@ -86,9 +86,13 @@ function App() {
       {/* Nav — Nothing style */}
       <nav className="nav-bar flex items-center justify-between px-5 h-11 shrink-0">
         <div className="flex items-center gap-3">
-          {/* Logo — minimal */}
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-display)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          {/* Logo — Nothing style: H frame + pulse */}
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <rect x="4" y="4" width="3" height="16" rx="1" stroke="var(--text-secondary)" strokeWidth="1" fill="none"/>
+            <rect x="17" y="4" width="3" height="16" rx="1" stroke="var(--text-secondary)" strokeWidth="1" fill="none"/>
+            <line x1="1" y1="12" x2="23" y2="12" stroke="var(--text-display)" strokeWidth="1.2" strokeLinecap="round"/>
+            <polyline points="8,12 10,12 11,8 12,4 13,16 14,8 15,12 17,12" fill="none" stroke="var(--text-display)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+            <circle cx="12" cy="3.5" r="1.5" fill="#D71921"/>
           </svg>
           <span style={{
             fontFamily: "'Space Grotesk', system-ui, sans-serif",
