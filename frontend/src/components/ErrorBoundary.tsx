@@ -33,10 +33,10 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="empty-state" style={{ minHeight: '50vh', padding: 24 }}>
           <div className="text-center">
-            <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 4 }}>
+            <div className="text-body" style={{ marginBottom: 4 }}>
               {t('error.crashTitle', lang)}
             </div>
-            <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+            <div className="text-body-sm">
               {t('error.crashDesc', lang)}
             </div>
           </div>
@@ -45,12 +45,11 @@ export class ErrorBoundary extends Component<Props, State> {
               <summary className="label label-disabled" style={{ cursor: 'pointer' }}>
                 {t('error.details', lang)}
               </summary>
-              <pre style={{
+              <pre className="text-mono" style={{
                 marginTop: 8,
                 padding: 16,
                 borderRadius: 8,
                 fontSize: 11,
-                fontFamily: "'Space Mono', monospace",
                 overflow: 'auto',
                 maxHeight: 256,
                 backgroundColor: 'var(--surface)',

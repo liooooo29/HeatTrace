@@ -116,17 +116,29 @@ function App() {
             </svg>
           </button>
 
-          {/* Window controls */}
-          <div className="flex items-center gap-1.5 ml-1">
+          {/* Window controls — Nothing monochrome */}
+          <div className="flex items-center gap-2 ml-1">
             <button onClick={() => WindowMinimise()}
-              className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: '#febc2e' }} />
+              className="window-control"
+              aria-label="Minimise">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.2">
+                <line x1="1" y1="5" x2="9" y2="5"/>
+              </svg>
+            </button>
             <button onClick={() => WindowToggleMaximise()}
-              className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: '#28c840' }} />
+              className="window-control"
+              aria-label="Maximise">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.2">
+                <rect x="1" y="1" width="8" height="8" rx="0.5"/>
+              </svg>
+            </button>
             <button onClick={() => WindowHide()}
-              className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: '#ff5f57' }} />
+              className="window-control"
+              aria-label="Close">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.2">
+                <line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/>
+              </svg>
+            </button>
           </div>
         </div>
       </nav>

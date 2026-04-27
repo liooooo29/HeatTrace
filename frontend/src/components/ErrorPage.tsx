@@ -13,10 +13,10 @@ export function ErrorPage({ title, message, details, onRetry, lang }: ErrorPageP
   return (
     <div className="empty-state" style={{ minHeight: '50vh' }}>
       <div className="text-center">
-        <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 4 }}>
+        <div className="text-body" style={{ marginBottom: 4 }}>
           {title || t('error.title', lang)}
         </div>
-        <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+        <div className="text-body-sm">
           {message}
         </div>
       </div>
@@ -25,12 +25,11 @@ export function ErrorPage({ title, message, details, onRetry, lang }: ErrorPageP
           <summary className="label label-disabled" style={{ cursor: 'pointer' }}>
             {t('error.details', lang)}
           </summary>
-          <pre style={{
+          <pre className="text-mono" style={{
             marginTop: 8,
             padding: 16,
             borderRadius: 8,
             fontSize: 11,
-            fontFamily: "'Space Mono', monospace",
             overflow: 'auto',
             maxHeight: 256,
             backgroundColor: 'var(--surface)',

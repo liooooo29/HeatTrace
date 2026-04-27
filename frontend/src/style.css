@@ -100,6 +100,26 @@ button { cursor: pointer; }
   outline-offset: 2px;
 }
 
+/* Window controls — monochrome, Nothing style */
+.window-control {
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--border-visible);
+  background: transparent;
+  color: var(--text-disabled);
+  padding: 0;
+  cursor: pointer;
+  transition: border-color 0.15s ease-out, color 0.15s ease-out;
+}
+.window-control:hover {
+  border-color: var(--text-secondary);
+  color: var(--text-primary);
+}
+
 /* ═══════════════════════════════════════════
    COMPONENTS
    ═══════════════════════════════════════════ */
@@ -309,7 +329,7 @@ button { cursor: pointer; }
   opacity: 0.8;
 }
 
-/* Empty state — Nothing pattern */
+/* Empty state — Nothing pattern with dot-grid */
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -320,6 +340,17 @@ button { cursor: pointer; }
   font-size: 13px;
   text-align: center;
   gap: 8px;
+  position: relative;
+}
+
+.empty-state-dotgrid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, var(--border) 0.5px, transparent 0.5px);
+  background-size: 12px 12px;
+  opacity: 0.3;
+  pointer-events: none;
+  border-radius: 12px;
 }
 
 /* Page transition */
@@ -411,6 +442,27 @@ button { cursor: pointer; }
 
 .list-row:last-child {
   border-bottom: none;
+}
+
+/* Back button — circular, Nothing style */
+.back-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.15s ease-out, color 0.15s ease-out;
+}
+
+.back-btn:hover {
+  border-color: var(--border-visible);
+  color: var(--text-primary);
 }
 
 /* Stat row — label left, value right */
@@ -526,9 +578,102 @@ button { cursor: pointer; }
   color: var(--text-disabled);
 }
 
+/* Label description — below label in settings rows */
+.label-desc {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-disabled);
+  margin-top: 2px;
+}
+
+/* ═══════════════════════════════════════════
+   TEXT UTILITIES — reduce inline styles
+   ═══════════════════════════════════════════ */
+
+.text-body {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.text-body-sm {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.text-mono {
+  font-family: 'Space Mono', monospace;
+}
+
+.text-mono-bold {
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  color: var(--text-display);
+}
+
+/* Card with accent left border */
+.card-accent-left {
+  border-left: 2px solid var(--accent);
+}
+
+.card-disabled-left {
+  border-left: 2px solid var(--text-disabled);
+}
+
 /* ═══════════════════════════════════════════
    DISPLAY TYPOGRAPHY — Doto for hero moments
    ═══════════════════════════════════════════ */
+
+/* Segmented progress bar — Nothing signature component */
+.segmented-bar {
+  display: flex;
+  gap: 2px;
+  width: 100%;
+}
+
+.segmented-bar-segment {
+  height: 8px;
+  flex: 1;
+  border-radius: 1px;
+  background: var(--border);
+  transition: background 0.3s ease-out;
+}
+
+.segmented-bar-segment[data-filled="true"] {
+  background: var(--text-display);
+}
+
+.segmented-bar-segment[data-filled="true"][data-status="accent"] {
+  background: var(--accent);
+}
+
+.segmented-bar-segment[data-filled="true"][data-status="warning"] {
+  background: var(--warning);
+}
+
+/* Segmented loading spinner — hardware style */
+@keyframes seg-spin {
+  0%   { opacity: 1; }
+  100% { opacity: 0.15; }
+}
+
+.segmented-spinner {
+  display: inline-flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.segmented-spinner-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 1px;
+  background: var(--text-secondary);
+}
 
 .display-xl {
   font-family: 'Doto', 'Space Mono', monospace;

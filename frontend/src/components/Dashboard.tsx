@@ -4,6 +4,8 @@ import { StatCard } from './StatCard';
 import { TypingECG } from './TypingECG';
 import { KeyboardHeatmap } from './KeyboardHeatmap';
 import { WeeklyReport } from './WeeklyReport';
+import { SegmentedBar } from './SegmentedBar';
+import { SegmentedSpinner } from './SegmentedSpinner';
 import { t } from '../i18n';
 import type { Lang } from '../i18n';
 import type { DailySummary, KeyHeatPoint } from '../types';
@@ -40,7 +42,6 @@ export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonito
   const [avgWPM, setAvgWPM] = useState(0);
   const [yesterdayKeys, setYesterdayKeys] = useState(0);
   const [topApps, setTopApps] = useState<any[]>([]);
-  const [showPresets, setShowPresets] = useState(false);
   const initialLoad = useRef(true);
 
   useEffect(() => {
@@ -134,7 +135,7 @@ export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonito
   if (accessErr) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[70vh]">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-md dot-grid-subtle" style={{ borderRadius: 12, padding: 24 }}>
           <div className="text-center mb-8">
             <h2 className="page-title mb-2">{t('setup.title', lang)}</h2>
             <p className="page-subtitle">{t('setup.subtitle', lang)}</p>
@@ -150,8 +151,8 @@ export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonito
                 <div className="flex items-start gap-3">
                   <span className="label label-accent" style={{ marginTop: 2 }}>{step.n}</span>
                   <div>
-                    <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 2 }}>{step.title}</div>
-                    <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{step.desc}</div>
+                    <div className="text-body" style={{ marginBottom: 2 }}>{step.title}</div>
+                    <div className="text-body-sm">{step.desc}</div>
                   </div>
                 </div>
               </div>
@@ -177,7 +178,7 @@ export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonito
           {configInfo && (
             <div className="mt-6">
               <div className="section-title">{t('setup.configTitle', lang)}</div>
-              <div className="label" style={{ fontSize: 12 }}>
+              <div className="text-body-sm">
                 {t('setup.configDesc', lang)
                   .replace('{days}', configInfo.data_retention_days)
                   .replace('{count}', configInfo.blacklisted_apps?.length || '0')}
@@ -199,7 +200,7 @@ export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonito
           <h2 className="page-title">{t('dash.title', lang)}</h2>
           <p className="page-subtitle">{t('dash.subtitle', lang)}</p>
         </div>
-        <div className="loading-text">[LOADING...]</div>
+        <div className="loading-text flex items-center gap-3">[LOADING...]<SegmentedSpinner /></div>
       </div>
     );
   }
@@ -208,11 +209,12 @@ export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonito
   if (!summary) {
     return (
       <div className="empty-state" style={{ minHeight: '50vh' }}>
-        <div className="text-center">
-          <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 4 }}>
+        <div className="empty-state-dotgrid" />
+        <div className="text-center" style={{ zIndex: 1 }}>
+          <div className="text-body" style={{ marginBottom: 4 }}>
             {t('dash.noData', lang)}
           </div>
-          <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 16 }}>
+          <div className="text-body-sm" style={{ marginBottom: 16 }}>
             {t('dash.noDataDesc', lang)}
           </div>
         </div>
@@ -220,7 +222,8 @@ export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonito
           <button
             onClick={handleStartMonitor}
             disabled={startingMonitor}
-            className="btn-base btn-sm btn-secondary">
+            className="btn-base btn-sm btn-secondary"
+            style={{ zIndex: 1 }}>
             {startingMonitor ? t('setup.checking', lang) : t('setup.startMonitor', lang)}
           </button>
         )}
@@ -267,7 +270,6 @@ export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonito
       onDateChange(d.toISOString().slice(0, 10), today);
       if (!historyMode) onToggleHistory?.();
     }
-    setShowPresets(false);
   };
 
   return (
@@ -276,62 +278,43 @@ export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonito
       <div className="flex items-center justify-between mb-8">
         <div>
           <h2 className="page-title">{titleLabel}</h2>
-          <div className="relative mt-1">
-            <button onClick={() => setShowPresets(v => !v)}
-              className="label"
-              style={{
-                color: isToday ? 'var(--text-secondary)' : 'var(--accent)',
-                background: 'none',
-                border: 'none',
-                padding: 0,
-              }}>
+          <div className="mt-1">
+            <span className="label" style={{ color: isToday ? 'var(--text-secondary)' : 'var(--accent)' }}>
               {dateLabel}
-              <span style={{ marginLeft: 4, fontSize: 9 }}>
-                {showPresets ? '▲' : '▼'}
-              </span>
-            </button>
-            {showPresets && (
-              <>
-                <div className="fixed inset-0 z-30" onClick={() => setShowPresets(false)} />
-                <div className="absolute left-0 top-6 z-40 p-1"
-                  style={{
-                    backgroundColor: 'var(--surface)',
-                    border: '1px solid var(--border-visible)',
-                    borderRadius: 8,
-                  }}>
-                  {[
-                    { label: t('dash.today', lang), days: 0 },
-                    { label: t('dash.7d', lang), days: 7 },
-                    { label: t('dash.30d', lang), days: 30 },
-                  ].map(p => (
-                    <button key={p.days} onClick={() => applyPreset(p.days)}
-                      className="label"
-                      style={{
-                        display: 'block',
-                        width: '100%',
-                        textAlign: 'left',
-                        padding: '6px 12px',
-                        color: 'var(--text-primary)',
-                        background: 'none',
-                        border: 'none',
-                        whiteSpace: 'nowrap',
-                      }}>
-                      {p.label}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
+            </span>
           </div>
         </div>
-        <button onClick={() => setShowWeekly(true)}
-          className="btn-base btn-sm btn-secondary">
-          {t('dash.weeklyReport', lang)}
-        </button>
+        <div className="flex items-center gap-3">
+          {/* Period selector — bracket nav */}
+          <div className="bracket-nav">
+            {[
+              { label: t('dash.today', lang), days: 0 },
+              { label: t('dash.7d', lang), days: 7 },
+              { label: t('dash.30d', lang), days: 30 },
+            ].map((p, i) => (
+              <span key={p.days} className="flex items-center gap-3">
+                {i > 0 && <span style={{ color: 'var(--text-disabled)' }}>·</span>}
+                <button
+                  onClick={() => applyPreset(p.days)}
+                  style={{
+                    color: daysDiff === (p.days || 1) && (p.days === 0 ? isToday : true)
+                      ? 'var(--text-display)'
+                      : 'var(--text-secondary)',
+                  }}>
+                  [{p.label}]
+                </button>
+              </span>
+            ))}
+          </div>
+          <button onClick={() => setShowWeekly(true)}
+            className="btn-base btn-sm btn-secondary">
+            {t('dash.weeklyReport', lang)}
+          </button>
+        </div>
       </div>
 
       {/* Stats — 4 hero numbers in a row */}
-      <div className="grid grid-cols-4 gap-6 mb-8 pb-8" style={{ borderBottom: '1px solid var(--border)' }}>
+      <div className="grid grid-cols-4 gap-6 mb-6">
         <StatCard
           label={t('dash.keys', lang)}
           value={summary.total_keys.toLocaleString()}
@@ -351,6 +334,23 @@ export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonito
         />
       </div>
 
+      {/* Active time — segmented progress bar */}
+      <div className="mb-8 pb-8" style={{ borderBottom: '1px solid var(--border)' }}>
+        <div className="flex items-baseline justify-between mb-2">
+          <span className="label">{t('dash.active', lang)}</span>
+          <span className="label" style={{ color: 'var(--text-primary)' }}>
+            {formatMinutes(summary.active_minutes)}
+            <span style={{ color: 'var(--text-disabled)', marginLeft: 4 }}>/ 24h</span>
+          </span>
+        </div>
+        <SegmentedBar
+          value={summary.active_minutes}
+          max={1440}
+          segments={24}
+          status={summary.active_minutes > 720 ? 'warning' : 'default'}
+        />
+      </div>
+
       {/* Top Apps — flat list with dividers */}
       {topApps.length > 0 && (
         <div className="mb-8">
@@ -363,9 +363,8 @@ export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonito
                 <div key={app.app}
                   className="list-row"
                   style={{ opacity: i === 0 ? 1 : 0.4 + 0.6 * ratio }}>
-                  <span style={{
+                  <span className="text-body" style={{
                     fontSize: 13,
-                    color: 'var(--text-primary)',
                     maxWidth: 200,
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -406,11 +405,8 @@ export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonito
                 <div key={k.key}
                   className="list-row"
                   style={{ opacity: i === 0 ? 1 : 0.4 + 0.6 * ratio }}>
-                  <span style={{
-                    fontFamily: "'Space Mono', monospace",
+                  <span className="text-mono-bold" style={{
                     fontSize: 14,
-                    fontWeight: 700,
-                    color: 'var(--text-display)',
                     minWidth: displayKey.length > 2 ? 'auto' : '2ch',
                     textAlign: 'center',
                   }}>
