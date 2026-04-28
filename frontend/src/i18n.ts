@@ -155,6 +155,13 @@ const en = {
   'error.crashTitle': 'Render Error',
   'error.crashDesc': 'A component failed to render.',
   'error.runtimeMissing': 'Wails runtime not available. Are you running in a browser?',
+
+  // Update
+  'update.title': 'Update',
+  'update.available': 'New version {version} available',
+  'update.uptodate': 'Up to date (v{version})',
+  'update.download': 'Download',
+  'update.releaseNotes': 'Release Notes',
 };
 
 const zh = {
@@ -304,6 +311,13 @@ const zh = {
   'error.crashTitle': '渲染错误',
   'error.crashDesc': '组件渲染时发生错误。',
   'error.runtimeMissing': 'Wails 运行时不可用。是否在浏览器中运行？',
+
+  // Update
+  'update.title': '更新',
+  'update.available': '新版本 {version} 可用',
+  'update.uptodate': '已是最新版本 (v{version})',
+  'update.download': '下载',
+  'update.releaseNotes': '更新日志',
 };
 
 export type Lang = 'en' | 'zh';

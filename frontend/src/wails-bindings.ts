@@ -178,3 +178,29 @@ export async function SaveReportImage(base64Data: string): Promise<string> {
   if (!app?.SaveReportImage) return '';
   return app.SaveReportImage(base64Data);
 }
+
+export interface UpdateInfo {
+  available: boolean;
+  version: string;
+  notes: string;
+  downloadUrl: string;
+  assetName: string;
+}
+
+export async function GetVersion(): Promise<string> {
+  const app = getApp();
+  if (!app?.GetVersion) return 'dev';
+  return app.GetVersion();
+}
+
+export async function CheckForUpdate(): Promise<UpdateInfo> {
+  const app = getApp();
+  if (!app?.CheckForUpdate) return { available: false, version: '', notes: '', downloadUrl: '', assetName: '' };
+  return app.CheckForUpdate();
+}
+
+export async function OpenDownloadPage(url: string): Promise<void> {
+  const app = getApp();
+  if (!app?.OpenDownloadPage) return;
+  return app.OpenDownloadPage(url);
+}

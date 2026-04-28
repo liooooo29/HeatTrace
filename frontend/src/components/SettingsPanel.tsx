@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { GetConfig, SaveConfig, GetMonitorStatus, ToggleMonitor, TestMonitor, GetEventCount, BrowserOpenURL, ClearAllData, Quit, GetDefaultDataDir, SwitchDataDir, PickDataDir } from '../wails-bindings';
+import { GetConfig, SaveConfig, GetMonitorStatus, ToggleMonitor, TestMonitor, GetEventCount, BrowserOpenURL, ClearAllData, Quit, GetDefaultDataDir, SwitchDataDir, PickDataDir, CheckForUpdate, GetVersion, OpenDownloadPage, type UpdateInfo } from '../wails-bindings';
 import { ErrorPage } from './ErrorPage';
 import { KeyboardDebug } from './KeyboardDebug';
 import { SegmentedSpinner } from './SegmentedSpinner';
@@ -30,6 +30,9 @@ export function SettingsPanel({ lang, onBack, mode, onToggleMode, onLangChange }
   const [saving, setSaving] = useState(false);
   const [switchingDir, setSwitchingDir] = useState(false);
   const [defaultDataDir, setDefaultDataDir] = useState('');
+  const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
+  const [currentVersion, setCurrentVersion] = useState('');
+  const [showNotes, setShowNotes] = useState(false);
   const prevDataDirRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -55,6 +58,17 @@ export function SettingsPanel({ lang, onBack, mode, onToggleMode, onLangChange }
       } catch {}
     }, 3000);
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const ver = await GetVersion();
+        setCurrentVersion(ver);
+        const info = await CheckForUpdate();
+        setUpdateInfo(info);
+      } catch {}
+    })();
   }, []);
 
   useEffect(() => {
@@ -207,6 +221,55 @@ export function SettingsPanel({ lang, onBack, mode, onToggleMode, onLangChange }
             <div className="toggle-thumb" />
           </button>
         </div>
+
+        {/* Update */}
+        {updateInfo && (
+          <div className="list-row" style={{ borderBottom: 'none' }}>
+            <div>
+              <span className="label">{t('update.title', lang)}</span>
+              <div className="label-desc">
+                {updateInfo.available
+                  ? t('update.available', lang).replace('{version}', updateInfo.version)
+                  : currentVersion
+                    ? t('update.uptodate', lang).replace('{version}', currentVersion)
+                    : ''}
+              </div>
+            </div>
+            {updateInfo.available && (
+              <div className="flex items-center gap-2">
+                {updateInfo.notes && (
+                  <button onClick={() => setShowNotes(v => !v)}
+                    className="btn-base btn-xs btn-secondary">
+                    {t('update.releaseNotes', lang)}
+                  </button>
+                )}
+                <button onClick={() => OpenDownloadPage(updateInfo.downloadUrl)}
+                  className="btn-base btn-xs"
+                  style={{ color: '#fff', backgroundColor: 'var(--accent)', border: 'none' }}>
+                  {t('update.download', lang)}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+        {updateInfo?.available && showNotes && (
+          <div style={{ padding: '0 12px 12px' }}>
+            <div style={{
+              fontSize: 11,
+              lineHeight: 1.6,
+              color: 'var(--text-secondary)',
+              whiteSpace: 'pre-wrap',
+              maxHeight: 200,
+              overflow: 'auto',
+              padding: '8px 12px',
+              backgroundColor: 'var(--bg-elevated)',
+              borderRadius: 6,
+              border: '1px solid var(--border)',
+            }}>
+              {updateInfo.notes}
+            </div>
+          </div>
+        )}
 
         {/* Monitoring status */}
         <div className="list-row">

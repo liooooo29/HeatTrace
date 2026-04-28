@@ -17,6 +17,7 @@ import (
 	"HeatTrace/filter"
 	"HeatTrace/monitor"
 	"HeatTrace/storage"
+	"HeatTrace/updater"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
@@ -447,4 +448,18 @@ func (a *App) ClearAllData() error {
 	a.agg = storage.NewAggregator(newStore)
 	a.mon = monitor.New(newStore, a.fltr)
 	return nil
+}
+
+func (a *App) GetVersion() string {
+	return version
+}
+
+func (a *App) CheckForUpdate() *updater.UpdateInfo {
+	return updater.CheckForUpdate(version)
+}
+
+func (a *App) OpenDownloadPage(url string) {
+	if a.ctx != nil {
+		runtime.BrowserOpenURL(a.ctx, url)
+	}
 }

@@ -4,6 +4,7 @@ go 1.22.5
 
 require (
 	fyne.io/systray v1.12.0
+	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/robotn/gohook v0.42.3
 	github.com/wailsapp/wails/v2 v2.12.0
 )

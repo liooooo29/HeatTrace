@@ -77,6 +77,15 @@ jobs:
         if: matrix.platform == 'linux'
         run: xvfb-run wails build -tags ${{ matrix.tags }}
 
+      - name: Extract version from tag
+        id: version
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "version=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=dev" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Package (Linux)
         if: matrix.platform == 'linux'
         run: |
@@ -101,7 +110,8 @@ jobs:
           ./appimagetool "$APP_DIR" HeatTrace-${{ matrix.os }}-amd64.AppImage
 
           # Create .deb package
-          DEB_DIR=build/heattrace_1.0.0_amd64
+          DEB_VERSION="${{ steps.version.outputs.version }}"
+          DEB_DIR="build/heattrace_${DEB_VERSION}_amd64"
           mkdir -p "$DEB_DIR/DEBIAN" "$DEB_DIR/usr/bin" "$DEB_DIR/usr/share/icons/hicolor/512x512/apps" "$DEB_DIR/usr/share/applications"
 
           cp build/bin/HeatTrace "$DEB_DIR/usr/bin/HeatTrace"
@@ -109,9 +119,9 @@ jobs:
           cp build/appicon.png "$DEB_DIR/usr/share/icons/hicolor/512x512/apps/heattrace.png"
           cp "$APP_DIR/usr/share/applications/heattrace.desktop" "$DEB_DIR/usr/share/applications/heattrace.desktop"
 
-          printf 'Package: heattrace\nVersion: 1.0.0\nArchitecture: amd64\nMaintainer: liooooo29 <1741196223@qq.com>\nDescription: Desktop activity tracker for keyboard & mouse\n HeatTrace monitors keyboard and mouse activity in real-time, providing heatmaps, typing analytics, and daily dashboards.\nSection: utils\nPriority: optional\n' > "$DEB_DIR/DEBIAN/control"
+          printf 'Package: heattrace\nVersion: %s\nArchitecture: amd64\nMaintainer: liooooo29 <1741196223@qq.com>\nDescription: Desktop activity tracker for keyboard & mouse\n HeatTrace monitors keyboard and mouse activity in real-time, providing heatmaps, typing analytics, and daily dashboards.\nSection: utils\nPriority: optional\n' "$DEB_VERSION" > "$DEB_DIR/DEBIAN/control"
 
-          dpkg-deb --build "$DEB_DIR" heattrace_${{ matrix.os }}_amd64.deb
+          dpkg-deb --build "$DEB_DIR" "heattrace_${DEB_VERSION}_${{ matrix.os }}_amd64.deb"
 
       - name: Package (macOS)
         if: matrix.platform == 'darwin'
