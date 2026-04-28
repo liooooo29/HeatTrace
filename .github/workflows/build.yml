@@ -81,7 +81,7 @@ jobs:
         id: version
         run: |
           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            echo "version=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+            echo "version=${{ github.ref_name#v }}" >> "$GITHUB_OUTPUT"
           else
             echo "version=dev" >> "$GITHUB_OUTPUT"
           fi
