@@ -110,13 +110,10 @@ export interface Persona {
   color: string;
 }
 
-export interface WeatherDay {
-  date: string;
-  weather: string;
-  weather_zh: string;
+export interface Insight {
   icon: string;
-  label: string;
-  label_zh: string;
+  text: string;
+  text_zh: string;
 }
 
 export interface DailyGridCell {
@@ -143,9 +140,8 @@ export interface WeeklyReport {
   app_count: number;
   prev_week: WeekComparison | null;
   daily_grid: DailyGridCell[] | null;
-  top_apps: AppUsagePoint[] | null;
   persona: Persona;
-  weather_days: WeatherDay[] | null;
+  insights: Insight[];
 }
 
 export interface RhythmPoint {

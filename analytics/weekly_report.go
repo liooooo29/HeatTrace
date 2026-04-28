@@ -3,7 +3,6 @@ package analytics
 import (
 	"fmt"
 	"math"
-	"sort"
 	"strings"
 
 	"HeatTrace/storage"
@@ -18,16 +17,6 @@ type Persona struct {
 	Slogan  string `json:"slogan"`
 	SloganZh string `json:"slogan_zh"`
 	Color   string `json:"color"`
-}
-
-// WeatherDay represents one day's productivity weather
-type WeatherDay struct {
-	Date      string `json:"date"`
-	Weather   string `json:"weather"`
-	WeatherZh string `json:"weather_zh"`
-	Icon      string `json:"icon"`
-	Label     string `json:"label"`
-	LabelZh   string `json:"label_zh"`
 }
 
 // DailyGridCell for 7x24 heatmap
@@ -46,6 +35,13 @@ type WeekComparison struct {
 	WPMDelta    int `json:"wpm_delta"`
 }
 
+// Insight represents a single insight about the user's week
+type Insight struct {
+	Icon  string `json:"icon"`
+	Text  string `json:"text"`
+	TextZh string `json:"text_zh"`
+}
+
 // WeeklyReport is the full weekly report data
 type WeeklyReport struct {
 	StartDate     string           `json:"start_date"`
@@ -57,16 +53,14 @@ type WeeklyReport struct {
 	AppCount      int              `json:"app_count"`
 	PrevWeek      *WeekComparison  `json:"prev_week"`
 	DailyGrid     []DailyGridCell  `json:"daily_grid"`
-	TopApps       []AppUsagePoint  `json:"top_apps"`
 	Persona       Persona          `json:"persona"`
-	WeatherDays   []WeatherDay     `json:"weather_days"`
+	Insights      []Insight        `json:"insights"`
 }
 
 func ComputeWeeklyReport(thisWeek, prevWeek []storage.DayData) WeeklyReport {
 	report := WeeklyReport{
-		DailyGrid:   []DailyGridCell{},
-		TopApps:     []AppUsagePoint{},
-		WeatherDays: []WeatherDay{},
+		DailyGrid: []DailyGridCell{},
+		Insights:  []Insight{},
 	}
 
 	if len(thisWeek) > 0 {
@@ -85,16 +79,6 @@ func ComputeWeeklyReport(thisWeek, prevWeek []storage.DayData) WeeklyReport {
 	report.ActiveMinutes = usageTime.TotalMinutes
 	report.AvgWPM = typingSpeed.AverageWPM
 	report.AppCount = len(usageTime.AppUsage)
-
-	// Top 5 apps
-	sort.Slice(usageTime.AppUsage, func(i, j int) bool {
-		return usageTime.AppUsage[i].Minutes > usageTime.AppUsage[j].Minutes
-	})
-	if len(usageTime.AppUsage) > 5 {
-		report.TopApps = usageTime.AppUsage[:5]
-	} else {
-		report.TopApps = usageTime.AppUsage
-	}
 
 	// Daily grid (7 days x 24 hours)
 	hourlyMap := make(map[string]int)
@@ -148,8 +132,8 @@ func ComputeWeeklyReport(thisWeek, prevWeek []storage.DayData) WeeklyReport {
 	// Persona
 	report.Persona = determinePersona(thisWeek, keyboardStats, typingSpeed, usageTime)
 
-	// Weather
-	report.WeatherDays = determineWeather(thisWeek, usageTime)
+	// Insights
+	report.Insights = generateInsights(thisWeek, keyboardStats, typingSpeed, usageTime)
 
 	return report
 }
@@ -314,68 +298,146 @@ func determinePersona(days []storage.DayData, kb KeyboardStats, ts TypingSpeed, 
 	}
 }
 
-// --- Weather logic ---
+// --- Insights logic ---
 
-func determineWeather(days []storage.DayData, ut UsageTime) []WeatherDay {
-	// Compute daily active keys
-	dailyKeys := make(map[string]int)
-	for _, day := range days {
-		count := 0
-		for _, k := range day.Keyboard {
-			if !k.Filtered {
-				count++
+func generateInsights(days []storage.DayData, kb KeyboardStats, ts TypingSpeed, ut UsageTime) []Insight {
+	var insights []Insight
+
+	// Peak hour
+	if len(kb.HourlyKeys) > 0 {
+		maxHour := 0
+		maxCount := 0
+		for _, h := range kb.HourlyKeys {
+			if h.Count > maxCount {
+				maxCount = h.Count
+				maxHour = h.Hour
 			}
 		}
-		dailyKeys[day.Date] = count
-	}
-
-	// Average
-	total := 0
-	for _, c := range dailyKeys {
-		total += c
-	}
-	avg := float64(total) / float64(max(len(dailyKeys), 1))
-
-	var result []WeatherDay
-	for _, day := range days {
-		count := dailyKeys[day.Date]
-		ratio := float64(count) / max(avg, 1)
-
-		var w WeatherDay
-		w.Date = day.Date
-
-		switch {
-		case count == 0:
-			w = WeatherDay{Date: day.Date, Weather: "snow", WeatherZh: "雪", Icon: "❄️", Label: "Rest day", LabelZh: "休息日"}
-		case ratio > 2.0:
-			w = WeatherDay{Date: day.Date, Weather: "thunderstorm", WeatherZh: "雷暴", Icon: "⛈️", Label: "Explosive!", LabelZh: "爆发日"}
-		case ratio > 1.0:
-			w = WeatherDay{Date: day.Date, Weather: "sunny", WeatherZh: "晴", Icon: "☀️", Label: "Productive", LabelZh: "高效"}
-		case ratio > 0.6:
-			w = WeatherDay{Date: day.Date, Weather: "cloudy", WeatherZh: "多云", Icon: "⛅", Label: "Steady", LabelZh: "平稳"}
-		case ratio > 0.3:
-			w = WeatherDay{Date: day.Date, Weather: "overcast", WeatherZh: "阴", Icon: "☁️", Label: "Light day", LabelZh: "轻松"}
-		default:
-			w = WeatherDay{Date: day.Date, Weather: "rainy", WeatherZh: "雨", Icon: "🌧️", Label: "Slow", LabelZh: "慢节奏"}
+		if maxCount > 0 {
+			insights = append(insights, Insight{
+				Icon: "⏰",
+				Text: fmt.Sprintf("Your peak hour is %d:00", maxHour),
+				TextZh: fmt.Sprintf("你的效率巅峰在 %d:00", maxHour),
+			})
 		}
-		result = append(result, w)
 	}
 
-	// Check for rainbow (5+ consecutive sunny days)
-	consecutive := 0
-	for i, w := range result {
-		if w.Weather == "sunny" || w.Weather == "thunderstorm" {
-			consecutive++
-			if consecutive >= 5 {
-				result[i] = WeatherDay{
-					Date: result[i].Date, Weather: "rainbow", WeatherZh: "彩虹",
-					Icon: "🌈", Label: "Streak bonus!", LabelZh: "连续高产",
+	// Most active day
+	if len(days) > 0 {
+		type dayKeys struct {
+			date  string
+			count int
+			dow   string
+			dowZh string
+		}
+		dowNames := []string{"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"}
+		dowNamesZh := []string{"周日", "周一", "周二", "周三", "周四", "周五", "周六"}
+		var dayList []dayKeys
+		for _, day := range days {
+			count := 0
+			for _, k := range day.Keyboard {
+				if !k.Filtered {
+					count++
 				}
 			}
-		} else {
-			consecutive = 0
+			dow := dowNames[0]
+			dowZh := dowNamesZh[0]
+			if len(day.Date) >= 10 {
+				var year, month, dayNum int
+				fmt.Sscanf(day.Date, "%d-%d-%d", &year, &month, &dayNum)
+				daysSinceEpoch := (year-1970)*365 + (year-1970)/4 - (year-1970)/100 + (year-1970)/400
+				for m := 1; m < month; m++ {
+					daysSinceEpoch += daysInMonth(m, year)
+				}
+				daysSinceEpoch += dayNum - 1
+				dowIdx := (daysSinceEpoch + 4) % 7
+				if dowIdx < 0 {
+					dowIdx += 7
+				}
+				dow = dowNames[dowIdx]
+				dowZh = dowNamesZh[dowIdx]
+			}
+			dayList = append(dayList, dayKeys{date: day.Date, count: count, dow: dow, dowZh: dowZh})
 		}
+		maxDay := dayList[0]
+		for _, d := range dayList[1:] {
+			if d.count > maxDay.count {
+				maxDay = d
+			}
+		}
+		insights = append(insights, Insight{
+			Icon:  "📅",
+			Text:  fmt.Sprintf("%s was your busiest day", maxDay.dow),
+			TextZh: fmt.Sprintf("%s是你最忙碌的一天", maxDay.dowZh),
+		})
 	}
 
-	return result
+	// Typing speed
+	if ts.AverageWPM > 0 {
+		insights = append(insights, Insight{
+			Icon: "🚀",
+			Text: fmt.Sprintf("Average typing speed: %.0f WPM", ts.AverageWPM),
+			TextZh: fmt.Sprintf("平均打字速度：%.0f WPM", ts.AverageWPM),
+		})
+	}
+
+	// Active days
+	activeDays := 0
+	for _, day := range days {
+		if len(day.Keyboard) > 0 || len(day.Mouse.Clicks) > 0 {
+			activeDays++
+		}
+	}
+	if activeDays >= 3 {
+		insights = append(insights, Insight{
+			Icon: "🔥",
+			Text: fmt.Sprintf("Active %d out of %d days", activeDays, len(days)),
+			TextZh: fmt.Sprintf("%d 天中有 %d 天保持活跃", len(days), activeDays),
+		})
+	}
+
+	// Typing sessions: count distinct active hour blocks per day
+	sessions := 0
+	for _, day := range days {
+		hourActive := make(map[int]bool)
+		for _, k := range day.Keyboard {
+			if !k.Filtered {
+				hourActive[hourFromTimestamp(k.Timestamp)] = true
+			}
+		}
+		sessions += len(hourActive)
+	}
+	if sessions > 0 {
+		insights = append(insights, Insight{
+			Icon:  "💻",
+			Text:  fmt.Sprintf("%d active hour blocks this week", sessions),
+			TextZh: fmt.Sprintf("本周共 %d 个活跃时段", sessions),
+		})
+	}
+
+	// Top shortcut — placed last as it's the longest
+	if len(kb.ModCombo) > 0 {
+		top := kb.ModCombo[0]
+		insights = append(insights, Insight{
+			Icon: "⌨️",
+			Text: fmt.Sprintf("Most used shortcut: %s (%d times)", top.Combo, top.Count),
+			TextZh: fmt.Sprintf("最常用的快捷键是 %s（%d 次）", top.Combo, top.Count),
+		})
+	}
+
+	return insights
+}
+
+func daysInMonth(month, year int) int {
+	switch month {
+	case 2:
+		if year%4 == 0 && (year%100 != 0 || year%400 == 0) {
+			return 29
+		}
+		return 28
+	case 4, 6, 9, 11:
+		return 30
+	default:
+		return 31
+	}
 }

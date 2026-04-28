@@ -31,7 +31,7 @@ export function WeeklyReport({ lang, onBack }: { lang: Lang; onBack: () => void 
     setExporting(true);
     try {
       const { toPng } = await import('html-to-image');
-      const dataUrl = await toPng(cardRef.current, { pixelRatio: 2, backgroundColor: '#000000' });
+      const dataUrl = await toPng(cardRef.current, { pixelRatio: 2 });
       const base64 = dataUrl.split(',')[1];
       if (await SaveReportImage(base64)) {
         setExported(true);
@@ -90,106 +90,144 @@ export function WeeklyReport({ lang, onBack }: { lang: Lang; onBack: () => void 
         </button>
       </div>
 
-      {/* Share card — theme-aware */}
+      {/* Share card — horizontal layout */}
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <div ref={cardRef} style={{
           background: isDark ? '#000000' : '#FFFFFF',
           borderRadius: 16,
-          padding: '48px 40px',
-          width: 420,
+          padding: '28px 32px',
+          width: 500,
           border: `1px solid ${isDark ? '#222222' : '#E8E8E8'}`,
         }}>
-          {/* Logo */}
-          <div className="flex items-center justify-center gap-2 mb-10">
-            <img src={isDark ? heattraceIconDark : heattraceIconLight} alt="HeatTrace" width={20} height={20} style={{ borderRadius: 4 }} />
-            <span style={{
-              fontFamily: "'Space Grotesk', system-ui, sans-serif",
-              fontSize: 14,
-              fontWeight: 500,
-              color: isDark ? '#FFFFFF' : '#000000',
-            }}>HeatTrace</span>
-          </div>
-
-          {/* Persona */}
-          <div className="text-center mb-10">
-            <div style={{
-              width: 72, height: 72, margin: '0 auto 16px',
-              borderRadius: 12,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              backgroundImage: `radial-gradient(circle, ${isDark ? '#333333' : '#CCCCCC'} 1px, transparent 1px)`,
-              backgroundSize: '8px 8px',
-              backgroundColor: isDark ? '#111111' : '#F0F0F0',
-              border: `1px solid ${isDark ? '#222222' : '#E8E8E8'}`,
-            }}>
+          {/* Logo + Date row */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+            <div className="flex items-center gap-2">
+              <img src={isDark ? heattraceIconDark : heattraceIconLight} alt="HeatTrace" width={16} height={16} style={{ borderRadius: 3 }} />
               <span style={{
-                fontFamily: "'Doto', 'Space Mono', monospace",
-                fontSize: 36,
-                fontWeight: 700,
+                fontFamily: "'Space Grotesk', system-ui, sans-serif",
+                fontSize: 13,
+                fontWeight: 500,
                 color: isDark ? '#FFFFFF' : '#000000',
-                lineHeight: 1,
-              }}>{personaName.charAt(0)}</span>
+              }}>HeatTrace</span>
             </div>
-            <div style={{
-              fontFamily: "'Space Grotesk', system-ui, sans-serif",
-              fontSize: 22,
-              fontWeight: 500,
-              color: isDark ? '#FFFFFF' : '#000000',
-              marginBottom: 4,
-            }}>{personaName}</div>
-            <div style={{
+            <span style={{
               fontFamily: "'Space Mono', monospace",
-              fontSize: 12,
+              fontSize: 11,
               color: isDark ? '#666666' : '#999999',
-            }}>{personaSlogan}</div>
+              letterSpacing: '0.05em',
+            }}>
+              {report.start_date} — {report.end_date}
+            </span>
           </div>
 
-          {/* 2 Big Stats */}
-          <div className="flex justify-center gap-16 mb-6">
-            <div className="text-center">
-              <div className="display-md" style={{ color: isDark ? '#FFFFFF' : '#000000' }}>
-                {report.total_keys >= 1000 ? `${(report.total_keys / 1000).toFixed(1)}K` : report.total_keys}
+          {/* Main row: Persona left + Stats right */}
+          <div style={{ display: 'flex', gap: 28, marginBottom: 0 }}>
+            {/* Left: Persona */}
+            <div style={{ flex: '0 0 auto', textAlign: 'center' }}>
+              <div style={{
+                width: 64, height: 64,
+                borderRadius: 12,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                backgroundImage: `radial-gradient(circle, ${isDark ? '#333333' : '#CCCCCC'} 1px, transparent 1px)`,
+                backgroundSize: '8px 8px',
+                backgroundColor: isDark ? '#111111' : '#F0F0F0',
+                border: `1px solid ${isDark ? '#222222' : '#E8E8E8'}`,
+                margin: '0 auto 12px',
+              }}>
+                <span style={{ fontSize: 30, lineHeight: 1 }}>
+                  {report.persona.emoji}
+                </span>
               </div>
-              <div className="label" style={{ color: isDark ? '#666666' : '#999999', marginTop: 6 }}>
-                {t('report.cardKeys', lang)}
-              </div>
+              <div style={{
+                fontFamily: "'Space Grotesk', system-ui, sans-serif",
+                fontSize: 16,
+                fontWeight: 500,
+                color: isDark ? '#FFFFFF' : '#000000',
+                marginBottom: 4,
+              }}>{personaName}</div>
+              <div style={{
+                fontFamily: "'Space Mono', monospace",
+                fontSize: 11,
+                color: isDark ? '#666666' : '#999999',
+                lineHeight: '15px',
+              }}>{personaSlogan}</div>
             </div>
-            <div className="text-center">
-              <div className="display-md" style={{ color: isDark ? '#FFFFFF' : '#000000' }}>
-                {formatMinutes(report.active_minutes)}
-              </div>
-              <div className="label" style={{ color: isDark ? '#666666' : '#999999', marginTop: 6 }}>
-                {t('report.cardActive', lang)}
-              </div>
+
+            {/* Vertical divider */}
+            <div style={{
+              width: 1,
+              background: isDark ? '#222222' : '#E8E8E8',
+              flexShrink: 0,
+              alignSelf: 'stretch',
+            }} />
+
+            {/* Right: Stats 2x2 */}
+            <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px 20px', alignContent: 'center' }}>
+              {[
+                { value: report.total_keys >= 1000 ? `${(report.total_keys / 1000).toFixed(1)}K` : String(report.total_keys), label: t('report.cardKeys', lang), delta: report.prev_week?.keys_delta },
+                { value: String(report.total_clicks), label: t('report.clicks', lang), delta: report.prev_week?.clicks_delta },
+                { value: formatMinutes(report.active_minutes), label: t('report.cardActive', lang), delta: report.prev_week?.active_delta },
+                { value: report.avg_wpm > 0 ? `${Math.round(report.avg_wpm)}` : '—', label: t('report.wpm', lang), delta: report.prev_week?.wpm_delta },
+              ].map((stat, i) => (
+                <div key={i}>
+                  <div style={{
+                    fontFamily: "'Space Grotesk', system-ui, sans-serif",
+                    fontSize: 22,
+                    fontWeight: 500,
+                    color: isDark ? '#FFFFFF' : '#000000',
+                    lineHeight: 1,
+                  }}>
+                    {stat.value}
+                  </div>
+                  <div style={{
+                    fontFamily: "'Space Mono', monospace",
+                    fontSize: 11,
+                    color: isDark ? '#666666' : '#999999',
+                    marginTop: 4,
+                    letterSpacing: '0.03em',
+                  }}>
+                    {stat.label}
+                  </div>
+                  {stat.delta !== undefined && stat.delta !== 0 && (
+                    <div style={{
+                      fontFamily: "'Space Mono', monospace",
+                      fontSize: 11,
+                      marginTop: 2,
+                      color: stat.delta > 0 ? 'var(--success)' : 'var(--accent)',
+                    }}>
+                      {stat.delta > 0 ? '+' : ''}{stat.delta}%
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* vs last week */}
-          {report.prev_week && (report.prev_week.keys_delta !== 0 || report.prev_week.active_delta !== 0) && (
-            <div className="text-center" style={{ fontSize: 12, color: isDark ? '#999999' : '#666666', marginBottom: 24 }}>
-              {report.prev_week.keys_delta !== 0 && (
-                <span style={{ color: report.prev_week.keys_delta > 0 ? 'var(--success)' : 'var(--accent)' }}>
-                  {report.prev_week.keys_delta > 0 ? '+' : ''}{report.prev_week.keys_delta}% {t('report.cardVsKeys', lang)}
-                </span>
-              )}
-              {report.prev_week.keys_delta !== 0 && report.prev_week.active_delta !== 0 && (
-                <span style={{ color: isDark ? '#666666' : '#999999' }}> · </span>
-              )}
-              {report.prev_week.active_delta !== 0 && (
-                <span style={{ color: report.prev_week.active_delta > 0 ? 'var(--success)' : 'var(--accent)' }}>
-                  {report.prev_week.active_delta > 0 ? '+' : ''}{report.prev_week.active_delta}% {t('report.cardVsActive', lang)}
-                </span>
-              )}
+          {/* Insights — 2-column grid, orphan spans full width */}
+          {report.insights && report.insights.length > 0 && (
+            <div style={{
+              marginTop: 20,
+              paddingTop: 16,
+              borderTop: `1px solid ${isDark ? '#222222' : '#E8E8E8'}`,
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '6px 24px',
+              alignItems: 'start',
+            }}>
+              {report.insights.map((insight, i) => (
+                <div key={i} style={{
+                  fontFamily: "'Space Mono', monospace",
+                  fontSize: 11,
+                  color: isDark ? '#666666' : '#999999',
+                  lineHeight: '18px',
+                  letterSpacing: '0.02em',
+                  gridColumn: i === report.insights.length - 1 ? '1 / -1' : undefined,
+                }}>
+                  {lang === 'zh' ? insight.text_zh : insight.text}
+                </div>
+              ))}
             </div>
           )}
-
-          {/* Date */}
-          <div className="text-center bracket-legend" style={{
-            color: isDark ? '#666666' : '#999999',
-            paddingTop: 20,
-            borderTop: `1px solid ${isDark ? '#222222' : '#E8E8E8'}`,
-          }}>
-            {report.start_date} — {report.end_date}
-          </div>
         </div>
       </div>
     </div>
