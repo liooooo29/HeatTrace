@@ -92,7 +92,7 @@ jobs:
           chmod +x "$APP_DIR/usr/bin/heattrace"
           cp build/appicon.png "$APP_DIR/usr/share/icons/hicolor/512x512/apps/heattrace.png"
 
-          printf '[Desktop Entry]\nName=HeatTrace\nExec=heattrace\nIcon=heattrace\nType=Application\nCategories=Utility;Development;\nComment=Desktop activity tracker for keyboard & mouse\nTerminal=false\nStartupNotify=false\n' > "$APP_DIR/usr/share/applications/heattrace.desktop"
+          printf '[Desktop Entry]\nName=HeatTrace\nExec=HeatTrace\nIcon=heattrace\nType=Application\nCategories=Utility;Development;\nComment=Desktop activity tracker for keyboard & mouse\nTerminal=false\nStartupNotify=false\n' > "$APP_DIR/usr/share/applications/heattrace.desktop"
 
           cp "$APP_DIR/usr/share/applications/heattrace.desktop" "$APP_DIR/heattrace.desktop"
           cp build/appicon.png "$APP_DIR/heattrace.png"
@@ -104,8 +104,8 @@ jobs:
           DEB_DIR=build/heattrace_1.0.0_amd64
           mkdir -p "$DEB_DIR/DEBIAN" "$DEB_DIR/usr/bin" "$DEB_DIR/usr/share/icons/hicolor/512x512/apps" "$DEB_DIR/usr/share/applications"
 
-          cp build/bin/HeatTrace "$DEB_DIR/usr/bin/heattrace"
-          chmod +x "$DEB_DIR/usr/bin/heattrace"
+          cp build/bin/HeatTrace "$DEB_DIR/usr/bin/HeatTrace"
+          chmod +x "$DEB_DIR/usr/bin/HeatTrace"
           cp build/appicon.png "$DEB_DIR/usr/share/icons/hicolor/512x512/apps/heattrace.png"
           cp "$APP_DIR/usr/share/applications/heattrace.desktop" "$DEB_DIR/usr/share/applications/heattrace.desktop"
 
