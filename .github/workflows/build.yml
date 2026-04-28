@@ -80,8 +80,10 @@ jobs:
       - name: Extract version from tag
         id: version
         run: |
+          TAG="${{ github.ref_name }}"
           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            echo "version=${{ github.ref_name#v }}" >> "$GITHUB_OUTPUT"
+            VER="${TAG#v}"
+            echo "version=$VER" >> "$GITHUB_OUTPUT"
           else
             echo "version=dev" >> "$GITHUB_OUTPUT"
           fi
