@@ -79,6 +79,7 @@ jobs:
 
       - name: Extract version from tag
         id: version
+        shell: bash
         run: |
           TAG="${{ github.ref_name }}"
           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
