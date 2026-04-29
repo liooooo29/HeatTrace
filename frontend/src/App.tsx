@@ -215,7 +215,8 @@ function App() {
                 <Dashboard dateRange={dr} lang={lang} monitorRunning={monitorRunning}
                   accessErr={accessErr} onMonitorChange={refreshStatus}
                   historyMode={historyMode} onToggleHistory={() => setHistoryMode(h => !h)}
-                  onDateChange={(s, e) => setDateRange({ start: s, end: e })} />
+                  onDateChange={(s, e) => setDateRange({ start: s, end: e })}
+                  currentWpm={morphWpm} />
               </div>
               <div className={showSettings ? 'page-visible' : 'page-hidden'}>
                 <SettingsPanel lang={lang} onBack={() => setShowSettings(false)}

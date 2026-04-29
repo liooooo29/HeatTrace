@@ -7,7 +7,6 @@
   "frontend:dev:watcher": "pnpm dev",
   "frontend:dev:serverUrl": "auto",
   "build:tags": "",
-  "ldflags": "-s -w -X main.version={{.Version}}",
   "author": {
     "name": "halalala222",
     "email": "1741196223@qq.com"

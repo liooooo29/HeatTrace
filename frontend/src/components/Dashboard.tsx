@@ -29,9 +29,10 @@ interface DashboardProps {
   historyMode?: boolean;
   onToggleHistory?: () => void;
   onDateChange?: (start: string, end: string) => void;
+  currentWpm?: number;
 }
 
-export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonitorChange, historyMode, onToggleHistory, onDateChange }: DashboardProps) {
+export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonitorChange, historyMode, onToggleHistory, onDateChange, currentWpm }: DashboardProps) {
   const [summary, setSummary] = useState<DailySummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [startingMonitor, setStartingMonitor] = useState(false);
@@ -382,7 +383,7 @@ export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonito
 
       {/* Typing ECG */}
       <div className="mb-8">
-        <TypingECG dateRange={dateRange} lang={lang} dataVersion={dataVersion} />
+        <TypingECG dateRange={dateRange} lang={lang} dataVersion={dataVersion} currentWpm={currentWpm} />
       </div>
 
       {/* Keyboard Heatmap */}

@@ -27,20 +27,15 @@ export function useMorph({ enabled, colors, mode }: UseMorphOptions) {
   const smoothWpmRef = useRef(0);
   const frameRef = useRef(0);
 
-  // Poll key count and compute real-time WPM
+  // Poll key count and compute real-time WPM — always runs
   useEffect(() => {
-    if (!enabled) return;
-
     const poll = async () => {
       try {
         const count = await GetKeyCount();
         if (lastKeyCountRef.current >= 0) {
           const delta = count - lastKeyCountRef.current;
           if (delta >= 0) {
-            // delta = keys in the last 1 second
-            // CPM = delta * 60, WPM = CPM / 5
             const instantWpm = (delta * 60) / 5;
-            // Exponential moving average for smooth transitions
             smoothWpmRef.current =
               smoothWpmRef.current * (1 - WPM_SMOOTHING) + instantWpm * WPM_SMOOTHING;
             setWpm(Math.round(smoothWpmRef.current));
@@ -50,14 +45,13 @@ export function useMorph({ enabled, colors, mode }: UseMorphOptions) {
       } catch {}
     };
 
-    // Reset state
     lastKeyCountRef.current = -1;
     smoothWpmRef.current = 0;
     setWpm(0);
 
     const interval = setInterval(poll, POLL_INTERVAL_MS);
     return () => clearInterval(interval);
-  }, [enabled]);
+  }, []);
 
   // Apply morph accent color to CSS variables
   useEffect(() => {

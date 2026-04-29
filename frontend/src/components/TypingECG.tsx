@@ -18,9 +18,10 @@ interface TypingECGProps {
   dateRange: { start: string; end: string };
   lang: Lang;
   dataVersion?: number;
+  currentWpm?: number;
 }
 
-export function TypingECG({ dateRange, lang, dataVersion }: TypingECGProps) {
+export function TypingECG({ dateRange, lang, dataVersion, currentWpm }: TypingECGProps) {
   const [data, setData] = useState<(RhythmPoint & { label: string })[]>([]);
   const [loading, setLoading] = useState(true);
   const animRef = useRef<number | null>(null);
@@ -114,6 +115,7 @@ export function TypingECG({ dateRange, lang, dataVersion }: TypingECGProps) {
   const visibleData = data.slice(0, Math.max(visibleCount, data.length));
   const avgCPM = data.reduce((sum, d) => sum + d.cpm, 0) / data.length;
   const maxCPM = Math.max(...data.map(d => d.cpm));
+  const displayWpm = currentWpm != null ? currentWpm : avgCPM / 5;
 
   return (
     <div className="chart-card">
@@ -134,7 +136,7 @@ export function TypingECG({ dateRange, lang, dataVersion }: TypingECGProps) {
             color: 'var(--accent)',
             transition: 'color 1.5s ease',
           }}>
-            {t('report.heartRate', lang)}: {avgCPM.toFixed(0)} CPM
+            {t('report.heartRate', lang)}: {displayWpm.toFixed(0)} WPM
           </span>
         </div>
         <span style={{
@@ -142,7 +144,7 @@ export function TypingECG({ dateRange, lang, dataVersion }: TypingECGProps) {
           fontSize: 10,
           color: 'var(--text-disabled)',
         }}>
-          {t('report.peak', lang)}: {maxCPM.toFixed(0)} CPM
+          {t('report.peak', lang)}: {(maxCPM / 5).toFixed(0)} WPM
         </span>
       </div>
 
@@ -157,10 +159,10 @@ export function TypingECG({ dateRange, lang, dataVersion }: TypingECGProps) {
             <YAxis tick={{ fill: 'var(--text-disabled)', fontSize: 10, fontFamily: "'Space Mono', monospace" }}
               axisLine={false} tickLine={false} width={35} />
             <Tooltip contentStyle={tooltipStyle}
-              formatter={(value: number) => [`${value.toFixed(0)} CPM`, '']}
+              formatter={(value: number) => [`${(value / 5).toFixed(0)} WPM`, '']}
               labelFormatter={(label: string) => `${label}`} />
             {avgCPM > 0 && (
-              <ReferenceLine y={avgCPM} stroke="var(--text-disabled)" strokeDasharray="4 4" strokeWidth={1} />
+              <ReferenceLine y={displayWpm * 5} stroke="var(--text-disabled)" strokeDasharray="4 4" strokeWidth={1} />
             )}
             <Line type="monotone" dataKey="cpm"
               stroke="var(--accent)" strokeWidth={1.5}
