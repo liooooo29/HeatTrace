@@ -122,15 +122,17 @@ export function TypingECG({ dateRange, lang, dataVersion }: TypingECGProps) {
         <div className="flex items-center gap-2">
           <div style={{
             width: 6, height: 6, borderRadius: '50%',
-            backgroundColor: 'var(--success)',
+            backgroundColor: 'var(--accent)',
             animation: 'ecg-pulse 1.5s ease-in-out infinite',
+            transition: 'background-color 1.5s ease',
           }} />
           <span style={{
             fontFamily: "'Space Mono', monospace",
             fontSize: 11,
             textTransform: 'uppercase',
             letterSpacing: '0.06em',
-            color: 'var(--success)',
+            color: 'var(--accent)',
+            transition: 'color 1.5s ease',
           }}>
             {t('report.heartRate', lang)}: {avgCPM.toFixed(0)} CPM
           </span>
@@ -161,8 +163,8 @@ export function TypingECG({ dateRange, lang, dataVersion }: TypingECGProps) {
               <ReferenceLine y={avgCPM} stroke="var(--text-disabled)" strokeDasharray="4 4" strokeWidth={1} />
             )}
             <Line type="monotone" dataKey="cpm"
-              stroke="var(--text-display)" strokeWidth={1.5}
-              dot={false} activeDot={{ r: 3, fill: 'var(--text-display)', stroke: 'var(--surface)', strokeWidth: 2 }}
+              stroke="var(--accent)" strokeWidth={1.5}
+              dot={false} activeDot={{ r: 3, fill: 'var(--accent)', stroke: 'var(--surface)', strokeWidth: 2 }}
               isAnimationActive={false} />
           </LineChart>
         </ResponsiveContainer>

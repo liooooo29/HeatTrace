@@ -20,6 +20,8 @@
   --error: #D71921;
   --info: #999999;
   --interactive: #5B9BF6;
+  --morph-tint: transparent;
+  --morph-tint-raised: transparent;
   --space-2xs: 2px;
   --space-xs: 4px;
   --space-sm: 8px;
@@ -72,6 +74,26 @@ body {
 }
 .theme-crossfading {
   animation: theme-crossfade 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Morph — smooth color transitions for dynamic accent */
+/* Standard properties using var(--accent) will transition when the variable changes */
+.morph-transition,
+.morph-transition .card,
+.morph-transition .badge-accent,
+.morph-transition .label-accent,
+.morph-transition .btn-primary,
+.morph-transition .btn-destructive,
+.morph-transition .heatmap-key,
+.morph-transition .topkey-bar-fill,
+.morph-transition .toggle-track[data-on="true"],
+.morph-transition .card-accent-left,
+.morph-transition .segmented-bar-segment[data-filled="true"] {
+  transition:
+    background-color 1.5s ease,
+    border-color 1.5s ease,
+    color 1.5s ease,
+    box-shadow 1.5s ease;
 }
 
 /* Reduced motion */

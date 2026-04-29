@@ -425,6 +425,8 @@ func (a *App) ShowWindow() {
 }
 
 func (a *App) Quit() {
+	a.mon.Stop()
+	a.store.Stop()
 	if a.ctx != nil {
 		runtime.Quit(a.ctx)
 	}

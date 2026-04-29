@@ -24,6 +24,12 @@ Keystrokes, typing speed, mouse clicks — all tracked locally on your machine. 
     <td align="center"><img src="screenshots/settings.png" width="280" /></td>
     <td align="center"><img src="screenshots/weekly-report.png" width="280" /></td>
   </tr>
+  <tr>
+    <td align="center" colspan="3"><img src="screenshots/Snipaste_2026-04-29_16-49-33.png" width="600" /></td>
+  </tr>
+  <tr>
+    <td align="center" colspan="3"><sub>Morph — dynamic theme colors that shift with your typing speed</sub></td>
+  </tr>
 </table>
 
 ## Features
@@ -35,7 +41,8 @@ Keystrokes, typing speed, mouse clicks — all tracked locally on your machine. 
 - **Weekly report** — typing style analysis, daily/hourly trends, shareable image export
 - **Top Apps** — track which applications consume your time
 - **System tray** — daily summary in the tray, runs in background
-- **Dark & Light mode** — Nothing-inspired monospace UI, OLED black or off-white
+- **Theme presets** — 8 Nothing-style color presets (Nothing Red, Arctic Cyan, Phosphor Green, Signal Violet, Amber Warm, Slate Blue, Rose Gold, Graphite) with dark & light mode
+- **Morph** — dynamic theme colors that respond to your typing speed in real-time. 6 color palettes (Thermal, Aurora, Ember, Neon, Ocean, Sunset) that shift from calm tones at idle to intense hues at peak WPM. The accent color, ECG line, heatmap, and all UI elements flow together as your typing rhythm changes
 - **i18n** — English and Chinese
 - **Data retention** — auto-cleanup with configurable retention period
 - **Custom data directory** — choose where your data lives

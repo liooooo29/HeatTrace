@@ -3,6 +3,7 @@ import { GetConfig, SaveConfig, GetMonitorStatus, ToggleMonitor, TestMonitor, Ge
 import { ErrorPage } from './ErrorPage';
 import { KeyboardDebug } from './KeyboardDebug';
 import { SegmentedSpinner } from './SegmentedSpinner';
+import { ThemeSelector } from './ThemeSelector';
 import { t } from '../i18n';
 import type { Lang } from '../i18n';
 import type { AppConfig } from '../types';
@@ -12,11 +13,19 @@ interface SettingsPanelProps {
   lang: Lang;
   onBack: () => void;
   mode: ThemeMode;
-  onToggleMode: () => void;
+  resolved: 'dark' | 'light';
+  onSetMode: (m: ThemeMode) => void;
   onLangChange: (lang: Lang) => void;
+  activePresetId: string;
+  onSelectPreset: (id: string) => void;
+  morphEnabled: boolean;
+  morphPresetId: string;
+  currentWpm: number;
+  onToggleMorph: () => void;
+  onSelectMorphPreset: (id: string) => void;
 }
 
-export function SettingsPanel({ lang, onBack, mode, onToggleMode, onLangChange }: SettingsPanelProps) {
+export function SettingsPanel({ lang, onBack, mode, resolved, onSetMode, onLangChange, activePresetId, onSelectPreset, morphEnabled, morphPresetId, currentWpm, onToggleMorph, onSelectMorphPreset }: SettingsPanelProps) {
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [monStatus, setMonStatus] = useState({ running: false, access_err: '' });
   const [toggleErr, setToggleErr] = useState('');
@@ -35,6 +44,10 @@ export function SettingsPanel({ lang, onBack, mode, onToggleMode, onLangChange }
   const [showNotes, setShowNotes] = useState(false);
   const prevDataDirRef = useRef<string | null>(null);
 
+  // Issue #3: track raw string for retention input so user can clear and retype
+  const [retentionRaw, setRetentionRaw] = useState<string>('');
+  const retentionFromBlur = useRef(false);
+
   useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
     async function load() {
@@ -45,6 +58,7 @@ export function SettingsPanel({ lang, onBack, mode, onToggleMode, onLangChange }
         setMonStatus(status);
         setDefaultDataDir(defaultDir);
         setLoadError('');
+        if (cfg) setRetentionRaw(String(cfg.data_retention_days));
       } catch (e) {
         console.error('Failed to load config:', e);
         setLoadError(e instanceof Error ? e.message : String(e));
@@ -85,6 +99,10 @@ export function SettingsPanel({ lang, onBack, mode, onToggleMode, onLangChange }
   useEffect(() => {
     if (!config) return;
     if (prevDataDirRef.current !== null && (config.data_dir || '') !== prevDataDirRef.current) return;
+    if (retentionFromBlur.current) {
+      retentionFromBlur.current = false;
+      return;
+    }
     const timer = setTimeout(handleSave, 500);
     return () => clearTimeout(timer);
   }, [config]);
@@ -158,6 +176,20 @@ export function SettingsPanel({ lang, onBack, mode, onToggleMode, onLangChange }
     }
   };
 
+  // Issue #3: validate retention on blur, not on every keystroke
+  const handleRetentionBlur = () => {
+    if (!config) return;
+    const parsed = parseInt(retentionRaw);
+    const valid = isNaN(parsed) || parsed < 1 ? 90 : parsed;
+    setRetentionRaw(String(valid));
+    if (valid !== config.data_retention_days) {
+      retentionFromBlur.current = true;
+      setConfig({ ...config, data_retention_days: valid });
+      // Save immediately on blur
+      SaveConfig({ ...config, data_retention_days: valid }).catch(() => {});
+    }
+  };
+
   if (loadError && !config) return (
     <div>
       <div className="mb-6">
@@ -212,14 +244,48 @@ export function SettingsPanel({ lang, onBack, mode, onToggleMode, onLangChange }
           </div>
         </div>
 
-        {/* Appearance — dark/light toggle */}
+        {/* Issue #2: Appearance — segmented control with Auto/Dark/Light */}
         <div className="list-row">
           <span className="label">{t('set.appearance', lang)}</span>
-          <button onClick={onToggleMode}
-            className="toggle-track"
-            data-on={mode === 'light'}>
-            <div className="toggle-thumb" />
-          </button>
+          <div className="flex" style={{ border: '1px solid var(--border-visible)', borderRadius: 999, overflow: 'hidden' }}>
+            {(['auto', 'dark', 'light'] as ThemeMode[]).map(m => {
+              const isActive = mode === m;
+              return (
+                <button key={m} onClick={() => onSetMode(m)}
+                  style={{
+                    fontFamily: "'Space Mono', monospace",
+                    fontSize: 10,
+                    letterSpacing: '0.02em',
+                    padding: '5px 12px',
+                    background: isActive ? 'var(--text-display)' : 'transparent',
+                    color: isActive ? 'var(--black)' : 'var(--text-secondary)',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'background 0.2s, color 0.2s',
+                  }}>
+                  {t(`set.mode.${m}`, lang)}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div style={{ borderTop: '1px solid var(--border)', margin: '8px 0' }} />
+
+        {/* Theme — presets + morph (full-width section) */}
+        <div style={{ padding: '8px 0' }}>
+          <ThemeSelector
+            lang={lang}
+            mode={resolved}
+            activePresetId={activePresetId}
+            morphEnabled={morphEnabled}
+            morphPresetId={morphPresetId}
+            currentWpm={currentWpm}
+            onSelectPreset={onSelectPreset}
+            onToggleMorph={onToggleMorph}
+            onSelectMorphPreset={onSelectMorphPreset}
+          />
         </div>
 
         {/* Update */}
@@ -342,15 +408,17 @@ export function SettingsPanel({ lang, onBack, mode, onToggleMode, onLangChange }
         {/* Divider */}
         <div style={{ borderTop: '1px solid var(--border)', margin: '8px 0' }} />
 
-        {/* Configuration */}
+        {/* Issue #3: Configuration — retention input validates on blur */}
         <div className="list-row">
           <div>
             <span className="label">{t('set.retention', lang)}</span>
             <div className="label-desc">{t('set.retentionDesc', lang)}</div>
           </div>
           <div className="flex items-center gap-2">
-            <input type="number" value={config.data_retention_days}
-              onChange={e => setConfig({ ...config, data_retention_days: parseInt(e.target.value) || 90 })}
+            <input type="number" value={retentionRaw}
+              onChange={e => setRetentionRaw(e.target.value)}
+              onBlur={handleRetentionBlur}
+              onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
               className="nd-input tabular-nums"
               style={{ width: 60, textAlign: 'right', borderBottom: 'none' }} />
             <span className="label label-disabled">{t('set.days', lang)}</span>

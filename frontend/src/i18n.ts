@@ -57,6 +57,9 @@ const en = {
   'set.subtitle': 'Monitor configuration and preferences',
   'set.language': 'Language',
   'set.appearance': 'Appearance',
+  'set.mode.auto': 'Auto',
+  'set.mode.dark': 'Dark',
+  'set.mode.light': 'Light',
   'set.monitoring': 'Monitoring',
   'set.active': 'Active',
   'set.paused': 'Paused',
@@ -162,6 +165,12 @@ const en = {
   'update.uptodate': 'Up to date (v{version})',
   'update.download': 'Download',
   'update.releaseNotes': 'Release Notes',
+
+  // Theme
+  'theme.title': 'Theme',
+  'theme.presets': 'Color Presets',
+  'theme.morph': 'Morph',
+  'theme.morphDesc': 'Match your typing speed · Dynamic theme colors',
 };
 
 const zh = {
@@ -218,6 +227,9 @@ const zh = {
   'set.subtitle': '监控配置与偏好',
   'set.language': '语言',
   'set.appearance': '外观',
+  'set.mode.auto': '跟随系统',
+  'set.mode.dark': '深色',
+  'set.mode.light': '浅色',
   'set.monitoring': '监控',
   'set.active': '运行中',
   'set.paused': '已暂停',
@@ -318,6 +330,12 @@ const zh = {
   'update.uptodate': '已是最新版本 (v{version})',
   'update.download': '下载',
   'update.releaseNotes': '更新日志',
+
+  // Theme
+  'theme.title': '主题',
+  'theme.presets': '配色方案',
+  'theme.morph': '动态主题',
+  'theme.morphDesc': '跟随打字速度 · 动态主题配色',
 };
 
 export type Lang = 'en' | 'zh';

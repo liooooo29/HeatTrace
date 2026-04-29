@@ -3,9 +3,11 @@ import { Dashboard } from './components/Dashboard';
 import { SettingsPanel } from './components/SettingsPanel';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { useTheme } from './hooks/useTheme';
+import { useMorph } from './hooks/useMorph';
 import { useLang } from './hooks/useLang';
 import { GetMonitorStatus, ToggleMonitor, BrowserOpenURL } from './wails-bindings';
 import { WindowMinimise, WindowToggleMaximise, WindowHide } from '../wailsjs/runtime/runtime';
+import { morphPresets } from './themes';
 import { t } from './i18n';
 import heattraceIconDark from './assets/images/heattrace-icon.png';
 import heattraceIconLight from './assets/images/heattrace-icon-light.png';
@@ -18,7 +20,33 @@ function App() {
   const [dismissed, setDismissed] = useState(false);
   const [monitorRunning, setMonitorRunning] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const { mode, toggleMode } = useTheme();
+
+  // Theme system
+  const { mode, resolved, toggleMode, setMode, presetId, setPreset } = useTheme();
+
+  // Morph state — persisted in localStorage
+  const [morphEnabled, setMorphEnabled] = useState(() => {
+    return localStorage.getItem('heattrace-morph') === 'true';
+  });
+  const [morphPresetId, setMorphPresetId] = useState(() => {
+    return localStorage.getItem('heattrace-morph-preset') || 'thermal';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('heattrace-morph', String(morphEnabled));
+  }, [morphEnabled]);
+
+  useEffect(() => {
+    localStorage.setItem('heattrace-morph-preset', morphPresetId);
+  }, [morphPresetId]);
+
+  const morphColors = (morphPresets.find(p => p.id === morphPresetId) || morphPresets[0]).colors;
+  const { wpm: morphWpm } = useMorph({
+    enabled: morphEnabled,
+    colors: morphColors,
+    mode: resolved,
+  });
+
   const { lang, switchLang } = useLang();
 
   const refreshStatus = () => {
@@ -89,7 +117,7 @@ function App() {
       <nav className="nav-bar flex items-center justify-between px-5 h-11 shrink-0">
         <div className="flex items-center gap-3">
           {/* Logo */}
-          <img src={mode === 'dark' ? heattraceIconDark : heattraceIconLight} alt="HeatTrace" width={22} height={22} style={{ borderRadius: 5 }} />
+          <img src={resolved === 'dark' ? heattraceIconDark : heattraceIconLight} alt="HeatTrace" width={22} height={22} style={{ borderRadius: 5 }} />
           <span style={{
             fontFamily: "'Space Grotesk', system-ui, sans-serif",
             fontSize: 14,
@@ -102,8 +130,8 @@ function App() {
         <div className="flex items-center gap-2 nav-no-drag">
           {/* Dark/Light toggle */}
           <button onClick={toggleMode} className="nav-icon-btn"
-            aria-label={mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
-            {mode === 'dark' ? (
+            aria-label={resolved === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
+            {resolved === 'dark' ? (
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
               </svg>
@@ -159,8 +187,13 @@ function App() {
               </div>
               <div className={showSettings ? 'page-visible' : 'page-hidden'}>
                 <SettingsPanel lang={lang} onBack={() => setShowSettings(false)}
-                  mode={mode} onToggleMode={toggleMode}
-                  onLangChange={l => switchLang(l)} />
+                  mode={mode} resolved={resolved} onSetMode={setMode}
+                  onLangChange={l => switchLang(l)}
+                  activePresetId={presetId} onSelectPreset={setPreset}
+                  morphEnabled={morphEnabled} morphPresetId={morphPresetId}
+                  currentWpm={morphWpm}
+                  onToggleMorph={() => setMorphEnabled(v => !v)}
+                  onSelectMorphPreset={setMorphPresetId} />
               </div>
             </div>
           </ErrorBoundary>

@@ -45,6 +45,9 @@ func main() {
 	tray := NewTray(app,
 		func() { app.ShowWindow() },
 		func() {
+			// Stop monitor and store before exiting — ensures gohook is cleaned up
+			app.mon.Stop()
+			app.store.Stop()
 			if app.ctx != nil {
 				wailsRuntime.Quit(app.ctx)
 			}
