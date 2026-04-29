@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { GetTypingRhythm } from '../wails-bindings';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { t } from '../i18n';
 import type { Lang } from '../i18n';
 import type { RhythmPoint } from '../types';
@@ -19,9 +19,10 @@ interface TypingECGProps {
   lang: Lang;
   dataVersion?: number;
   currentWpm?: number;
+  peakWpm?: number;
 }
 
-export function TypingECG({ dateRange, lang, dataVersion, currentWpm }: TypingECGProps) {
+export function TypingECG({ dateRange, lang, dataVersion, currentWpm, peakWpm }: TypingECGProps) {
   const [data, setData] = useState<(RhythmPoint & { label: string })[]>([]);
   const [loading, setLoading] = useState(true);
   const animRef = useRef<number | null>(null);
@@ -113,9 +114,8 @@ export function TypingECG({ dateRange, lang, dataVersion, currentWpm }: TypingEC
   }
 
   const visibleData = data.slice(0, Math.max(visibleCount, data.length));
-  const avgCPM = data.reduce((sum, d) => sum + d.cpm, 0) / data.length;
-  const maxCPM = Math.max(...data.map(d => d.cpm));
-  const displayWpm = currentWpm != null ? currentWpm : avgCPM / 5;
+  const displayWpm = currentWpm ?? 0;
+  const displayPeak = peakWpm ?? 0;
 
   return (
     <div className="chart-card">
@@ -144,7 +144,7 @@ export function TypingECG({ dateRange, lang, dataVersion, currentWpm }: TypingEC
           fontSize: 10,
           color: 'var(--text-disabled)',
         }}>
-          {t('report.peak', lang)}: {(maxCPM / 5).toFixed(0)} WPM
+          {t('report.peak', lang)}: {displayPeak} WPM
         </span>
       </div>
 
@@ -157,13 +157,12 @@ export function TypingECG({ dateRange, lang, dataVersion, currentWpm }: TypingEC
               tickLine={false}
               interval={Math.max(0, Math.floor(data.length / 8))} />
             <YAxis tick={{ fill: 'var(--text-disabled)', fontSize: 10, fontFamily: "'Space Mono', monospace" }}
-              axisLine={false} tickLine={false} width={35} />
+              axisLine={false} tickLine={false} width={35}
+              tickFormatter={(v: number) => `${Math.round(v / 5)}`} />
             <Tooltip contentStyle={tooltipStyle}
               formatter={(value: number) => [`${(value / 5).toFixed(0)} WPM`, '']}
               labelFormatter={(label: string) => `${label}`} />
-            {avgCPM > 0 && (
-              <ReferenceLine y={displayWpm * 5} stroke="var(--text-disabled)" strokeDasharray="4 4" strokeWidth={1} />
-            )}
+            {/* No reference line — mixing live WPM with historical CPM is confusing */}
             <Line type="monotone" dataKey="cpm"
               stroke="var(--accent)" strokeWidth={1.5}
               dot={false} activeDot={{ r: 3, fill: 'var(--accent)', stroke: 'var(--surface)', strokeWidth: 2 }}

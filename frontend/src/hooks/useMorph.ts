@@ -25,6 +25,7 @@ export function useMorph({ enabled, colors, mode }: UseMorphOptions) {
   const [currentAccent, setCurrentAccent] = useState('');
   const lastKeyCountRef = useRef(-1);
   const smoothWpmRef = useRef(0);
+  const peakWpmRef = useRef(0);
   const frameRef = useRef(0);
 
   // Poll key count and compute real-time WPM — always runs
@@ -36,6 +37,9 @@ export function useMorph({ enabled, colors, mode }: UseMorphOptions) {
           const delta = count - lastKeyCountRef.current;
           if (delta >= 0) {
             const instantWpm = (delta * 60) / 5;
+            if (instantWpm > peakWpmRef.current) {
+              peakWpmRef.current = instantWpm;
+            }
             smoothWpmRef.current =
               smoothWpmRef.current * (1 - WPM_SMOOTHING) + instantWpm * WPM_SMOOTHING;
             setWpm(Math.round(smoothWpmRef.current));
@@ -47,6 +51,7 @@ export function useMorph({ enabled, colors, mode }: UseMorphOptions) {
 
     lastKeyCountRef.current = -1;
     smoothWpmRef.current = 0;
+    peakWpmRef.current = 0;
     setWpm(0);
 
     const interval = setInterval(poll, POLL_INTERVAL_MS);
@@ -103,8 +108,9 @@ export function useMorph({ enabled, colors, mode }: UseMorphOptions) {
   const resetMorph = useCallback(() => {
     lastKeyCountRef.current = -1;
     smoothWpmRef.current = 0;
+    peakWpmRef.current = 0;
     setWpm(0);
   }, []);
 
-  return { wpm, currentAccent, resetMorph };
+  return { wpm, peakWpm: peakWpmRef.current, currentAccent, resetMorph };
 }

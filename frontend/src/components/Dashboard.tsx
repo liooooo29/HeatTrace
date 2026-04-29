@@ -30,9 +30,10 @@ interface DashboardProps {
   onToggleHistory?: () => void;
   onDateChange?: (start: string, end: string) => void;
   currentWpm?: number;
+  peakWpm?: number;
 }
 
-export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonitorChange, historyMode, onToggleHistory, onDateChange, currentWpm }: DashboardProps) {
+export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonitorChange, historyMode, onToggleHistory, onDateChange, currentWpm, peakWpm }: DashboardProps) {
   const [summary, setSummary] = useState<DailySummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [startingMonitor, setStartingMonitor] = useState(false);
@@ -323,7 +324,7 @@ export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonito
         />
         <StatCard
           label={t('dash.wpm', lang)}
-          value={avgWPM > 0 ? avgWPM.toFixed(0) : '—'}
+          value={currentWpm != null && currentWpm > 0 ? currentWpm.toFixed(0) : '—'}
         />
         <StatCard
           label={t('dash.active', lang)}
@@ -383,7 +384,7 @@ export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonito
 
       {/* Typing ECG */}
       <div className="mb-8">
-        <TypingECG dateRange={dateRange} lang={lang} dataVersion={dataVersion} currentWpm={currentWpm} />
+        <TypingECG dateRange={dateRange} lang={lang} dataVersion={dataVersion} currentWpm={currentWpm} peakWpm={peakWpm} />
       </div>
 
       {/* Keyboard Heatmap */}
