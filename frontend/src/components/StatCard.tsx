@@ -2,9 +2,10 @@ interface StatCardProps {
   label: string;
   value: string;
   delta?: number;
+  hint?: string;
 }
 
-export function StatCard({ label, value, delta }: StatCardProps) {
+export function StatCard({ label, value, delta, hint }: StatCardProps) {
   const showDelta = delta != null && delta !== 0;
   const deltaColor = delta != null && delta > 0 ? 'var(--success)' : 'var(--accent)';
 
@@ -24,6 +25,15 @@ export function StatCard({ label, value, delta }: StatCardProps) {
         )}
       </div>
       <div className="stat-label">{label}</div>
+      {hint && (
+        <div style={{
+          fontFamily: "'Space Mono', monospace",
+          fontSize: 9,
+          color: 'var(--text-disabled)',
+          letterSpacing: '0.04em',
+          marginTop: 2,
+        }}>{hint}</div>
+      )}
     </div>
   );
 }

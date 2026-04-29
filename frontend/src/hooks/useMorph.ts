@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { GetKeyCount } from '../wails-bindings';
 import { getMorphAccent, type MorphColorRange, type ThemeMode } from '../themes';
 
@@ -130,5 +130,12 @@ export function useMorph({ enabled, colors, mode }: UseMorphOptions) {
     setWpmHistory([]);
   }, []);
 
-  return { wpm, peakWpm: peakWpmRef.current, wpmHistory, currentAccent, resetMorph };
+  // 1-minute rolling average WPM
+  const avgWpm1m = useMemo(() => {
+    const samples = wpmHistory.slice(-60);
+    if (samples.length === 0) return 0;
+    return Math.round(samples.reduce((sum, s) => sum + s.wpm, 0) / samples.length);
+  }, [wpmHistory]);
+
+  return { wpm, peakWpm: peakWpmRef.current, avgWpm1m, wpmHistory, currentAccent, resetMorph };
 }

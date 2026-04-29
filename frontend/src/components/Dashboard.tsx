@@ -31,10 +31,11 @@ interface DashboardProps {
   onDateChange?: (start: string, end: string) => void;
   currentWpm?: number;
   peakWpm?: number;
+  avgWpm1m?: number;
   wpmHistory?: { wpm: number; time: number }[];
 }
 
-export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonitorChange, historyMode, onToggleHistory, onDateChange, currentWpm, peakWpm, wpmHistory }: DashboardProps) {
+export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonitorChange, historyMode, onToggleHistory, onDateChange, currentWpm, peakWpm, avgWpm1m, wpmHistory }: DashboardProps) {
   const [summary, setSummary] = useState<DailySummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [startingMonitor, setStartingMonitor] = useState(false);
@@ -325,7 +326,8 @@ export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonito
         />
         <StatCard
           label={t('dash.wpm', lang)}
-          value={currentWpm != null && currentWpm > 0 ? currentWpm.toFixed(0) : '—'}
+          value={avgWpm1m != null && avgWpm1m > 0 ? avgWpm1m.toFixed(0) : '—'}
+          hint={t('dash.wpmHint', lang)}
         />
         <StatCard
           label={t('dash.active', lang)}
