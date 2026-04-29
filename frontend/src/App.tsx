@@ -6,7 +6,7 @@ import { useTheme } from './hooks/useTheme';
 import { useMorph } from './hooks/useMorph';
 import { useLang } from './hooks/useLang';
 import { GetMonitorStatus, ToggleMonitor, BrowserOpenURL } from './wails-bindings';
-import { WindowMinimise, WindowToggleMaximise, WindowHide } from '../wailsjs/runtime/runtime';
+import { WindowMinimise, WindowToggleMaximise, WindowHide, WindowIsMaximised } from '../wailsjs/runtime/runtime';
 import { morphPresets } from './themes';
 import { t } from './i18n';
 import heattraceIconDark from './assets/images/heattrace-icon.png';
@@ -20,6 +20,7 @@ function App() {
   const [dismissed, setDismissed] = useState(false);
   const [monitorRunning, setMonitorRunning] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [isMaximised, setIsMaximised] = useState(false);
 
   // Theme system
   const { mode, resolved, toggleMode, setMode, presetId, setPreset } = useTheme();
@@ -57,6 +58,19 @@ function App() {
   };
 
   useEffect(() => { refreshStatus(); }, []);
+
+  useEffect(() => {
+    WindowIsMaximised().then(setIsMaximised).catch(() => {});
+    const onFocus = () => WindowIsMaximised().then(setIsMaximised).catch(() => {});
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
+  }, []);
+
+  const handleToggleMaximise = async () => {
+    WindowToggleMaximise();
+    // Delay to let the window state settle
+    setTimeout(() => WindowIsMaximised().then(setIsMaximised).catch(() => {}), 100);
+  };
 
   useEffect(() => {
     const onFocus = async () => {
@@ -128,16 +142,26 @@ function App() {
         </div>
 
         <div className="flex items-center gap-2 nav-no-drag">
-          {/* Dark/Light toggle */}
-          <button onClick={toggleMode} className="nav-icon-btn"
-            aria-label={resolved === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
-            {resolved === 'dark' ? (
+          {/* Theme mode: auto → dark → light → auto */}
+          <button onClick={() => {
+            const next = mode === 'auto' ? 'dark' : mode === 'dark' ? 'light' : 'auto';
+            setMode(next);
+          }} className="nav-icon-btn"
+            aria-label={`Theme: ${mode}`}>
+            {mode === 'auto' ? (
+              // Monitor/display icon for "follow system"
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
               </svg>
-            ) : (
+            ) : mode === 'dark' ? (
+              // Moon icon
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+              </svg>
+            ) : (
+              // Sun icon
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
               </svg>
             )}
           </button>
@@ -158,11 +182,19 @@ function App() {
                 <line x1="2" y1="5" x2="8" y2="5"/>
               </svg>
             </button>
-            <button onClick={() => WindowToggleMaximise()}
-              className="nav-icon-btn" aria-label="Maximise">
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.2">
-                <rect x="1.5" y="1.5" width="7" height="7" rx="0.5"/>
-              </svg>
+            <button onClick={handleToggleMaximise}
+              className="nav-icon-btn" aria-label={isMaximised ? 'Restore' : 'Maximise'}>
+              {isMaximised ? (
+                // Restore: two overlapping rectangles
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.2">
+                  <rect x="0.5" y="2.5" width="5.5" height="5.5" rx="0.5"/><polyline points="4.5 2.5 4.5 0.5 9.5 0.5 9.5 5.5 7.5 5.5"/>
+                </svg>
+              ) : (
+                // Maximise: single rectangle
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.2">
+                  <rect x="1.5" y="1.5" width="7" height="7" rx="0.5"/>
+                </svg>
+              )}
             </button>
             <button onClick={() => WindowHide()}
               className="nav-icon-btn" aria-label="Close">
