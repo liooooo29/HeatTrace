@@ -42,7 +42,7 @@ function App() {
   }, [morphPresetId]);
 
   const morphColors = (morphPresets.find(p => p.id === morphPresetId) || morphPresets[0]).colors;
-  const { wpm: morphWpm, peakWpm: morphPeakWpm } = useMorph({
+  const { wpm: morphWpm, peakWpm: morphPeakWpm, wpmHistory: morphWpmHistory } = useMorph({
     enabled: morphEnabled,
     colors: morphColors,
     mode: resolved,
@@ -216,7 +216,7 @@ function App() {
                   accessErr={accessErr} onMonitorChange={refreshStatus}
                   historyMode={historyMode} onToggleHistory={() => setHistoryMode(h => !h)}
                   onDateChange={(s, e) => setDateRange({ start: s, end: e })}
-                  currentWpm={morphWpm} peakWpm={morphPeakWpm} />
+                  currentWpm={morphWpm} peakWpm={morphPeakWpm} wpmHistory={morphWpmHistory} />
               </div>
               <div className={showSettings ? 'page-visible' : 'page-hidden'}>
                 <SettingsPanel lang={lang} onBack={() => setShowSettings(false)}

@@ -20,12 +20,21 @@ interface UseMorphOptions {
   mode: ThemeMode;
 }
 
+const HISTORY_SIZE = 120; // 2 minutes of 1s samples
+
+export interface WpmSample {
+  wpm: number;
+  time: number; // Date.now()
+}
+
 export function useMorph({ enabled, colors, mode }: UseMorphOptions) {
   const [wpm, setWpm] = useState(0);
+  const [wpmHistory, setWpmHistory] = useState<WpmSample[]>([]);
   const [currentAccent, setCurrentAccent] = useState('');
   const lastKeyCountRef = useRef(-1);
   const smoothWpmRef = useRef(0);
   const peakWpmRef = useRef(0);
+  const historyRef = useRef<WpmSample[]>([]);
   const frameRef = useRef(0);
 
   // Poll key count and compute real-time WPM — always runs
@@ -42,7 +51,12 @@ export function useMorph({ enabled, colors, mode }: UseMorphOptions) {
             }
             smoothWpmRef.current =
               smoothWpmRef.current * (1 - WPM_SMOOTHING) + instantWpm * WPM_SMOOTHING;
-            setWpm(Math.round(smoothWpmRef.current));
+            const smoothed = Math.round(smoothWpmRef.current);
+            setWpm(smoothed);
+            // Record history
+            const sample: WpmSample = { wpm: smoothed, time: Date.now() };
+            historyRef.current = [...historyRef.current.slice(-(HISTORY_SIZE - 1)), sample];
+            setWpmHistory(historyRef.current);
           }
         }
         lastKeyCountRef.current = count;
@@ -52,7 +66,9 @@ export function useMorph({ enabled, colors, mode }: UseMorphOptions) {
     lastKeyCountRef.current = -1;
     smoothWpmRef.current = 0;
     peakWpmRef.current = 0;
+    historyRef.current = [];
     setWpm(0);
+    setWpmHistory([]);
 
     const interval = setInterval(poll, POLL_INTERVAL_MS);
     return () => clearInterval(interval);
@@ -109,8 +125,10 @@ export function useMorph({ enabled, colors, mode }: UseMorphOptions) {
     lastKeyCountRef.current = -1;
     smoothWpmRef.current = 0;
     peakWpmRef.current = 0;
+    historyRef.current = [];
     setWpm(0);
+    setWpmHistory([]);
   }, []);
 
-  return { wpm, peakWpm: peakWpmRef.current, currentAccent, resetMorph };
+  return { wpm, peakWpm: peakWpmRef.current, wpmHistory, currentAccent, resetMorph };
 }
