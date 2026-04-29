@@ -69,14 +69,6 @@ jobs:
           sudo apt-get install -y libgtk-3-dev ${{ matrix.webkit }} \
             libx11-dev libx11-xcb-dev libxkbcommon-x11-dev xvfb
 
-      - name: Build
-        if: matrix.platform != 'linux'
-        run: wails build
-
-      - name: Build (Linux)
-        if: matrix.platform == 'linux'
-        run: xvfb-run wails build -tags ${{ matrix.tags }}
-
       - name: Extract version from tag
         id: version
         shell: bash
@@ -88,6 +80,14 @@ jobs:
           else
             echo "version=dev" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Build
+        if: matrix.platform != 'linux'
+        run: wails build -ldflags "-X main.version=${{ steps.version.outputs.version }}"
+
+      - name: Build (Linux)
+        if: matrix.platform == 'linux'
+        run: xvfb-run wails build -tags ${{ matrix.tags }} -ldflags "-X main.version=${{ steps.version.outputs.version }}"
 
       - name: Package (Linux)
         if: matrix.platform == 'linux'
