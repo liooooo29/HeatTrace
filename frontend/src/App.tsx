@@ -5,6 +5,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { useTheme } from './hooks/useTheme';
 import { useMorph } from './hooks/useMorph';
 import { useLang } from './hooks/useLang';
+import { useFont } from './hooks/useFont';
 import { GetMonitorStatus, ToggleMonitor, BrowserOpenURL } from './wails-bindings';
 import { WindowMinimise, WindowToggleMaximise, WindowHide, WindowIsMaximised } from '../wailsjs/runtime/runtime';
 import { morphPresets } from './themes';
@@ -49,6 +50,7 @@ function App() {
   });
 
   const { lang, switchLang } = useLang();
+  const { font, switchFont } = useFont();
 
   const refreshStatus = () => {
     GetMonitorStatus().then(s => {
@@ -133,7 +135,7 @@ function App() {
           {/* Logo */}
           <img src={resolved === 'dark' ? heattraceIconDark : heattraceIconLight} alt="HeatTrace" width={22} height={22} style={{ borderRadius: 5 }} />
           <span style={{
-            fontFamily: "'Space Grotesk', system-ui, sans-serif",
+            fontFamily: "var(--font-body)",
             fontSize: 14,
             fontWeight: 500,
             color: 'var(--text-display)',
@@ -226,7 +228,8 @@ function App() {
                   morphEnabled={morphEnabled} morphPresetId={morphPresetId}
                   currentWpm={morphWpm}
                   onToggleMorph={() => setMorphEnabled(v => !v)}
-                  onSelectMorphPreset={setMorphPresetId} />
+                  onSelectMorphPreset={setMorphPresetId}
+                  font={font} onFontChange={switchFont} />
               </div>
             </div>
           </ErrorBoundary>

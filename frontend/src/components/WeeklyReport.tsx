@@ -104,14 +104,14 @@ export function WeeklyReport({ lang, onBack }: { lang: Lang; onBack: () => void 
             <div className="flex items-center gap-2">
               <img src={isDark ? heattraceIconDark : heattraceIconLight} alt="HeatTrace" width={16} height={16} style={{ borderRadius: 3 }} />
               <span style={{
-                fontFamily: "'Space Grotesk', system-ui, sans-serif",
+                fontFamily: "var(--font-body)",
                 fontSize: 13,
                 fontWeight: 500,
                 color: isDark ? '#FFFFFF' : '#000000',
               }}>HeatTrace</span>
             </div>
             <span style={{
-              fontFamily: "'Space Mono', monospace",
+              fontFamily: "var(--font-mono)",
               fontSize: 11,
               color: isDark ? '#666666' : '#999999',
               letterSpacing: '0.05em',
@@ -139,14 +139,14 @@ export function WeeklyReport({ lang, onBack }: { lang: Lang; onBack: () => void 
                 </span>
               </div>
               <div style={{
-                fontFamily: "'Space Grotesk', system-ui, sans-serif",
+                fontFamily: "var(--font-body)",
                 fontSize: 16,
                 fontWeight: 500,
                 color: isDark ? '#FFFFFF' : '#000000',
                 marginBottom: 4,
               }}>{personaName}</div>
               <div style={{
-                fontFamily: "'Space Mono', monospace",
+                fontFamily: "var(--font-mono)",
                 fontSize: 11,
                 color: isDark ? '#666666' : '#999999',
                 lineHeight: '15px',
@@ -171,7 +171,7 @@ export function WeeklyReport({ lang, onBack }: { lang: Lang; onBack: () => void 
               ].map((stat, i) => (
                 <div key={i}>
                   <div style={{
-                    fontFamily: "'Space Grotesk', system-ui, sans-serif",
+                    fontFamily: "var(--font-body)",
                     fontSize: 22,
                     fontWeight: 500,
                     color: isDark ? '#FFFFFF' : '#000000',
@@ -180,7 +180,7 @@ export function WeeklyReport({ lang, onBack }: { lang: Lang; onBack: () => void 
                     {stat.value}
                   </div>
                   <div style={{
-                    fontFamily: "'Space Mono', monospace",
+                    fontFamily: "var(--font-mono)",
                     fontSize: 11,
                     color: isDark ? '#666666' : '#999999',
                     marginTop: 4,
@@ -190,7 +190,7 @@ export function WeeklyReport({ lang, onBack }: { lang: Lang; onBack: () => void 
                   </div>
                   {stat.delta !== undefined && stat.delta !== 0 && (
                     <div style={{
-                      fontFamily: "'Space Mono', monospace",
+                      fontFamily: "var(--font-mono)",
                       fontSize: 11,
                       marginTop: 2,
                       color: stat.delta > 0 ? 'var(--success)' : 'var(--accent)',
@@ -216,7 +216,7 @@ export function WeeklyReport({ lang, onBack }: { lang: Lang; onBack: () => void 
             }}>
               {report.insights.map((insight, i) => (
                 <div key={i} style={{
-                  fontFamily: "'Space Mono', monospace",
+                  fontFamily: "var(--font-mono)",
                   fontSize: 11,
                   color: isDark ? '#666666' : '#999999',
                   lineHeight: '18px',

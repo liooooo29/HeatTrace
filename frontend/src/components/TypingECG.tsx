@@ -8,7 +8,7 @@ const tooltipStyle = {
   border: '1px solid var(--border-visible)',
   borderRadius: 8,
   fontSize: 12,
-  fontFamily: "'Space Mono', monospace",
+  fontFamily: "var(--font-mono)",
   color: 'var(--text-primary)',
 };
 
@@ -54,7 +54,7 @@ export function TypingECG({ lang, currentWpm, peakWpm, wpmHistory }: TypingECGPr
             transition: 'background-color 1.5s ease',
           }} />
           <span style={{
-            fontFamily: "'Space Mono', monospace",
+            fontFamily: "var(--font-mono)",
             fontSize: 11,
             textTransform: 'uppercase',
             letterSpacing: '0.06em',
@@ -65,7 +65,7 @@ export function TypingECG({ lang, currentWpm, peakWpm, wpmHistory }: TypingECGPr
           </span>
         </div>
         <span style={{
-          fontFamily: "'Space Mono', monospace",
+          fontFamily: "var(--font-mono)",
           fontSize: 10,
           color: 'var(--text-disabled)',
         }}>
@@ -77,11 +77,11 @@ export function TypingECG({ lang, currentWpm, peakWpm, wpmHistory }: TypingECGPr
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData} margin={{ left: 0, right: 10, top: 5, bottom: 0 }}>
             <XAxis dataKey="label"
-              tick={{ fill: 'var(--text-disabled)', fontSize: 10, fontFamily: "'Space Mono', monospace" }}
+              tick={{ fill: 'var(--text-disabled)', fontSize: 10, fontFamily: "var(--font-mono)" }}
               axisLine={{ stroke: 'var(--border)' }}
               tickLine={false}
               interval={Math.max(0, Math.floor(chartData.length / 6))} />
-            <YAxis tick={{ fill: 'var(--text-disabled)', fontSize: 10, fontFamily: "'Space Mono', monospace" }}
+            <YAxis tick={{ fill: 'var(--text-disabled)', fontSize: 10, fontFamily: "var(--font-mono)" }}
               axisLine={false} tickLine={false} width={35} />
             <Tooltip contentStyle={tooltipStyle}
               formatter={(value: number) => [`${value} WPM`, '']}

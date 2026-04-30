@@ -177,7 +177,7 @@ export function KeyboardDebug({ lang }: { lang: Lang }) {
             <div className="label-disabled" style={{ fontSize: 10 }}>Event Log</div>
             <button onClick={() => { logRef.current = []; setLog([]); }}
               style={{
-                fontFamily: "'Space Mono', monospace",
+                fontFamily: "var(--font-mono)",
                 fontSize: 10,
                 textTransform: 'uppercase',
                 letterSpacing: '0.06em',

@@ -8,6 +8,7 @@ import { t } from '../i18n';
 import type { Lang } from '../i18n';
 import type { AppConfig } from '../types';
 import type { ThemeMode } from '../themes';
+import type { FontChoice } from '../hooks/useFont';
 
 interface SettingsPanelProps {
   lang: Lang;
@@ -23,9 +24,11 @@ interface SettingsPanelProps {
   currentWpm: number;
   onToggleMorph: () => void;
   onSelectMorphPreset: (id: string) => void;
+  font: FontChoice;
+  onFontChange: (f: FontChoice) => void;
 }
 
-export function SettingsPanel({ lang, onBack, mode, resolved, onSetMode, onLangChange, activePresetId, onSelectPreset, morphEnabled, morphPresetId, currentWpm, onToggleMorph, onSelectMorphPreset }: SettingsPanelProps) {
+export function SettingsPanel({ lang, onBack, mode, resolved, onSetMode, onLangChange, activePresetId, onSelectPreset, morphEnabled, morphPresetId, currentWpm, onToggleMorph, onSelectMorphPreset, font, onFontChange }: SettingsPanelProps) {
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [monStatus, setMonStatus] = useState({ running: false, access_err: '' });
   const [toggleErr, setToggleErr] = useState('');
@@ -253,10 +256,10 @@ export function SettingsPanel({ lang, onBack, mode, resolved, onSetMode, onLangC
               return (
                 <button key={m} onClick={() => onSetMode(m)}
                   style={{
-                    fontFamily: "'Space Mono', monospace",
-                    fontSize: 10,
-                    letterSpacing: '0.02em',
-                    padding: '5px 12px',
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 11,
+                    letterSpacing: '0.06em',
+                    padding: '5px 14px',
                     background: isActive ? 'var(--text-display)' : 'transparent',
                     color: isActive ? 'var(--black)' : 'var(--text-secondary)',
                     border: 'none',
@@ -264,6 +267,32 @@ export function SettingsPanel({ lang, onBack, mode, resolved, onSetMode, onLangC
                     transition: 'background 0.2s, color 0.2s',
                   }}>
                   {t(`set.mode.${m}`, lang)}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Font — Design vs System */}
+        <div className="list-row">
+          <span className="label">{t('set.font', lang)}</span>
+          <div className="flex" style={{ border: '1px solid var(--border-visible)', borderRadius: 999, overflow: 'hidden' }}>
+            {(['design', 'system'] as FontChoice[]).map(f => {
+              const isActive = font === f;
+              return (
+                <button key={f} onClick={() => onFontChange(f)}
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 11,
+                    letterSpacing: '0.06em',
+                    padding: '5px 14px',
+                    background: isActive ? 'var(--text-display)' : 'transparent',
+                    color: isActive ? 'var(--black)' : 'var(--text-secondary)',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'background 0.2s, color 0.2s',
+                  }}>
+                  {t(`set.font${f === 'design' ? 'Design' : 'System'}`, lang)}
                 </button>
               );
             })}
@@ -288,8 +317,8 @@ export function SettingsPanel({ lang, onBack, mode, resolved, onSetMode, onLangC
           />
         </div>
 
-        {/* Update */}
-        {updateInfo && (
+        {/* Update — hide for dev builds */}
+        {updateInfo && currentVersion !== 'dev' && (
           <div className="list-row" style={{ borderBottom: 'none' }}>
             <div>
               <span className="label">{t('update.title', lang)}</span>
@@ -310,8 +339,7 @@ export function SettingsPanel({ lang, onBack, mode, resolved, onSetMode, onLangC
                   </button>
                 )}
                 <button onClick={() => OpenDownloadPage(updateInfo.downloadUrl)}
-                  className="btn-base btn-xs"
-                  style={{ color: '#fff', backgroundColor: 'var(--accent)', border: 'none' }}>
+                  className="btn-base btn-xs btn-primary">
                   {t('update.download', lang)}
                 </button>
               </div>
@@ -337,24 +365,37 @@ export function SettingsPanel({ lang, onBack, mode, resolved, onSetMode, onLangC
           </div>
         )}
 
-        {/* Monitoring status */}
+        {/* Monitoring — status + controls in one row */}
         <div className="list-row">
-          <span className="label">{t('set.monitoring', lang)}</span>
-          <div className="flex items-center gap-3">
-            <span className="label" style={{
+          <div>
+            <span className="label">{t('set.monitoring', lang)}</span>
+            <div className="label" style={{
               color: monStatus.running ? 'var(--success)' : 'var(--text-disabled)',
+              marginTop: 2,
             }}>
               {monStatus.running
                 ? `${t('set.active', lang)}${eventCount > 0 ? ` · ${eventCount}` : ''}`
                 : t('set.paused', lang)}
-            </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {monStatus.running && (
+              <>
+                <button onClick={handleTest} disabled={testing}
+                  className="btn-base btn-xs btn-secondary">
+                  {testing ? t('set.testing', lang) : t('set.testMonitor', lang)}
+                </button>
+                {testResult && (
+                  <span className="label" style={{
+                    color: testResult.success ? 'var(--success)' : 'var(--accent)',
+                  }}>
+                    {testResult.message}
+                  </span>
+                )}
+              </>
+            )}
             <button onClick={handleToggle}
-              className="btn-base btn-xs"
-              style={{
-                color: monStatus.running ? 'var(--accent)' : 'var(--text-secondary)',
-                background: 'none',
-                border: `1px solid ${monStatus.running ? 'var(--accent)' : 'var(--border-visible)'}`,
-              }}>
+              className={`btn-base btn-xs ${monStatus.running ? 'btn-destructive' : 'btn-secondary'}`}>
               {monStatus.running ? t('set.stop', lang) : t('set.start', lang)}
             </button>
           </div>
@@ -373,40 +414,11 @@ export function SettingsPanel({ lang, onBack, mode, resolved, onSetMode, onLangC
             </span>
             <button
               onClick={() => BrowserOpenURL('x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility')}
-              className="btn-base btn-xs"
-              style={{
-                color: 'var(--text-display)',
-                backgroundColor: 'var(--accent)',
-                border: 'none',
-              }}>
+              className="btn-base btn-xs btn-primary">
               {t('set.openSettings', lang)}
             </button>
           </div>
         )}
-
-        {/* Test button — inline */}
-        {monStatus.running && (
-          <div className="list-row" style={{ borderBottom: 'none' }}>
-            <span />
-            <div className="flex items-center gap-2">
-              <button onClick={handleTest} disabled={testing}
-                className="btn-base btn-xs btn-secondary">
-                {testing ? t('set.testing', lang) : t('set.testMonitor', lang)}
-              </button>
-              {testResult && (
-                <span className="label" style={{
-                  fontSize: 10,
-                  color: testResult.success ? 'var(--success)' : 'var(--accent)',
-                }}>
-                  {testResult.message}
-                </span>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Divider */}
-        <div style={{ borderTop: '1px solid var(--border)', margin: '8px 0' }} />
 
         {/* Issue #3: Configuration — retention input validates on blur */}
         <div className="list-row">
@@ -426,12 +438,12 @@ export function SettingsPanel({ lang, onBack, mode, resolved, onSetMode, onLangC
         </div>
 
         {/* Data directory */}
-        <div className="list-row" style={{ alignItems: 'flex-start' }}>
-          <div style={{ flexShrink: 0 }}>
+        <div className="list-row" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 8 }}>
+          <div>
             <span className="label">{t('set.dataDir', lang)}</span>
             <div className="label-desc">{t('set.dataDirDesc', lang)}</div>
           </div>
-          <div className="flex items-center gap-2" style={{ flex: 1, minWidth: 0 }}>
+          <div className="flex items-center gap-2">
             <input type="text" value={config.data_dir || ''}
               onChange={e => setConfig({ ...config, data_dir: e.target.value })}
               placeholder={defaultDataDir}
@@ -446,36 +458,28 @@ export function SettingsPanel({ lang, onBack, mode, resolved, onSetMode, onLangC
               <span className="label-desc" style={{ fontSize: 10 }}>[...]</span>
             )}
           </div>
+          <div className="bracket-legend">
+            {t('set.dataDirDefault', lang)}: {defaultDataDir}
+          </div>
         </div>
 
-        <div className="bracket-legend" style={{ marginBottom: 8 }}>
-          {t('set.dataDirDefault', lang)}: {defaultDataDir}
-        </div>
-
-        {/* Divider */}
-        <div style={{ borderTop: '1px solid var(--border)', margin: '8px 0' }} />
-
-        {/* Danger zone — accent border */}
-        <div className="list-row" style={{ borderBottom: 'none' }}>
+        {/* Danger zone — Nothing Design: destructive button = accent outline */}
+        <div className="list-row">
           <div>
-            <span className="label label-accent">{t('set.uninstall', lang)}</span>
+            <span className="label">{t('set.uninstall', lang)}</span>
             <div className="label-desc">{t('set.uninstallDesc', lang)}</div>
           </div>
           <button onClick={() => setShowClearConfirm(v => !v)}
-            className="btn-base btn-xs btn-destructive"
-            style={{
-              color: showClearConfirm ? '#fff' : 'var(--accent)',
-              backgroundColor: showClearConfirm ? 'var(--accent)' : 'transparent',
-            }}>
+            className="btn-base btn-xs btn-destructive">
             {showClearConfirm ? t('common.cancel', lang) : t('set.uninstallBtn', lang)}
           </button>
         </div>
 
         {showClearConfirm && (
-          <div style={{ padding: '12px 0', display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ flex: 1 }}>
-              <div className="label label-accent">{t('set.uninstallTitle', lang)}</div>
-              <div className="label-desc" style={{ fontSize: 10 }}>{t('set.uninstallModalDesc', lang)}</div>
+          <div className="list-row" style={{ borderBottom: 'none' }}>
+            <div>
+              <span className="label">{t('set.uninstallTitle', lang)}</span>
+              <div className="label-desc">{t('set.uninstallModalDesc', lang)}</div>
             </div>
             <button onClick={async () => {
               setClearing(true);
@@ -488,12 +492,7 @@ export function SettingsPanel({ lang, onBack, mode, resolved, onSetMode, onLangC
               }
               setClearing(false);
             }} disabled={clearing}
-              className="btn-base btn-xs"
-              style={{
-                color: '#fff',
-                backgroundColor: 'var(--accent)',
-                border: 'none',
-              }}>
+              className="btn-base btn-xs btn-destructive">
               {clearing ? '...' : t('set.confirmUninstall', lang)}
             </button>
           </div>

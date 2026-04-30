@@ -9,9 +9,9 @@
   --surface-raised: #1A1A1A;
   --border: #222222;
   --border-visible: #333333;
-  --text-disabled: #666666;
-  --text-secondary: #999999;
-  --text-primary: #E8E8E8;
+  --text-disabled: #757575;
+  --text-secondary: #ABABAB;
+  --text-primary: #F0F0F0;
   --text-display: #FFFFFF;
   --accent: #D71921;
   --accent-subtle: rgba(215,25,33,0.15);
@@ -22,6 +22,9 @@
   --interactive: #5B9BF6;
   --morph-tint: transparent;
   --morph-tint-raised: transparent;
+  --font-display: 'Doto', 'Space Mono', monospace;
+  --font-body: 'Space Grotesk', system-ui, sans-serif;
+  --font-mono: 'Space Mono', monospace;
   --space-2xs: 2px;
   --space-xs: 4px;
   --space-sm: 8px;
@@ -60,7 +63,7 @@ body {
   margin: 0;
   background-color: var(--black);
   color: var(--text-primary);
-  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.5;
@@ -113,7 +116,7 @@ body {
 /* Tabular numbers — always Space Mono */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 /* Theme transition — instant (Nothing style) */
@@ -145,18 +148,18 @@ button { cursor: pointer; }
 
 /* Section title — Space Mono, ALL CAPS */
 .section-title {
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   color: var(--text-secondary);
   margin-bottom: 12px;
 }
 
 /* Stat value — Doto hero number */
 .stat-value {
-  font-family: 'Doto', 'Space Mono', monospace;
+  font-family: var(--font-display);
   font-size: 28px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -167,18 +170,18 @@ button { cursor: pointer; }
 
 /* Stat label — Space Mono ALL CAPS */
 .stat-label {
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   color: var(--text-secondary);
   margin-top: 6px;
 }
 
 /* Page header */
 .page-title {
-  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-family: var(--font-body);
   font-size: 24px;
   font-weight: 500;
   letter-spacing: -0.01em;
@@ -186,7 +189,7 @@ button { cursor: pointer; }
 }
 
 .page-subtitle {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-secondary);
   margin-top: 2px;
 }
@@ -235,7 +238,7 @@ button { cursor: pointer; }
   gap: 4px;
   padding: 3px 10px;
   border-radius: 999px;
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 400;
   text-transform: uppercase;
@@ -266,7 +269,7 @@ button { cursor: pointer; }
 }
 
 .loading-text {
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 12px;
   color: var(--text-disabled);
   animation: nothing-pulse 1.5s ease-in-out infinite;
@@ -278,7 +281,7 @@ button { cursor: pointer; }
   align-items: center;
   justify-content: center;
   border-radius: 4px;
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   user-select: none;
   background: var(--surface-raised);
@@ -308,7 +311,7 @@ button { cursor: pointer; }
   align-items: center;
   justify-content: center;
   border-radius: 4px;
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-mono);
   height: 38px;
   cursor: default;
   user-select: none;
@@ -441,7 +444,7 @@ button { cursor: pointer; }
 
 /* Bracket navigation — Nothing style */
 .bracket-nav {
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -535,7 +538,7 @@ button { cursor: pointer; }
   border: none;
   border-bottom: 1px solid var(--border-visible);
   color: var(--text-primary);
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 13px;
   padding: 8px 0;
   outline: none;
@@ -563,7 +566,7 @@ button { cursor: pointer; }
   padding: 12px 24px;
   min-height: 44px;
   border-radius: 999px;
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -610,11 +613,11 @@ button { cursor: pointer; }
    ═══════════════════════════════════════════ */
 
 .label {
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   color: var(--text-secondary);
 }
 
@@ -636,12 +639,12 @@ button { cursor: pointer; }
 
 /* Label description — below label in settings rows */
 .label-desc {
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-disabled);
+  text-transform: none;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
   margin-top: 2px;
 }
 
@@ -650,24 +653,24 @@ button { cursor: pointer; }
    ═══════════════════════════════════════════ */
 
 .text-body {
-  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-family: var(--font-body);
   font-size: 14px;
   font-weight: 500;
   color: var(--text-primary);
 }
 
 .text-body-sm {
-  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-family: var(--font-body);
   font-size: 12px;
   color: var(--text-secondary);
 }
 
 .text-mono {
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 .text-mono-bold {
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-mono);
   font-weight: 700;
   color: var(--text-display);
 }
@@ -732,7 +735,7 @@ button { cursor: pointer; }
 }
 
 .display-xl {
-  font-family: 'Doto', 'Space Mono', monospace;
+  font-family: var(--font-display);
   font-size: 72px;
   font-weight: 700;
   line-height: 1.0;
@@ -742,7 +745,7 @@ button { cursor: pointer; }
 }
 
 .display-lg {
-  font-family: 'Doto', 'Space Mono', monospace;
+  font-family: var(--font-display);
   font-size: 48px;
   font-weight: 700;
   line-height: 1.05;
@@ -752,7 +755,7 @@ button { cursor: pointer; }
 }
 
 .display-md {
-  font-family: 'Doto', 'Space Mono', monospace;
+  font-family: var(--font-display);
   font-size: 36px;
   font-weight: 700;
   line-height: 1.1;
@@ -766,10 +769,10 @@ button { cursor: pointer; }
    ═══════════════════════════════════════════ */
 
 .bracket-legend {
-  font-family: 'Space Mono', monospace;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: none;
+  letter-spacing: 0.04em;
   color: var(--text-disabled);
 }
 
@@ -782,7 +785,7 @@ button { cursor: pointer; }
 }
 
 .topkey-bar-label {
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 13px;
   font-weight: 700;
   color: var(--text-display);
@@ -806,9 +809,21 @@ button { cursor: pointer; }
 }
 
 .topkey-bar-count {
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text-secondary);
   min-width: 48px;
   text-align: right;
+}
+
+/* ═══════════════════════════════════════════
+   SYSTEM FONT MODE — .system-font on <html>
+   Swaps the 3 font CSS variables; everything
+   using var(--font-xxx) picks up the change.
+   ═══════════════════════════════════════════ */
+
+.system-font {
+  --font-display: ui-monospace, 'Cascadia Code', 'Source Code Pro', 'Menlo', 'Consolas', monospace;
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', 'Menlo', 'Consolas', monospace;
 }

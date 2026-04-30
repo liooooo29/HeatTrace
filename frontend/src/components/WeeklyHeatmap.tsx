@@ -37,7 +37,7 @@ export function WeeklyHeatmap({ grid }: WeeklyHeatmapProps) {
           <div style={{ height: 18 }} />
           {Array.from({ length: 24 }, (_, h) => (
             <div key={h} className="flex items-center justify-end pr-1"
-              style={{ height: 14, fontSize: 9, color: 'var(--text-disabled)', fontFamily: "'Space Mono', monospace" }}>
+              style={{ height: 14, fontSize: 9, color: 'var(--text-disabled)', fontFamily: "var(--font-mono)" }}>
               {h % 6 === 0 ? `${h}` : ''}
             </div>
           ))}
@@ -48,7 +48,7 @@ export function WeeklyHeatmap({ grid }: WeeklyHeatmapProps) {
           const dowLabel = DOW_LABELS[dow === 0 ? 6 : dow - 1];
           return (
             <div key={date} className="flex-1">
-              <div className="text-center mb-1" style={{ fontSize: 9, color: 'var(--text-secondary)', fontFamily: "'Space Mono', monospace", height: 18 }}>
+              <div className="text-center mb-1" style={{ fontSize: 9, color: 'var(--text-secondary)', fontFamily: "var(--font-mono)", height: 18 }}>
                 {dowLabel}
               </div>
               <div className="flex flex-col gap-px">

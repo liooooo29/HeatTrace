@@ -100,9 +100,9 @@ export function ThemeSelector({
                 transition: 'border-color 0.2s',
               }} />
               <span style={{
-                fontFamily: "'Space Mono', monospace",
-                fontSize: 10,
-                letterSpacing: '0.02em',
+                fontFamily: "var(--font-mono)",
+                fontSize: 11,
+                letterSpacing: '0.06em',
                 color: isActive ? 'var(--text-display)' : 'var(--text-secondary)',
                 textAlign: 'left',
                 lineHeight: 1.2,
@@ -138,7 +138,7 @@ export function ThemeSelector({
             </button>
             <div>
               <div style={{
-                fontFamily: "'Space Mono', monospace",
+                fontFamily: "var(--font-mono)",
                 fontSize: 11,
                 color: morphEnabled ? 'var(--text-display)' : 'var(--text-secondary)',
                 letterSpacing: '0.02em',
@@ -147,8 +147,8 @@ export function ThemeSelector({
                 {t('theme.morph', lang)}
               </div>
               <div style={{
-                fontSize: 10,
-                color: 'var(--text-disabled)',
+                fontSize: 11,
+                color: 'var(--text-secondary)',
                 marginTop: 1,
               }}>
                 {t('theme.morphDesc', lang)}
@@ -168,7 +168,7 @@ export function ThemeSelector({
                 transition: 'background-color 1.5s ease, box-shadow 1.5s ease',
               }} />
               <span style={{
-                fontFamily: "'Doto', monospace",
+                fontFamily: "var(--font-display)",
                 fontSize: 16,
                 fontWeight: 700,
                 color: 'var(--text-display)',
@@ -179,7 +179,7 @@ export function ThemeSelector({
                 {currentWpm}
               </span>
               <span style={{
-                fontFamily: "'Space Mono', monospace",
+                fontFamily: "var(--font-mono)",
                 fontSize: 9,
                 color: 'var(--text-disabled)',
                 letterSpacing: '0.04em',
@@ -215,10 +215,10 @@ export function ThemeSelector({
                 flexShrink: 0,
               }} />
               <span style={{
-                fontFamily: "'Space Mono', monospace",
-                fontSize: 10,
+                fontFamily: "var(--font-mono)",
+                fontSize: 11,
                 color: 'var(--text-primary)',
-                letterSpacing: '0.02em',
+                letterSpacing: '0.06em',
                 flex: 1,
                 textAlign: 'left',
               }}>
@@ -270,10 +270,10 @@ export function ThemeSelector({
                         flexShrink: 0,
                       }} />
                       <span style={{
-                        fontFamily: "'Space Mono', monospace",
-                        fontSize: 10,
+                        fontFamily: "var(--font-mono)",
+                        fontSize: 11,
                         color: isActive ? 'var(--text-display)' : 'var(--text-secondary)',
-                        letterSpacing: '0.02em',
+                        letterSpacing: '0.06em',
                       }}>
                         {lang === 'zh' ? preset.nameZh : preset.name}
                       </span>
