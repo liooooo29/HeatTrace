@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Dashboard } from './components/Dashboard';
 import { SettingsPanel } from './components/SettingsPanel';
+import { KeyboardLayoutDemo } from './components/KeyboardLayoutDemo';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { useTheme } from './hooks/useTheme';
 import { useMorph } from './hooks/useMorph';
 import { useLang } from './hooks/useLang';
 import { useFont } from './hooks/useFont';
+import { useFontSize } from './hooks/useFontSize';
+import { useKeyboardLayout } from './hooks/useKeyboardLayout';
 import { GetMonitorStatus, ToggleMonitor, BrowserOpenURL } from './wails-bindings';
 import { WindowMinimise, WindowToggleMaximise, WindowHide, WindowIsMaximised } from '../wailsjs/runtime/runtime';
 import { morphPresets } from './themes';
@@ -21,6 +24,7 @@ function App() {
   const [dismissed, setDismissed] = useState(false);
   const [monitorRunning, setMonitorRunning] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showDemo, setShowDemo] = useState(false);
   const [isMaximised, setIsMaximised] = useState(false);
 
   // Theme system
@@ -51,6 +55,8 @@ function App() {
 
   const { lang, switchLang } = useLang();
   const { font, switchFont } = useFont();
+  const { fontSize, setFontSize } = useFontSize();
+  const { layoutId, setLayoutId, layout } = useKeyboardLayout();
 
   const refreshStatus = () => {
     GetMonitorStatus().then(s => {
@@ -105,7 +111,7 @@ function App() {
               <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
               <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
             </svg>
-            <span className="label" style={{ fontSize: 12 }}>
+            <span className="label" style={{ fontSize: 'var(--label-size)' }}>
               {t('banner.access', lang)}
             </span>
           </div>
@@ -136,7 +142,7 @@ function App() {
           <img src={resolved === 'dark' ? heattraceIconDark : heattraceIconLight} alt="HeatTrace" width={22} height={22} style={{ borderRadius: 5 }} />
           <span style={{
             fontFamily: "var(--font-body)",
-            fontSize: 14,
+            fontSize: 'var(--font-body-size)',
             fontWeight: 500,
             color: 'var(--text-display)',
             letterSpacing: '-0.01em',
@@ -168,8 +174,17 @@ function App() {
             )}
           </button>
 
+          {/* Demo toggle (temporary) */}
+          <button onClick={() => setShowDemo(v => !v)} className="nav-icon-btn"
+            style={showDemo ? { borderColor: 'var(--accent)', color: 'var(--accent)' } : undefined}
+            aria-label="Layout Demo" title="Keyboard Layout Demo">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="4" width="20" height="16" rx="2"/><line x1="6" y1="8" x2="6" y2="8.01"/><line x1="10" y1="8" x2="10" y2="8.01"/><line x1="14" y1="8" x2="14" y2="8.01"/><line x1="18" y1="8" x2="18" y2="8.01"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="6" y1="16" x2="10" y2="16"/>
+            </svg>
+          </button>
+
           {/* Settings */}
-          <button onClick={() => setShowSettings(true)} className="nav-icon-btn"
+          <button onClick={() => { setShowSettings(true); setShowDemo(false); }} className="nav-icon-btn"
             aria-label={t('nav.settings', lang)} title={t('nav.settings', lang)}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
@@ -212,26 +227,33 @@ function App() {
       <main className="flex-1 overflow-auto flex justify-center">
         <div className="w-full px-6 py-6" style={{ maxWidth: 960 }}>
           <ErrorBoundary lang={lang}>
-            <div className="page-stack">
-              <div className={showSettings ? 'page-hidden' : 'page-visible'}>
-                <Dashboard dateRange={dr} lang={lang} monitorRunning={monitorRunning}
-                  accessErr={accessErr} onMonitorChange={refreshStatus}
-                  historyMode={historyMode} onToggleHistory={() => setHistoryMode(h => !h)}
-                  onDateChange={(s, e) => setDateRange({ start: s, end: e })}
-                  currentWpm={morphWpm} peakWpm={morphPeakWpm} avgWpm1m={morphAvgWpm1m} wpmHistory={morphWpmHistory} />
+            {showDemo ? (
+              <KeyboardLayoutDemo lang={lang} />
+            ) : (
+              <div className="page-stack">
+                <div className={showSettings ? 'page-hidden' : 'page-visible'}>
+                  <Dashboard dateRange={dr} lang={lang} monitorRunning={monitorRunning}
+                    accessErr={accessErr} onMonitorChange={refreshStatus}
+                    historyMode={historyMode} onToggleHistory={() => setHistoryMode(h => !h)}
+                    onDateChange={(s, e) => setDateRange({ start: s, end: e })}
+                    currentWpm={morphWpm} peakWpm={morphPeakWpm} avgWpm1m={morphAvgWpm1m} wpmHistory={morphWpmHistory}
+                    layout={layout} />
+                </div>
+                <div className={showSettings ? 'page-visible' : 'page-hidden'}>
+                  <SettingsPanel lang={lang} onBack={() => setShowSettings(false)}
+                    mode={mode} resolved={resolved} onSetMode={setMode}
+                    onLangChange={l => switchLang(l)}
+                    activePresetId={presetId} onSelectPreset={setPreset}
+                    morphEnabled={morphEnabled} morphPresetId={morphPresetId}
+                    currentWpm={morphWpm}
+                    onToggleMorph={() => setMorphEnabled(v => !v)}
+                    onSelectMorphPreset={setMorphPresetId}
+                    font={font} onFontChange={switchFont}
+                    fontSize={fontSize} onFontSizeChange={setFontSize}
+                    layoutId={layoutId} onLayoutChange={setLayoutId} layout={layout} />
+                </div>
               </div>
-              <div className={showSettings ? 'page-visible' : 'page-hidden'}>
-                <SettingsPanel lang={lang} onBack={() => setShowSettings(false)}
-                  mode={mode} resolved={resolved} onSetMode={setMode}
-                  onLangChange={l => switchLang(l)}
-                  activePresetId={presetId} onSelectPreset={setPreset}
-                  morphEnabled={morphEnabled} morphPresetId={morphPresetId}
-                  currentWpm={morphWpm}
-                  onToggleMorph={() => setMorphEnabled(v => !v)}
-                  onSelectMorphPreset={setMorphPresetId}
-                  font={font} onFontChange={switchFont} />
-              </div>
-            </div>
+            )}
           </ErrorBoundary>
         </div>
       </main>

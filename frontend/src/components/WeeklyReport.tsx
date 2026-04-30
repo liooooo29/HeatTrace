@@ -57,7 +57,7 @@ export function WeeklyReport({ lang, onBack }: { lang: Lang; onBack: () => void 
   if (!report) return (
     <div>
       <div className="mb-6"><h2 className="page-title">{t('report.title', lang)}</h2></div>
-      <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{t('report.noData', lang)}</div>
+      <div style={{ fontSize: 'var(--font-body-size)', color: 'var(--text-secondary)' }}>{t('report.noData', lang)}</div>
     </div>
   );
 
@@ -105,14 +105,14 @@ export function WeeklyReport({ lang, onBack }: { lang: Lang; onBack: () => void 
               <img src={isDark ? heattraceIconDark : heattraceIconLight} alt="HeatTrace" width={16} height={16} style={{ borderRadius: 3 }} />
               <span style={{
                 fontFamily: "var(--font-body)",
-                fontSize: 13,
+                fontSize: 'var(--font-body-size)',
                 fontWeight: 500,
                 color: isDark ? '#FFFFFF' : '#000000',
               }}>HeatTrace</span>
             </div>
             <span style={{
               fontFamily: "var(--font-mono)",
-              fontSize: 11,
+              fontSize: 'var(--label-size)',
               color: isDark ? '#666666' : '#999999',
               letterSpacing: '0.05em',
             }}>
@@ -147,7 +147,7 @@ export function WeeklyReport({ lang, onBack }: { lang: Lang; onBack: () => void 
               }}>{personaName}</div>
               <div style={{
                 fontFamily: "var(--font-mono)",
-                fontSize: 11,
+                fontSize: 'var(--label-size)',
                 color: isDark ? '#666666' : '#999999',
                 lineHeight: '15px',
               }}>{personaSlogan}</div>
@@ -181,7 +181,7 @@ export function WeeklyReport({ lang, onBack }: { lang: Lang; onBack: () => void 
                   </div>
                   <div style={{
                     fontFamily: "var(--font-mono)",
-                    fontSize: 11,
+                    fontSize: 'var(--label-size)',
                     color: isDark ? '#666666' : '#999999',
                     marginTop: 4,
                     letterSpacing: '0.03em',
@@ -191,7 +191,7 @@ export function WeeklyReport({ lang, onBack }: { lang: Lang; onBack: () => void 
                   {stat.delta !== undefined && stat.delta !== 0 && (
                     <div style={{
                       fontFamily: "var(--font-mono)",
-                      fontSize: 11,
+                      fontSize: 'var(--label-size)',
                       marginTop: 2,
                       color: stat.delta > 0 ? 'var(--success)' : 'var(--accent)',
                     }}>
@@ -217,7 +217,7 @@ export function WeeklyReport({ lang, onBack }: { lang: Lang; onBack: () => void 
               {report.insights.map((insight, i) => (
                 <div key={i} style={{
                   fontFamily: "var(--font-mono)",
-                  fontSize: 11,
+                  fontSize: 'var(--label-size)',
                   color: isDark ? '#666666' : '#999999',
                   lineHeight: '18px',
                   letterSpacing: '0.02em',

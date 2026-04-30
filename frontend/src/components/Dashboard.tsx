@@ -9,6 +9,7 @@ import { SegmentedSpinner } from './SegmentedSpinner';
 import { t } from '../i18n';
 import type { Lang } from '../i18n';
 import type { DailySummary, KeyHeatPoint } from '../types';
+import type { KeyboardLayout } from '../data/keyboardLayouts';
 
 const KEY_DISPLAY: Record<string, string> = {
   ' ': 'Space', 'Backspace': '⌫', 'Tab': '⇥', 'Enter': '↵',
@@ -33,9 +34,10 @@ interface DashboardProps {
   peakWpm?: number;
   avgWpm1m?: number;
   wpmHistory?: { wpm: number; time: number }[];
+  layout: KeyboardLayout;
 }
 
-export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonitorChange, historyMode, onToggleHistory, onDateChange, currentWpm, peakWpm, avgWpm1m, wpmHistory }: DashboardProps) {
+export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonitorChange, historyMode, onToggleHistory, onDateChange, currentWpm, peakWpm, avgWpm1m, wpmHistory, layout }: DashboardProps) {
   const [summary, setSummary] = useState<DailySummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [startingMonitor, setStartingMonitor] = useState(false);
@@ -369,7 +371,7 @@ export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonito
                   className="list-row"
                   style={{ opacity: i === 0 ? 1 : 0.4 + 0.6 * ratio }}>
                   <span className="text-body" style={{
-                    fontSize: 13,
+                    fontSize: 'var(--font-body-size)',
                     maxWidth: 200,
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -393,7 +395,7 @@ export function Dashboard({ dateRange, lang, monitorRunning, accessErr, onMonito
       {/* Keyboard Heatmap */}
       {heatmapKeys.length > 0 && (
         <div className="mb-8">
-          <KeyboardHeatmap keys={heatmapKeys} />
+          <KeyboardHeatmap keys={heatmapKeys} layout={layout} />
         </div>
       )}
 

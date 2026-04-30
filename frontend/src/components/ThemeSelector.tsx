@@ -101,7 +101,7 @@ export function ThemeSelector({
               }} />
               <span style={{
                 fontFamily: "var(--font-mono)",
-                fontSize: 11,
+                fontSize: 'var(--label-size)',
                 letterSpacing: '0.06em',
                 color: isActive ? 'var(--text-display)' : 'var(--text-secondary)',
                 textAlign: 'left',
@@ -139,7 +139,7 @@ export function ThemeSelector({
             <div>
               <div style={{
                 fontFamily: "var(--font-mono)",
-                fontSize: 11,
+                fontSize: 'var(--label-size)',
                 color: morphEnabled ? 'var(--text-display)' : 'var(--text-secondary)',
                 letterSpacing: '0.02em',
                 transition: 'color 0.2s',
@@ -147,7 +147,7 @@ export function ThemeSelector({
                 {t('theme.morph', lang)}
               </div>
               <div style={{
-                fontSize: 11,
+                fontSize: 'var(--label-size)',
                 color: 'var(--text-secondary)',
                 marginTop: 1,
               }}>
@@ -216,7 +216,7 @@ export function ThemeSelector({
               }} />
               <span style={{
                 fontFamily: "var(--font-mono)",
-                fontSize: 11,
+                fontSize: 'var(--label-size)',
                 color: 'var(--text-primary)',
                 letterSpacing: '0.06em',
                 flex: 1,
@@ -271,7 +271,7 @@ export function ThemeSelector({
                       }} />
                       <span style={{
                         fontFamily: "var(--font-mono)",
-                        fontSize: 11,
+                        fontSize: 'var(--label-size)',
                         color: isActive ? 'var(--text-display)' : 'var(--text-secondary)',
                         letterSpacing: '0.06em',
                       }}>

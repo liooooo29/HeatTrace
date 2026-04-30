@@ -34,6 +34,35 @@
   --space-2xl: 48px;
   --space-3xl: 64px;
   --space-4xl: 96px;
+  /* Font size scale — overridden by .font-small / .font-large */
+  --font-body-size: 14px;
+  --label-size: 11px;
+  --page-title-size: 24px;
+  --display-xl-size: 72px;
+  --display-lg-size: 48px;
+  --display-md-size: 36px;
+  --stat-value-size: 28px;
+}
+
+/* Font size overrides */
+.font-small {
+  --font-body-size: 12px;
+  --label-size: 10px;
+  --page-title-size: 20px;
+  --display-xl-size: 62px;
+  --display-lg-size: 42px;
+  --display-md-size: 32px;
+  --stat-value-size: 24px;
+}
+
+.font-large {
+  --font-body-size: 16px;
+  --label-size: 12px;
+  --page-title-size: 28px;
+  --display-xl-size: 82px;
+  --display-lg-size: 54px;
+  --display-md-size: 40px;
+  --stat-value-size: 32px;
 }
 
 .light {
@@ -64,6 +93,7 @@ body {
   background-color: var(--black);
   color: var(--text-primary);
   font-family: var(--font-body);
+  font-size: var(--font-body-size);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.5;
@@ -149,7 +179,7 @@ button { cursor: pointer; }
 /* Section title — Space Mono, ALL CAPS */
 .section-title {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--label-size);
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -160,7 +190,7 @@ button { cursor: pointer; }
 /* Stat value — Doto hero number */
 .stat-value {
   font-family: var(--font-display);
-  font-size: 28px;
+  font-size: var(--stat-value-size);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
@@ -171,7 +201,7 @@ button { cursor: pointer; }
 /* Stat label — Space Mono ALL CAPS */
 .stat-label {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--label-size);
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -182,14 +212,14 @@ button { cursor: pointer; }
 /* Page header */
 .page-title {
   font-family: var(--font-body);
-  font-size: 24px;
+  font-size: var(--page-title-size);
   font-weight: 500;
   letter-spacing: -0.01em;
   color: var(--text-display);
 }
 
 .page-subtitle {
-  font-size: 14px;
+  font-size: calc(var(--label-size) + 3px);
   color: var(--text-secondary);
   margin-top: 2px;
 }
@@ -239,7 +269,7 @@ button { cursor: pointer; }
   padding: 3px 10px;
   border-radius: 999px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--label-size);
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -331,7 +361,7 @@ button { cursor: pointer; }
 }
 
 .heatmap-key-base {
-  font-size: 11px;
+  font-size: var(--label-size);
   line-height: 1.1;
 }
 
@@ -614,7 +644,7 @@ button { cursor: pointer; }
 
 .label {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--label-size);
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -640,7 +670,7 @@ button { cursor: pointer; }
 /* Label description — below label in settings rows */
 .label-desc {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--label-size);
   font-weight: 400;
   text-transform: none;
   letter-spacing: 0.04em;
@@ -736,7 +766,7 @@ button { cursor: pointer; }
 
 .display-xl {
   font-family: var(--font-display);
-  font-size: 72px;
+  font-size: var(--display-xl-size);
   font-weight: 700;
   line-height: 1.0;
   letter-spacing: -0.03em;
@@ -746,7 +776,7 @@ button { cursor: pointer; }
 
 .display-lg {
   font-family: var(--font-display);
-  font-size: 48px;
+  font-size: var(--display-lg-size);
   font-weight: 700;
   line-height: 1.05;
   letter-spacing: -0.02em;
@@ -756,7 +786,7 @@ button { cursor: pointer; }
 
 .display-md {
   font-family: var(--font-display);
-  font-size: 36px;
+  font-size: var(--display-md-size);
   font-weight: 700;
   line-height: 1.1;
   letter-spacing: -0.02em;
@@ -770,7 +800,7 @@ button { cursor: pointer; }
 
 .bracket-legend {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--label-size);
   text-transform: none;
   letter-spacing: 0.04em;
   color: var(--text-disabled);
@@ -786,7 +816,7 @@ button { cursor: pointer; }
 
 .topkey-bar-label {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: var(--font-body-size);
   font-weight: 700;
   color: var(--text-display);
   min-width: 48px;
@@ -810,7 +840,7 @@ button { cursor: pointer; }
 
 .topkey-bar-count {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--label-size);
   color: var(--text-secondary);
   min-width: 48px;
   text-align: right;
@@ -827,3 +857,7 @@ button { cursor: pointer; }
   --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   --font-mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', 'Menlo', 'Consolas', monospace;
 }
+
+/* Hide scrollbar for carousel */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

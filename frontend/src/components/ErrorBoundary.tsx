@@ -49,7 +49,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 marginTop: 8,
                 padding: 16,
                 borderRadius: 8,
-                fontSize: 11,
+                fontSize: 'var(--label-size)',
                 overflow: 'auto',
                 maxHeight: 256,
                 backgroundColor: 'var(--surface)',

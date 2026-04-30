@@ -9,6 +9,10 @@ import type { Lang } from '../i18n';
 import type { AppConfig } from '../types';
 import type { ThemeMode } from '../themes';
 import type { FontChoice } from '../hooks/useFont';
+import type { FontSizeChoice } from '../hooks/useFontSize';
+import type { LayoutId, KeyboardLayout } from '../hooks/useKeyboardLayout';
+import { layoutList, sizeCategories } from '../data/keyboardLayouts';
+import { KeyboardLayoutPreview } from './KeyboardLayoutPreview';
 
 interface SettingsPanelProps {
   lang: Lang;
@@ -26,9 +30,14 @@ interface SettingsPanelProps {
   onSelectMorphPreset: (id: string) => void;
   font: FontChoice;
   onFontChange: (f: FontChoice) => void;
+  fontSize: FontSizeChoice;
+  onFontSizeChange: (s: FontSizeChoice) => void;
+  layoutId: LayoutId;
+  onLayoutChange: (id: LayoutId) => void;
+  layout: KeyboardLayout;
 }
 
-export function SettingsPanel({ lang, onBack, mode, resolved, onSetMode, onLangChange, activePresetId, onSelectPreset, morphEnabled, morphPresetId, currentWpm, onToggleMorph, onSelectMorphPreset, font, onFontChange }: SettingsPanelProps) {
+export function SettingsPanel({ lang, onBack, mode, resolved, onSetMode, onLangChange, activePresetId, onSelectPreset, morphEnabled, morphPresetId, currentWpm, onToggleMorph, onSelectMorphPreset, font, onFontChange, fontSize, onFontSizeChange, layoutId, onLayoutChange, layout }: SettingsPanelProps) {
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [monStatus, setMonStatus] = useState({ running: false, access_err: '' });
   const [toggleErr, setToggleErr] = useState('');
@@ -211,7 +220,7 @@ export function SettingsPanel({ lang, onBack, mode, resolved, onSetMode, onLangC
     </div>
   );
 
-  return (
+  const main = (
     <div>
       {/* Header with back button */}
       <div className="flex items-center gap-3 mb-8">
@@ -257,7 +266,7 @@ export function SettingsPanel({ lang, onBack, mode, resolved, onSetMode, onLangC
                 <button key={m} onClick={() => onSetMode(m)}
                   style={{
                     fontFamily: "var(--font-mono)",
-                    fontSize: 11,
+                    fontSize: 'var(--label-size)',
                     letterSpacing: '0.06em',
                     padding: '5px 14px',
                     background: isActive ? 'var(--text-display)' : 'transparent',
@@ -283,7 +292,7 @@ export function SettingsPanel({ lang, onBack, mode, resolved, onSetMode, onLangC
                 <button key={f} onClick={() => onFontChange(f)}
                   style={{
                     fontFamily: "var(--font-mono)",
-                    fontSize: 11,
+                    fontSize: 'var(--label-size)',
                     letterSpacing: '0.06em',
                     padding: '5px 14px',
                     background: isActive ? 'var(--text-display)' : 'transparent',
@@ -296,6 +305,95 @@ export function SettingsPanel({ lang, onBack, mode, resolved, onSetMode, onLangC
                 </button>
               );
             })}
+          </div>
+        </div>
+
+        {/* Font Size — S / M / L */}
+        <div className="list-row">
+          <span className="label">{t('set.fontSize', lang)}</span>
+          <div className="flex" style={{ border: '1px solid var(--border-visible)', borderRadius: 999, overflow: 'hidden' }}>
+            {(['small', 'default', 'large'] as FontSizeChoice[]).map(s => {
+              const isActive = fontSize === s;
+              return (
+                <button key={s} onClick={() => onFontSizeChange(s)}
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 'var(--label-size)',
+                    letterSpacing: '0.06em',
+                    padding: '5px 14px',
+                    background: isActive ? 'var(--text-display)' : 'transparent',
+                    color: isActive ? 'var(--black)' : 'var(--text-secondary)',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'background 0.2s, color 0.2s',
+                  }}>
+                  {t(`set.font${s === 'small' ? 'Small' : s === 'default' ? 'Default' : 'Large'}`, lang)}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Keyboard Layout — category selector + preview */}
+        <div className="list-row" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 12 }}>
+          <span className="label">{t('set.keyboardLayout', lang)}</span>
+          {/* Size category buttons */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {sizeCategories.map(cat => {
+              const isActive = layout.category === cat.key;
+              return (
+                <button key={cat.key}
+                  onClick={() => {
+                    const first = layoutList.find(l => l.category === cat.key);
+                    if (first) onLayoutChange(first.id as LayoutId);
+                  }}
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 11,
+                    letterSpacing: '0.04em',
+                    padding: '6px 12px',
+                    borderRadius: 6,
+                    background: isActive ? 'var(--surface-raised)' : 'transparent',
+                    color: isActive ? 'var(--text-display)' : 'var(--text-secondary)',
+                    border: `1px solid ${isActive ? 'var(--border-visible)' : 'var(--border)'}`,
+                    cursor: 'pointer',
+                    transition: 'background 0.15s, color 0.15s, border-color 0.15s',
+                    whiteSpace: 'nowrap',
+                  }}>
+                  {cat.label} <span style={{ opacity: 0.5 }}>{cat.desc}</span>
+                </button>
+              );
+            })}
+          </div>
+          {/* Variant selector for current category (if multiple) */}
+          {layoutList.filter(l => l.category === layout.category).length > 1 && (
+            <div style={{ display: 'flex', gap: 4 }}>
+              {layoutList.filter(l => l.category === layout.category).map(item => {
+                const isActive = layoutId === item.id;
+                return (
+                  <button key={item.id} onClick={() => onLayoutChange(item.id as LayoutId)}
+                    style={{
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 10,
+                      letterSpacing: '0.04em',
+                      padding: '4px 10px',
+                      borderRadius: 4,
+                      background: isActive ? 'var(--text-display)' : 'transparent',
+                      color: isActive ? 'var(--black)' : 'var(--text-secondary)',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'background 0.15s, color 0.15s',
+                      whiteSpace: 'nowrap',
+                    }}>
+                    {item.name} ({item.keyCount})
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          {/* Preview */}
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
+            <KeyboardLayoutPreview layout={layout} keySize={20} />
           </div>
         </div>
 
@@ -349,7 +447,7 @@ export function SettingsPanel({ lang, onBack, mode, resolved, onSetMode, onLangC
         {updateInfo?.available && showNotes && (
           <div style={{ padding: '0 12px 12px' }}>
             <div style={{
-              fontSize: 11,
+              fontSize: 'var(--label-size)',
               lineHeight: 1.6,
               color: 'var(--text-secondary)',
               whiteSpace: 'pre-wrap',
@@ -515,11 +613,14 @@ export function SettingsPanel({ lang, onBack, mode, resolved, onSetMode, onLangC
           </button>
           {showKbDebug && (
             <div className="mt-3">
-              <KeyboardDebug lang={lang} />
+              <KeyboardDebug lang={lang} layout={layout} />
             </div>
           )}
         </div>
       </div>
+
     </div>
   );
+
+  return main;
 }

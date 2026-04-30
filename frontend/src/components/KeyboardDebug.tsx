@@ -1,29 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
 import { GetLastKeyEvent } from '../wails-bindings';
 import type { Lang } from '../i18n';
-
-const ROWS: [string, string, number?][][] = [
-  [ ['Esc','Escape'], ['F1','F1'], ['F2','F2'], ['F3','F3'], ['F4','F4'], ['F5','F5'], ['F6','F6'], ['F7','F7'], ['F8','F8'], ['F9','F9'], ['F10','F10'], ['F11','F11'], ['F12','F12'] ],
-  [ ['`','Backquote'], ['1','Digit1'], ['2','Digit2'], ['3','Digit3'], ['4','Digit4'], ['5','Digit5'], ['6','Digit6'], ['7','Digit7'], ['8','Digit8'], ['9','Digit9'], ['0','Digit0'], ['-','Minus'], ['=','Equal'], ['⌫','Backspace',2] ],
-  [ ['Tab','Tab',1.5], ['Q','KeyQ'], ['W','KeyW'], ['E','KeyE'], ['R','KeyR'], ['T','KeyT'], ['Y','KeyY'], ['U','KeyU'], ['I','KeyI'], ['O','KeyO'], ['P','KeyP'], ['[','BracketLeft'], [']','BracketRight'], ['\\','Backslash',1.5] ],
-  [ ['Caps','CapsLock',1.75], ['A','KeyA'], ['S','KeyS'], ['D','KeyD'], ['F','KeyF'], ['G','KeyG'], ['H','KeyH'], ['J','KeyJ'], ['K','KeyK'], ['L','KeyL'], [';','Semicolon'], ["'",'Quote'], ['Enter','Enter',2.25] ],
-  [ ['Shift','ShiftLeft',2.25], ['Z','KeyZ'], ['X','KeyX'], ['C','KeyC'], ['V','KeyV'], ['B','KeyB'], ['N','KeyN'], ['M','KeyM'], [',','Comma'], ['.','Period'], ['/','Slash'], ['Shift','ShiftRight',2.75] ],
-  [ ['Ctrl','ControlLeft',1.25], ['Super','MetaLeft',1.25], ['Alt','AltLeft',1.25], ['Space','Space',6.25], ['Alt','AltRight',1.25], ['Ctrl','ControlRight',1.25] ],
-];
-
-const NAV_ROW: [string, string][][] = [
-  [['Ins','Insert'],['Home','Home'],['PgUp','PageUp']],
-  [['Del','Delete'],['End','End'],['PgDn','PageDown']],
-];
-
-const ARROWS: [string, string][][] = [
-  [['',''], ['↑','ArrowUp'], ['','']],
-  [['←','ArrowLeft'], ['↓','ArrowDown'], ['→','ArrowRight']],
-];
+import type { KeyboardLayout, LayoutKey } from '../data/keyboardLayouts';
 
 const GAP = 4;
 const TOTAL_UNITS = 15;
-const NAV_COLS = 3;
 
 function Key({ label, code, flexUnits, w, h, active }: { label: string; code: string; flexUnits?: number; w?: number; h: number; active: boolean }) {
   if (!label) return <div style={{ width: w, height: h }} />;
@@ -46,7 +27,12 @@ function Key({ label, code, flexUnits, w, h, active }: { label: string; code: st
   );
 }
 
-export function KeyboardDebug({ lang }: { lang: Lang }) {
+// Flatten grouped rows into flat rows for debug rendering
+function flattenRows(grouped: LayoutKey[][][]): LayoutKey[][] {
+  return grouped.map(row => row.flat());
+}
+
+export function KeyboardDebug({ lang, layout }: { lang: Lang; layout: KeyboardLayout }) {
   const [pressed, setPressed] = useState<Set<string>>(new Set());
   const [lastBrowser, setLastBrowser] = useState<any>(null);
   const [lastGo, setLastGo] = useState<any>(null);
@@ -54,6 +40,12 @@ export function KeyboardDebug({ lang }: { lang: Lang }) {
   const logRef = useRef<string[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerW, setContainerW] = useState(700);
+
+  const mainRows = flattenRows(layout.debugRows);
+  const navRows = layout.navRow ? flattenRows(layout.navRow) : [];
+  const arrowRows = layout.arrows ? flattenRows(layout.arrows) : [];
+  const numpadRows = layout.numpad ? flattenRows(layout.numpad) : [];
+  const mediaRows = layout.mediaRow ? flattenRows(layout.mediaRow) : [];
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -106,7 +98,7 @@ export function KeyboardDebug({ lang }: { lang: Lang }) {
   const field = (label: string, value: React.ReactNode) => (
     <div className="flex items-baseline gap-2">
       <span className="label-disabled" style={{ fontSize: 10, width: 60, flexShrink: 0 }}>{label}</span>
-      <span className="text-mono" style={{ fontSize: 13, color: 'var(--text-primary)' }}>{value}</span>
+      <span className="text-mono" style={{ fontSize: 'var(--font-body-size)', color: 'var(--text-primary)' }}>{value}</span>
     </div>
   );
 
@@ -142,31 +134,63 @@ export function KeyboardDebug({ lang }: { lang: Lang }) {
       {/* Keyboard */}
       <div className="card p-4 mb-4">
         <div className="flex flex-col items-center" style={{ gap: GAP }}>
-          {ROWS.map((row, ri) => (
+          {mainRows.map((row, ri) => (
             <div key={ri} className="flex w-full" style={{ gap: GAP }}>
-              {row.map(([label, code, u]) => (
-                <Key key={code} label={label} code={code} flexUnits={u || 1} h={keyH} active={pressed.has(code)} />
+              {row.map((k) => (
+                <Key key={k.code} label={k.label} code={k.code} flexUnits={k.width} h={keyH} active={pressed.has(k.code)} />
               ))}
             </div>
           ))}
 
-          <div className="flex items-start w-full" style={{ gap: GAP, marginTop: 8 }}>
-            <div className="flex flex-col" style={{ gap: GAP }}>
-              {NAV_ROW.map((row, ri) => (
-                <div key={ri} className="flex" style={{ gap: GAP }}>
-                  {row.map(([label, code]) => <Key key={code} label={label} code={code} w={navKeyW} h={keyH} active={pressed.has(code)} />)}
+          {(navRows.length > 0 || arrowRows.length > 0 || numpadRows.length > 0 || mediaRows.length > 0) && (
+            <div className="flex items-start w-full" style={{ gap: GAP, marginTop: 8 }}>
+              {navRows.length > 0 && (
+                <div className="flex flex-col" style={{ gap: GAP }}>
+                  {navRows.map((row, ri) => (
+                    <div key={ri} className="flex" style={{ gap: GAP }}>
+                      {row.map((k) => <Key key={k.code} label={k.label} code={k.code} w={navKeyW} h={keyH} active={pressed.has(k.code)} />)}
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
+              {arrowRows.length > 0 && (
+                <>
+                  <div style={{ width: 12 }} />
+                  <div className="flex flex-col" style={{ gap: GAP }}>
+                    {arrowRows.map((row, ri) => (
+                      <div key={ri} className="flex" style={{ gap: GAP }}>
+                        {row.map((k) => <Key key={k.code || Math.random()} label={k.label} code={k.code} w={navKeyW} h={keyH} active={k.code ? pressed.has(k.code) : false} />)}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+              {numpadRows.length > 0 && (
+                <>
+                  <div style={{ width: 12 }} />
+                  <div className="flex flex-col" style={{ gap: GAP }}>
+                    {numpadRows.map((row, ri) => (
+                      <div key={ri} className="flex" style={{ gap: GAP }}>
+                        {row.map((k) => <Key key={k.code} label={k.label} code={k.code} w={navKeyW} h={keyH} active={pressed.has(k.code)} />)}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+              {mediaRows.length > 0 && (
+                <>
+                  <div style={{ width: 12 }} />
+                  <div className="flex flex-col" style={{ gap: GAP }}>
+                    {mediaRows.map((row, ri) => (
+                      <div key={ri} className="flex" style={{ gap: GAP }}>
+                        {row.map((k) => <Key key={k.code} label={k.label} code={k.code} w={navKeyW} h={keyH} active={pressed.has(k.code)} />)}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
-            <div style={{ width: 12 }} />
-            <div className="flex flex-col" style={{ gap: GAP }}>
-              {ARROWS.map((row, ri) => (
-                <div key={ri} className="flex" style={{ gap: GAP }}>
-                  {row.map(([label, code]) => <Key key={code || Math.random()} label={label} code={code} w={navKeyW} h={keyH} active={code ? pressed.has(code) : false} />)}
-                </div>
-              ))}
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -190,7 +214,7 @@ export function KeyboardDebug({ lang }: { lang: Lang }) {
               Clear
             </button>
           </div>
-          <div className="text-mono" style={{ fontSize: 11, maxHeight: 144, overflow: 'auto' }}>
+          <div className="text-mono" style={{ fontSize: 'var(--label-size)', maxHeight: 144, overflow: 'auto' }}>
             {log.map((l, i) => (
               <div key={i} style={{
                 padding: '2px 8px',

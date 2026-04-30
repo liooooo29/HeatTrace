@@ -16,7 +16,7 @@ export function StatCard({ label, value, delta, hint }: StatCardProps) {
         {showDelta && (
           <span style={{
             fontFamily: "var(--font-mono)",
-            fontSize: 11,
+            fontSize: 'var(--label-size)',
             letterSpacing: '0.04em',
             color: deltaColor,
           }}>

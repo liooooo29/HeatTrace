@@ -36,7 +36,7 @@ export function TypingECG({ lang, currentWpm, peakWpm, wpmHistory }: TypingECGPr
   if (chartData.length === 0) {
     return (
       <div className="chart-card flex items-center justify-center dot-grid-subtle"
-        style={{ color: 'var(--text-disabled)', fontSize: 13, minHeight: 192, borderRadius: 12 }}>
+        style={{ color: 'var(--text-disabled)', fontSize: 'var(--font-body-size)', minHeight: 192, borderRadius: 12 }}>
         {t('report.noRhythm', lang)}
       </div>
     );
@@ -55,7 +55,7 @@ export function TypingECG({ lang, currentWpm, peakWpm, wpmHistory }: TypingECGPr
           }} />
           <span style={{
             fontFamily: "var(--font-mono)",
-            fontSize: 11,
+            fontSize: 'var(--label-size)',
             textTransform: 'uppercase',
             letterSpacing: '0.06em',
             color: 'var(--accent)',

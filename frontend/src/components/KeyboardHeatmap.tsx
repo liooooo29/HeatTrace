@@ -1,45 +1,8 @@
 import { useMemo } from 'react';
 import type { KeyHeatPoint } from '../types';
+import type { KeyboardLayout, LayoutRow } from '../data/keyboardLayouts';
 
-const ROWS: [string, string?][][][] = [
-  [
-    [['`','~'], ['1','!'], ['2','@'], ['3','#'], ['4','$'], ['5','%']],
-    [['6','^'], ['7','&'], ['8','*'], ['9','('], ['0',')'], ['-','_'], ['=','+']],
-    [['Backspace']],
-  ],
-  [
-    [['Tab']],
-    [['q'], ['w'], ['e'], ['r'], ['t'], ['y'], ['u'], ['i'], ['o'], ['p']],
-    [['[','{'], [']','}'], ['\\','|']],
-  ],
-  [
-    [['Caps']],
-    [['a'], ['s'], ['d'], ['f'], ['g'], ['h'], ['j'], ['k'], ['l']],
-    [[';',':'], ["'",'"'], ['Enter']],
-  ],
-  [
-    [['Shift']],
-    [['z'], ['x'], ['c'], ['v'], ['b'], ['n'], ['m']],
-    [[',','<'], ['.','>'], ['/','?'], ['Shift']],
-  ],
-  [
-    [['Ctrl'], ['Opt'], ['Cmd'], ['Space'], ['Cmd'], ['Opt'], ['Ctrl']],
-  ],
-];
-
-function getKeyWidth(key: string): number {
-  switch (key) {
-    case 'Backspace': return 72;
-    case 'Tab': return 56;
-    case 'Caps': return 64;
-    case 'Enter': return 80;
-    case 'Shift': return 82;
-    case 'Ctrl': case 'Opt': return 44;
-    case 'Cmd': return 50;
-    case 'Space': return 220;
-    default: return 36;
-  }
-}
+const BASE_UNIT = 36; // pixels per flex unit
 
 function getDisplayLabel(key: string): string {
   switch (key) {
@@ -125,7 +88,9 @@ function KeyCell({ baseKey, shiftedKey, count, value, width }: {
   );
 }
 
-export function KeyboardHeatmap({ keys }: { keys: KeyHeatPoint[] }) {
+export function KeyboardHeatmap({ keys, layout }: { keys: KeyHeatPoint[]; layout: KeyboardLayout }) {
+  if (!layout) return null;
+
   const keyMap = useMemo(() => {
     const map = new Map<string, KeyHeatPoint>();
     for (const k of keys) {
@@ -145,33 +110,47 @@ export function KeyboardHeatmap({ keys }: { keys: KeyHeatPoint[] }) {
 
   const levels = [0, 0.17, 0.33, 0.5, 0.67, 0.83, 1.0];
 
-  return (
-    <div className="chart-card p-4">
-      <div className="space-y-0.5">
-        {ROWS.map((row, ri) => (
-          <div key={ri} className="flex gap-0.5 justify-center">
-            {row.map((group, gi) => (
-              <div key={gi} className="flex gap-0.5">
-                {group.map(([baseKey, shiftedKey], ki) => {
-                  const data = keyMap.get(baseKey.toLowerCase());
-                  const count = data?.count || 0;
-                  const value = count / maxCount;
-                  const width = getKeyWidth(baseKey);
-                  return (
-                    <KeyCell
-                      key={`${ri}-${gi}-${ki}`}
-                      baseKey={baseKey}
-                      shiftedKey={shiftedKey}
-                      count={count}
-                      value={value}
-                      width={width}
-                    />
-                  );
-                })}
-              </div>
-            ))}
+  const renderRows = (rows: LayoutRow[], prefix: string) =>
+    rows.map((row, ri) => (
+      <div key={`${prefix}-${ri}`} className="flex gap-0.5">
+        {row.map((group, gi) => (
+          <div key={gi} className="flex gap-0.5">
+            {group.map((keyDef, ki) => {
+              const data = keyMap.get(keyDef.label.toLowerCase());
+              const count = data?.count || 0;
+              const value = count / maxCount;
+              const width = Math.round(keyDef.width * BASE_UNIT);
+              return (
+                <KeyCell
+                  key={`${prefix}-${ri}-${gi}-${ki}`}
+                  baseKey={keyDef.label}
+                  shiftedKey={keyDef.shifted}
+                  count={count}
+                  value={value}
+                  width={width}
+                />
+              );
+            })}
           </div>
         ))}
+      </div>
+    ));
+
+  const hasExtras = layout.navRow || layout.arrows || layout.numpad;
+
+  return (
+    <div className="chart-card p-4">
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 4 }}>
+        <div className="space-y-0.5">
+          {renderRows(layout.rows, 'main')}
+        </div>
+        {hasExtras && (
+          <div className="space-y-0.5">
+            {layout.navRow && renderRows(layout.navRow, 'nav')}
+            {layout.arrows && renderRows(layout.arrows, 'arr')}
+            {layout.numpad && renderRows(layout.numpad, 'num')}
+          </div>
+        )}
       </div>
 
       {/* Color legend — opacity ramp */}
